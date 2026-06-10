@@ -52,6 +52,17 @@ export default function SelectRoleScreen() {
     }
 
     setAuthFlow(intent, selectedRole);
+
+    if (selectedRole === "farmer" && intent === "register") {
+      router.push("/farmer/sign-up" as Href);
+      return;
+    }
+
+    if (selectedRole === "farmer" && intent === "sign-in") {
+      router.push("/farmer/sign-in" as Href);
+      return;
+    }
+
     router.push("/sign-in" as Href);
   }
 

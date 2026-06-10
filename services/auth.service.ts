@@ -1,23 +1,32 @@
+import { authClient } from '@/lib/auth-client';
 import { apiClient } from '@/lib/api-client';
-import type { ApiResponse } from '@/types/api';
-import type { AuthResponse, LoginPayload, RegisterPayload, RequestOtpPayload } from '@/types/auth';
+import type { LegacyResponse, V1Response } from '@/types/api';
+import type {
+  AuthTokensResponse,
+  AuthUser,
+  FarmerAuthenticatePayload,
+  FarmerRegisterPayload,
+  FarmerRegisterResponse,
+  RefreshTokenResponse,
+  SendOtpPayload,
+  SendOtpResponse,
+} from '@/types/auth';
 
 export const authService = {
-  requestOtp: (payload: RequestOtpPayload) =>
-    apiClient.post<ApiResponse<{ message: string }>>('/auth/otp', payload),
+  sendOtp: (payload: SendOtpPayload) =>
+    authClient.post<LegacyResponse<SendOtpResponse>>('/send-otp', payload),
 
-  login: (payload: LoginPayload) =>
-    apiClient.post<ApiResponse<AuthResponse>>('/auth/login', payload),
+  registerFarmer: (payload: FarmerRegisterPayload) =>
+    authClient.post<LegacyResponse<FarmerRegisterResponse>>('/farmer/register', payload),
 
-  register: (payload: RegisterPayload) =>
-    apiClient.post<ApiResponse<AuthResponse>>('/auth/register', payload),
-
-  logout: () =>
-    apiClient.post<ApiResponse<null>>('/auth/logout'),
+  authenticateFarmer: (payload: FarmerAuthenticatePayload) =>
+    authClient.post<LegacyResponse<AuthTokensResponse>>('/farmer/authenticate', payload),
 
   refreshToken: (refreshToken: string) =>
-    apiClient.post<ApiResponse<{ token: string }>>('/auth/refresh', { refreshToken }),
+    apiClient.post<V1Response<RefreshTokenResponse>>('/auth/refresh', { refreshToken }),
 
-  me: () =>
-    apiClient.get<ApiResponse<AuthResponse['user']>>('/auth/me'),
+  logout: (refreshToken: string) =>
+    apiClient.post('/auth/logout', { refreshToken }),
+
+  me: () => apiClient.get<V1Response<AuthUser>>('/me'),
 };

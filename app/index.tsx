@@ -7,12 +7,18 @@ import { useAuthStore } from '@/stores/auth.store';
 export default function Index() {
   const hydrated = usePersistHydrated();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const user = useAuthStore((s) => s.user);
+  const profileCompleted = useAuthStore((s) => s.profileCompleted);
 
   if (!hydrated) {
     return <View className="flex-1 bg-background" />;
   }
 
   if (isAuthenticated) {
+    if (user?.role === 'FARMER' && !profileCompleted) {
+      return <Redirect href={'/farmer/sign-up' as Href} />;
+    }
+
     return <Redirect href="/(tabs)" />;
   }
 

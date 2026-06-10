@@ -1,32 +1,52 @@
-export type UserRole = 'farmer' | 'expert' | 'admin';
+export type BackendUserRole =
+  | 'FARMER'
+  | 'EXPERT'
+  | 'OPERATOR'
+  | 'LENDER'
+  | 'AGENT'
+  | 'ADMIN';
 
-export type User = {
+export type UserStatus = 'PENDING_OTP' | 'ACTIVE' | 'SUSPENDED';
+
+export type AuthUser = {
   id: string;
-  name: string;
-  phone: string;
-  role: UserRole;
-  language?: string;
-  avatarUrl?: string;
+  role: BackendUserRole;
+  username: string;
+  phoneNumber: string;
+  email?: string;
+  status: UserStatus;
+  language: string;
 };
 
-export type LoginPayload = {
-  phone: string;
+export type FarmerRegisterPayload = {
+  username: string;
+  phoneNumber: string;
+};
+
+export type FarmerRegisterResponse = {
+  id: string;
+};
+
+export type SendOtpPayload = {
+  phoneNumber: string;
+};
+
+export type SendOtpResponse = {
+  sent: boolean;
+};
+
+export type FarmerAuthenticatePayload = {
+  phoneNumber: string;
   otp: string;
 };
 
-export type RegisterPayload = {
-  name: string;
-  phone: string;
-  role: 'farmer' | 'expert';
-  language?: string;
-};
-
-export type RequestOtpPayload = {
-  phone: string;
-};
-
-export type AuthResponse = {
-  user: User;
+export type AuthTokensResponse = {
   token: string;
+  refreshToken: string;
+  user: AuthUser;
+};
+
+export type RefreshTokenResponse = {
+  accessToken: string;
   refreshToken: string;
 };

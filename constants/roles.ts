@@ -1,9 +1,8 @@
 import type { Ionicons } from '@expo/vector-icons';
 
 import { Palette } from '@/constants/theme';
-import type { UserRole } from '@/types/auth';
 
-export type SelectableRole = Extract<UserRole, 'farmer' | 'expert'>;
+export type SelectableRole = 'farmer' | 'expert';
 
 export type RoleOption = {
   id: SelectableRole;

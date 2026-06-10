@@ -51,6 +51,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     adaptiveIcon: ANDROID_ADAPTIVE_ICON,
     edgeToEdgeEnabled: true,
     predictiveBackGestureEnabled: false,
+    softwareKeyboardLayoutMode: 'resize',
   },
   web: {
     ...config.web,
@@ -60,6 +61,15 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   plugins: [
     'expo-router',
+    [
+      'expo-location',
+      {
+        locationWhenInUsePermission:
+          'KrishiMotto needs your location to centre the map on your field.',
+        locationAlwaysAndWhenInUsePermission:
+          'KrishiMotto needs your location to centre the map on your field.',
+      },
+    ],
     [
       'expo-splash-screen',
       {

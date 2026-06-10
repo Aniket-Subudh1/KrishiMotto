@@ -10,6 +10,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import Animated, { FadeOut } from 'react-native-reanimated';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { AppSplash, SPLASH_DURATION_MS } from '@/components/app-splash';
 import { FontLoadMap } from '@/constants/fonts';
@@ -62,9 +63,10 @@ export default function RootLayout() {
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <I18nProvider>
-        <View className="flex-1 bg-background font-sans">
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <QueryClientProvider client={queryClient}>
+        <I18nProvider>
+          <View className="flex-1 bg-background font-sans">
           <ThemeProvider value={NavigationTheme}>
             <Stack
               screenOptions={{
@@ -78,6 +80,7 @@ export default function RootLayout() {
               <Stack.Screen name="index" options={{ headerShown: false }} />
               <Stack.Screen name="get-started" options={{ headerShown: false }} />
               <Stack.Screen name="select-role" options={{ headerShown: false }} />
+              <Stack.Screen name="farmer" options={{ headerShown: false }} />
               <Stack.Screen name="sign-in" options={{ headerShown: false }} />
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
               <Stack.Screen
@@ -99,5 +102,6 @@ export default function RootLayout() {
         </View>
       </I18nProvider>
     </QueryClientProvider>
+    </GestureHandlerRootView>
   );
 }

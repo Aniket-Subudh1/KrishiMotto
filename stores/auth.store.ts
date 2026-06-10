@@ -2,16 +2,19 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-import type { User } from '@/types/auth';
+import type { AuthUser } from '@/types/auth';
 
 type AuthState = {
-  user: User | null;
+  user: AuthUser | null;
   token: string | null;
   refreshToken: string | null;
   isAuthenticated: boolean;
-  setAuth: (user: User, token: string, refreshToken: string) => void;
-  updateUser: (partial: Partial<User>) => void;
+  profileCompleted: boolean;
+  setAuth: (user: AuthUser, token: string, refreshToken: string) => void;
+  updateUser: (partial: Partial<AuthUser>) => void;
   setToken: (token: string) => void;
+  setRefreshToken: (refreshToken: string) => void;
+  setProfileCompleted: (completed: boolean) => void;
   clearAuth: () => void;
 };
 
@@ -22,6 +25,7 @@ export const useAuthStore = create<AuthState>()(
       token: null,
       refreshToken: null,
       isAuthenticated: false,
+      profileCompleted: false,
 
       setAuth: (user, token, refreshToken) =>
         set({ user, token, refreshToken, isAuthenticated: true }),
@@ -33,18 +37,28 @@ export const useAuthStore = create<AuthState>()(
 
       setToken: (token) => set({ token }),
 
+      setRefreshToken: (refreshToken) => set({ refreshToken }),
+
+      setProfileCompleted: (profileCompleted) => set({ profileCompleted }),
+
       clearAuth: () =>
-        set({ user: null, token: null, refreshToken: null, isAuthenticated: false }),
+        set({
+          user: null,
+          token: null,
+          refreshToken: null,
+          isAuthenticated: false,
+          profileCompleted: false,
+        }),
     }),
     {
       name: 'krishimotto-auth',
       storage: createJSONStorage(() => AsyncStorage),
-      // Only persist non-sensitive shape; token is kept for convenience (use SecureStore in prod)
       partialize: (state) => ({
         user: state.user,
         token: state.token,
         refreshToken: state.refreshToken,
         isAuthenticated: state.isAuthenticated,
+        profileCompleted: state.profileCompleted,
       }),
     },
   ),

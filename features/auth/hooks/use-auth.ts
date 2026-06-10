@@ -3,47 +3,45 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { queryClient } from '@/lib/query-client';
 import { authService } from '@/services/auth.service';
 import { useAuthStore } from '@/stores/auth.store';
-import type { LoginPayload, RegisterPayload, RequestOtpPayload } from '@/types/auth';
+import type { FarmerAuthenticatePayload, SendOtpPayload } from '@/types/auth';
 
 export const AUTH_KEYS = {
   me: ['auth', 'me'] as const,
 };
 
-export function useRequestOtp() {
+export function useSendOtp() {
   return useMutation({
-    mutationFn: (payload: RequestOtpPayload) => authService.requestOtp(payload),
-  });
-}
-
-export function useLogin() {
-  const setAuth = useAuthStore((s) => s.setAuth);
-
-  return useMutation({
-    mutationFn: (payload: LoginPayload) => authService.login(payload),
-    onSuccess: ({ data }) => {
-      const { user, token, refreshToken } = data.data;
-      setAuth(user, token, refreshToken);
+    mutationFn: async (payload: SendOtpPayload) => {
+      const { data } = await authService.sendOtp(payload);
+      return data.response;
     },
   });
 }
 
-export function useRegister() {
+export function useAuthenticateFarmer() {
   const setAuth = useAuthStore((s) => s.setAuth);
 
   return useMutation({
-    mutationFn: (payload: RegisterPayload) => authService.register(payload),
-    onSuccess: ({ data }) => {
-      const { user, token, refreshToken } = data.data;
-      setAuth(user, token, refreshToken);
+    mutationFn: async (payload: FarmerAuthenticatePayload) => {
+      const { data } = await authService.authenticateFarmer(payload);
+      return data.response;
+    },
+    onSuccess: (response) => {
+      setAuth(response.user, response.token, response.refreshToken);
     },
   });
 }
 
 export function useLogout() {
   const clearAuth = useAuthStore((s) => s.clearAuth);
+  const refreshToken = useAuthStore((s) => s.refreshToken);
 
   return useMutation({
-    mutationFn: authService.logout,
+    mutationFn: async () => {
+      if (refreshToken) {
+        await authService.logout(refreshToken);
+      }
+    },
     onSettled: () => {
       clearAuth();
       queryClient.clear();
@@ -57,8 +55,10 @@ export function useMe() {
 
   return useQuery({
     queryKey: AUTH_KEYS.me,
-    queryFn: () => authService.me(),
+    queryFn: async () => {
+      const { data } = await authService.me();
+      return data.data;
+    },
     enabled: isAuthenticated,
-    select: (res) => res.data.data,
   });
 }

@@ -1,18 +1,27 @@
-export type ApiResponse<T> = {
-  success: boolean;
-  data: T;
-  message?: string;
+export type ResponseMeta = {
+  requestId?: string;
+  ts: string;
 };
 
-export type PaginatedResponse<T> = ApiResponse<{
-  items: T[];
-  total: number;
-  page: number;
-  limit: number;
-}>;
+/** V1 envelope: `/api/v1/*` */
+export type V1Response<T> = {
+  data: T;
+  meta: ResponseMeta;
+};
+
+/** Legacy envelope: `/auth/*` */
+export type LegacyResponse<T> = {
+  response: T;
+  meta: ResponseMeta;
+};
 
 export type ApiError = {
+  code: string;
   message: string;
-  code?: string;
-  status?: number;
+  details?: Record<string, unknown>;
+  requestId?: string;
+};
+
+export type PaginatedItems<T> = {
+  items: T[];
 };
