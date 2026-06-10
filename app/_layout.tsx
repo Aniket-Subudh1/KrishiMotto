@@ -16,6 +16,7 @@ import { AppSplash, SPLASH_DURATION_MS } from '@/components/app-splash';
 import { FontLoadMap } from '@/constants/fonts';
 import { Colors, Fonts, NavigationTheme } from '@/constants/theme';
 import { queryClient } from '@/lib/query-client';
+import { AuthSessionProvider } from '@/providers/auth-session-provider';
 import { I18nProvider } from '@/providers/i18n-provider';
 
 SplashScreen.preventAutoHideAsync().catch(() => {
@@ -65,7 +66,8 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <QueryClientProvider client={queryClient}>
-        <I18nProvider>
+        <AuthSessionProvider>
+          <I18nProvider>
           <View className="flex-1 bg-background font-sans">
           <ThemeProvider value={NavigationTheme}>
             <Stack
@@ -100,8 +102,9 @@ export default function RootLayout() {
             </Animated.View>
           )}
         </View>
-      </I18nProvider>
-    </QueryClientProvider>
+        </I18nProvider>
+        </AuthSessionProvider>
+      </QueryClientProvider>
     </GestureHandlerRootView>
   );
 }

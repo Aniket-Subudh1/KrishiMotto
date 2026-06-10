@@ -61,6 +61,13 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   plugins: [
     'expo-router',
+    'expo-localization',
+    [
+      'expo-image-picker',
+      {
+        photosPermission: 'KrishiMotto needs access to your photos to set a profile picture.',
+      },
+    ],
     [
       'expo-location',
       {

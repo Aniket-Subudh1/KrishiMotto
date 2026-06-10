@@ -1,6 +1,8 @@
 import { Redirect, router, type Href } from 'expo-router';
+import { Image } from 'expo-image';
 import { useCallback, useEffect, useState } from 'react';
-import { Alert, BackHandler, View } from 'react-native';
+import { Alert, BackHandler, Pressable, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 import {
   AuthScreenLayout,
@@ -26,10 +28,13 @@ import {
   isValidLocationField,
   isValidOtp,
   isValidProfileName,
+  isValidSeason,
   isValidUsername,
+  INDIAN_CROP_SEASONS,
   normalizePhoneInput,
 } from '@/lib/validation';
 import { Palette } from '@/constants/theme';
+import { uploadService } from '@/services/upload.service';
 import { useAuthFlowStore } from '@/stores/auth-flow.store';
 import { useAuthStore } from '@/stores/auth.store';
 import type { LandType } from '@/types/farmer';
@@ -53,8 +58,11 @@ export default function FarmerSignUpScreen() {
   const hasEnteredFromGetStarted = useAuthFlowStore((s) => s.hasEnteredFromGetStarted);
   const storedPhone = useAuthFlowStore((s) => s.phoneNumber);
   const storedUsername = useAuthFlowStore((s) => s.username);
+  const signupStep = useAuthFlowStore((s) => s.signupStep);
   const setPhoneNumber = useAuthFlowStore((s) => s.setPhoneNumber);
   const setUsername = useAuthFlowStore((s) => s.setUsername);
+  const setSignupStep = useAuthFlowStore((s) => s.setSignupStep);
+  const setStoredLandType = useAuthFlowStore((s) => s.setLandType);
 
   const registerFarmer = useRegisterFarmer();
   const sendOtp = useSendOtp();
@@ -73,6 +81,8 @@ export default function FarmerSignUpScreen() {
   const [state, setStateValue] = useState('');
   const [landType, setLandType] = useState<LandType>('OWNED');
   const [primaryCrop, setPrimaryCrop] = useState('');
+  const [currentSeason, setCurrentSeason] = useState<string | null>(null);
+  const [profilePhotoUri, setProfilePhotoUri] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
   const [slideResetKey, setSlideResetKey] = useState(0);
@@ -138,6 +148,10 @@ export default function FarmerSignUpScreen() {
 
   if (isAuthenticated && profileCompleted) {
     return <Redirect href="/(tabs)" />;
+  }
+
+  if (isAuthenticated && signupStep === 'land') {
+    return <Redirect href={'/farmer/land-boundary' as Href} />;
   }
 
   if (
@@ -257,6 +271,26 @@ export default function FarmerSignUpScreen() {
     }
   }
 
+  async function pickProfilePhoto() {
+    const ImagePicker = await import('expo-image-picker');
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      Alert.alert(t('farmerSignUp.photoPermissionTitle'), t('farmerSignUp.photoPermissionMessage'));
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.85,
+    });
+
+    if (!result.canceled && result.assets[0]?.uri) {
+      setProfilePhotoUri(result.assets[0].uri);
+    }
+  }
+
   async function handleProfileSubmit() {
     setFormError(null);
     setInfoMessage(null);
@@ -285,7 +319,23 @@ export default function FarmerSignUpScreen() {
       return;
     }
 
+    if (currentSeason && !isValidSeason(currentSeason)) {
+      setFormError(t('farmerSignUp.errors.currentSeason'));
+      bumpSlideReset();
+      return;
+    }
+
     try {
+      let profilePicKey: string | null = null;
+
+      if (profilePhotoUri) {
+        const contentType = 'image/jpeg';
+        const { data: presignData } = await uploadService.presign('profile_pic', contentType);
+        const presign = presignData.data;
+        await uploadService.uploadToPresignedUrl(presign.uploadUrl, profilePhotoUri, contentType);
+        profilePicKey = presign.assetKey;
+      }
+
       await updateProfile.mutateAsync({
         name: name.trim(),
         district: district.trim(),
@@ -293,7 +343,12 @@ export default function FarmerSignUpScreen() {
         country: 'India',
         landType,
         primaryCrop: primaryCrop.trim() || null,
+        currentSeason: currentSeason || null,
+        profilePicKey,
       });
+
+      setStoredLandType(landType);
+      setSignupStep('land');
       router.replace('/farmer/land-boundary' as Href);
     } catch (error) {
       setFormError(getMutationError(error, t('farmerSignUp.errors.generic')));
@@ -412,7 +467,7 @@ export default function FarmerSignUpScreen() {
       onBack={handleBack}
       footer={
         <SlideButton
-          label={t('farmerSignUp.completeProfile')}
+          label={t('farmerSignUp.continueToMap')}
           hint={t('farmerSignUp.slideHint')}
           loading={isBusy}
           resetKey={slideResetKey}
@@ -422,6 +477,23 @@ export default function FarmerSignUpScreen() {
       footerHint={t('selectRole.hint')}
     >
       <FormCard title={t('farmerSignUp.profileSection')}>
+        <View className="items-center gap-2">
+          <Pressable
+            onPress={pickProfilePhoto}
+            className="h-[88px] w-[88px] items-center justify-center overflow-hidden rounded-full border-2 border-dashed border-india-green/50 bg-surface"
+          >
+            {profilePhotoUri ? (
+              <Image source={{ uri: profilePhotoUri }} style={{ width: 88, height: 88 }} contentFit="cover" />
+            ) : (
+              <View className="items-center gap-1">
+                <Ionicons name="camera-outline" size={28} color={Palette.indiaGreen} />
+                <Text className="text-[10px] font-semibold text-muted">{t('farmerSignUp.addPhoto')}</Text>
+              </View>
+            )}
+          </Pressable>
+          <Text className="text-[12px] text-muted">{t('farmerSignUp.photoHint')}</Text>
+        </View>
+
         <Input
           fieldId="profile-name"
           label={t('farmerSignUp.nameLabel')}
@@ -455,6 +527,45 @@ export default function FarmerSignUpScreen() {
               autoCapitalize="characters"
             />
           </View>
+        </View>
+
+        <Input
+          fieldId="profile-country"
+          label={t('farmerSignUp.countryLabel')}
+          value="India"
+          editable={false}
+          icon="flag-outline"
+        />
+
+        <View className="gap-2.5">
+          <View className="flex-row items-center gap-1.5">
+            <View className="h-1.5 w-1.5 shrink-0 rounded-sm bg-india-green" />
+            <Text className="font-condensed-semibold text-[11px] uppercase tracking-[0.5px] text-india-green">
+              {t('farmerSignUp.currentSeasonLabel')}
+            </Text>
+          </View>
+          <View className="flex-row flex-wrap gap-2">
+            {INDIAN_CROP_SEASONS.map((season) => (
+              <Pressable
+                key={season}
+                onPress={() => setCurrentSeason(currentSeason === season ? null : season)}
+                className={`rounded-full border px-4 py-2 ${
+                  currentSeason === season
+                    ? 'border-india-green bg-surface'
+                    : 'border-border bg-background'
+                }`}
+              >
+                <Text
+                  className={`text-[13px] font-semibold ${
+                    currentSeason === season ? 'text-india-green' : 'text-muted'
+                  }`}
+                >
+                  {t(`farmerSignUp.seasons.${season.toLowerCase()}` as 'farmerSignUp.seasons.kharif')}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+          <Text className="text-[12px] text-muted">{t('farmerSignUp.currentSeasonHint')}</Text>
         </View>
 
         <View className="gap-2.5">

@@ -1,7 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import * as Location from 'expo-location';
 import { Redirect, router, type Href } from 'expo-router';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -12,21 +11,21 @@ import {
   Text as RNText,
   View,
 } from 'react-native';
-import MapView, {
-  Marker,
-  Polygon,
-  Polyline,
+import type MapView from 'react-native-maps';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import {
+  LandMap,
   type LatLng,
-  type MapPressEvent,
   type MapType,
   type Region,
-} from 'react-native-maps';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+} from '@/components/land/land-map';
 
 import { Text } from '@/components/ui/text';
 import { Palette } from '@/constants/theme';
 import { useCreateLandParcel, getLandParcelError } from '@/features/farmer/hooks/use-land-parcel';
 import { useAppLocale } from '@/hooks/use-app-locale';
+import { useAuthFlowStore } from '@/stores/auth-flow.store';
 import { useAuthStore } from '@/stores/auth.store';
 import type { GeoPolygon } from '@/types/farmer';
 
@@ -38,6 +37,61 @@ const INDIA_CENTER: Region = {
 };
 
 const MIN_POINTS = 3;
+
+type BoundaryPoint = LatLng & { id: string };
+
+type BoundaryState = {
+  points: BoundaryPoint[];
+  selectedIndex: number | null;
+};
+
+type BoundaryAction =
+  | { type: 'add'; coordinate: LatLng; id: string }
+  | { type: 'update'; index: number; coordinate: LatLng }
+  | { type: 'toggle_select'; index: number }
+  | { type: 'undo' }
+  | { type: 'clear' };
+
+function boundaryReducer(state: BoundaryState, action: BoundaryAction): BoundaryState {
+  switch (action.type) {
+    case 'add': {
+      const points = [...state.points, { ...action.coordinate, id: action.id }];
+      return { points, selectedIndex: points.length - 1 };
+    }
+    case 'update': {
+      if (action.index < 0 || action.index >= state.points.length) return state;
+      const points = state.points.map((point, index) =>
+        index === action.index ? { ...point, ...action.coordinate } : point,
+      );
+      return { ...state, points };
+    }
+    case 'toggle_select':
+      return {
+        ...state,
+        selectedIndex: state.selectedIndex === action.index ? null : action.index,
+      };
+    case 'undo': {
+      if (state.points.length === 0) return state;
+      const removedIndex = state.points.length - 1;
+      const points = state.points.slice(0, -1);
+      let { selectedIndex } = state;
+
+      if (selectedIndex !== null) {
+        if (selectedIndex === removedIndex) {
+          selectedIndex = points.length > 0 ? points.length - 1 : null;
+        } else if (selectedIndex >= points.length) {
+          selectedIndex = null;
+        }
+      }
+
+      return { points, selectedIndex };
+    }
+    case 'clear':
+      return { points: [], selectedIndex: null };
+    default:
+      return state;
+  }
+}
 
 // Shoelace formula with equirectangular projection — accurate to <0.5% for parcels up to ~500 acres
 function computeAreaAcres(coords: LatLng[]): number {
@@ -73,10 +127,18 @@ export default function LandBoundaryScreen() {
   const { t } = useAppLocale();
   const insets = useSafeAreaInsets();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const setProfileCompleted = useAuthStore((s) => s.setProfileCompleted);
+  const landType = useAuthFlowStore((s) => s.landType);
+  const setSignupStep = useAuthFlowStore((s) => s.setSignupStep);
   const mapRef = useRef<MapView>(null);
+  const pointIdRef = useRef(0);
   const createParcel = useCreateLandParcel();
+  const isBusy = createParcel.isPending;
 
-  const [points, setPoints] = useState<LatLng[]>([]);
+  const [{ points, selectedIndex }, dispatchBoundary] = useReducer(boundaryReducer, {
+    points: [],
+    selectedIndex: null,
+  });
   const [mapType, setMapType] = useState<MapType>('hybrid');
   const [initialRegion, setInitialRegion] = useState<Region>(INDIA_CENTER);
   const [locationReady, setLocationReady] = useState(false);
@@ -84,14 +146,16 @@ export default function LandBoundaryScreen() {
   const [headerHeight, setHeaderHeight] = useState(90);
   const [bottomHeight, setBottomHeight] = useState(180);
 
-  if (!isAuthenticated) {
-    return <Redirect href={'/get-started' as Href} />;
-  }
+  const finishOnboarding = useCallback(() => {
+    setSignupStep('complete');
+    setProfileCompleted(true);
+    router.replace('/(tabs)' as Href);
+  }, [setProfileCompleted, setSignupStep]);
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     async function initLocation() {
       try {
+        const Location = await import('expo-location');
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== 'granted') {
           setLocationDenied(true);
@@ -125,13 +189,12 @@ export default function LandBoundaryScreen() {
         {
           text: t('landBoundary.backWarningSkip'),
           style: 'default',
-          onPress: () => router.replace('/(tabs)' as Href),
+          onPress: finishOnboarding,
         },
       ],
     );
-  }, [t]);
+  }, [finishOnboarding, t]);
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
       handleBack();
@@ -142,6 +205,7 @@ export default function LandBoundaryScreen() {
 
   async function locateMe() {
     try {
+      const Location = await import('expo-location');
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
         setLocationDenied(true);
@@ -162,26 +226,49 @@ export default function LandBoundaryScreen() {
     } catch {}
   }
 
-  function handleMapPress(e: MapPressEvent) {
-    setPoints((prev) => [...prev, e.nativeEvent.coordinate]);
+  function handleMapPress(coordinate: LatLng) {
+    if (isBusy) return;
+
+    if (selectedIndex !== null) {
+      dispatchBoundary({ type: 'update', index: selectedIndex, coordinate });
+      return;
+    }
+
+    dispatchBoundary({
+      type: 'add',
+      coordinate,
+      id: `corner-${pointIdRef.current++}`,
+    });
+  }
+
+  function handleMarkerPress(index: number) {
+    if (isBusy) return;
+    dispatchBoundary({ type: 'toggle_select', index });
   }
 
   function updatePoint(index: number, coord: LatLng) {
-    setPoints((prev) => prev.map((p, i) => (i === index ? coord : p)));
+    if (isBusy) return;
+    dispatchBoundary({ type: 'update', index, coordinate: coord });
+  }
+
+  function selectCorner(index: number) {
+    if (isBusy) return;
+    dispatchBoundary({ type: 'toggle_select', index });
   }
 
   function undoLastPoint() {
-    setPoints((prev) => prev.slice(0, -1));
+    if (isBusy || points.length === 0) return;
+    dispatchBoundary({ type: 'undo' });
   }
 
   function clearAll() {
-    if (points.length === 0) return;
+    if (isBusy || points.length === 0) return;
     Alert.alert(t('landBoundary.clearTitle'), t('landBoundary.clearMessage'), [
       { text: t('landBoundary.clearCancel'), style: 'cancel' },
       {
         text: t('landBoundary.clearConfirm'),
         style: 'destructive',
-        onPress: () => setPoints([]),
+        onPress: () => dispatchBoundary({ type: 'clear' }),
       },
     ]);
   }
@@ -190,77 +277,41 @@ export default function LandBoundaryScreen() {
     if (points.length < MIN_POINTS) return;
     try {
       const geometry = toGeoJsonPolygon(points);
-      await createParcel.mutateAsync({ name: 'My Field', geometry });
-      router.replace('/(tabs)' as Href);
+      await createParcel.mutateAsync({ name: 'My Field', geometry, landType });
+      finishOnboarding();
     } catch (error) {
       Alert.alert('', getLandParcelError(error, t('landBoundary.errors.save')));
     }
   }
 
   function handleSkip() {
-    router.replace('/(tabs)' as Href);
+    finishOnboarding();
+  }
+
+  if (!isAuthenticated) {
+    return <Redirect href={'/get-started' as Href} />;
   }
 
   const area = computeAreaAcres(points);
   const canConfirm = points.length >= MIN_POINTS;
-  const isBusy = createParcel.isPending;
 
   return (
     <View style={styles.container}>
       {/* Full-screen map */}
       {locationReady ? (
-        <MapView
-          ref={mapRef}
-          style={styles.map}
+        <LandMap
+          mapRef={mapRef}
           mapType={mapType}
           initialRegion={initialRegion}
-          onPress={handleMapPress}
-          showsUserLocation
-          showsMyLocationButton={false}
-          showsCompass={false}
-          toolbarEnabled={false}
-        >
-          {/* Polygon fill when 3+ points */}
-          {points.length >= MIN_POINTS && (
-            <Polygon
-              coordinates={points}
-              strokeColor={Palette.indiaGreen}
-              strokeWidth={2.5}
-              fillColor="rgba(70, 150, 47, 0.22)"
-            />
-          )}
-
-          {/* Line preview when 2 points */}
-          {points.length === 2 && (
-            <Polyline
-              coordinates={points}
-              strokeColor={Palette.indiaGreen}
-              strokeWidth={2}
-              lineDashPattern={[6, 4]}
-            />
-          )}
-
-          {/* Vertex markers */}
-          {points.map((point, index) => (
-            <Marker
-              key={`v-${index}`}
-              coordinate={point}
-              anchor={{ x: 0.5, y: 0.5 }}
-              draggable
-              onDragEnd={(e) => updatePoint(index, e.nativeEvent.coordinate)}
-              tracksViewChanges={false}
-            >
-              <View
-                style={[
-                  styles.vertexMarker,
-                  index === 0 && styles.vertexMarkerFirst,
-                ]}
-              >
-                <RNText style={styles.vertexLabel}>{index + 1}</RNText>
-              </View>
-            </Marker>
-          ))}
-        </MapView>
+          points={points}
+          minPoints={MIN_POINTS}
+          selectedIndex={selectedIndex}
+          onMapPress={handleMapPress}
+          onMarkerPress={handleMarkerPress}
+          onPointDrag={updatePoint}
+          unavailableMessage={t('landBoundary.mapsUnavailable')}
+          loadingMessage={t('landBoundary.loadingMap')}
+        />
       ) : (
         <View style={[styles.map, styles.mapLoading]}>
           <ActivityIndicator size="large" color={Palette.indiaGreen} />
@@ -360,18 +411,49 @@ export default function LandBoundaryScreen() {
           </View>
         )}
 
+        {/* Corner selector chips */}
+        {points.length > 0 && (
+          <View style={styles.cornerRow}>
+            <RNText style={styles.cornerRowLabel}>{t('landBoundary.selectCorner')}</RNText>
+            <View style={styles.cornerChips}>
+              {points.map((point, index) => {
+                const selected = selectedIndex === index;
+                return (
+                  <Pressable
+                    key={point.id}
+                    onPress={() => selectCorner(index)}
+                    style={[styles.cornerChip, selected && styles.cornerChipSelected]}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected }}
+                  >
+                    <RNText
+                      style={[styles.cornerChipText, selected && styles.cornerChipTextSelected]}
+                    >
+                      {index + 1}
+                    </RNText>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+        )}
+
         {/* Undo / Clear row */}
         {points.length > 0 && (
           <View style={styles.editRow}>
             <Pressable
-              style={styles.editButton}
+              style={[styles.editButton, isBusy && styles.editButtonDisabled]}
               onPress={undoLastPoint}
-              disabled={points.length === 0}
+              disabled={isBusy || points.length === 0}
             >
               <Ionicons name="arrow-undo" size={16} color={Palette.indigo} />
               <RNText style={styles.editButtonText}>{t('landBoundary.undo')}</RNText>
             </Pressable>
-            <Pressable style={styles.editButton} onPress={clearAll}>
+            <Pressable
+              style={[styles.editButton, isBusy && styles.editButtonDisabled]}
+              onPress={clearAll}
+              disabled={isBusy}
+            >
               <Ionicons name="trash-outline" size={16} color="#EF4444" />
               <RNText style={[styles.editButtonText, { color: '#EF4444' }]}>
                 {t('landBoundary.clearAll')}
@@ -382,7 +464,11 @@ export default function LandBoundaryScreen() {
 
         {/* Drag hint (shown after first point) */}
         {points.length > 0 && (
-          <Text style={styles.dragHint}>{t('landBoundary.dragHint')}</Text>
+          <Text style={styles.dragHint}>
+            {selectedIndex !== null
+              ? t('landBoundary.moveSelectedHint', { corner: selectedIndex + 1 })
+              : t('landBoundary.dragHint')}
+          </Text>
         )}
 
         {/* Primary actions */}
@@ -589,35 +675,6 @@ const styles = StyleSheet.create({
     lineHeight: 17,
   },
 
-  // Vertex markers
-  vertexMarker: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: Palette.indigo,
-    borderWidth: 2.5,
-    borderColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.35,
-        shadowRadius: 4,
-      },
-      android: { elevation: 5 },
-    }),
-  },
-  vertexMarkerFirst: {
-    backgroundColor: Palette.saffron,
-  },
-  vertexLabel: {
-    color: '#fff',
-    fontSize: 10,
-    fontWeight: '800',
-  },
-
   // Bottom panel
   bottomPanel: {
     position: 'absolute',
@@ -682,6 +739,44 @@ const styles = StyleSheet.create({
     color: '#94A3B8',
     lineHeight: 17,
   },
+  cornerRow: {
+    gap: 8,
+  },
+  cornerRowLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#64748B',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+  },
+  cornerChips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  cornerChip: {
+    minWidth: 40,
+    height: 40,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: 'rgba(0,0,0,0.10)',
+    backgroundColor: '#F8FAFC',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 10,
+  },
+  cornerChipSelected: {
+    borderColor: Palette.indiaGreen,
+    backgroundColor: 'rgba(70, 150, 47, 0.12)',
+  },
+  cornerChipText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: Palette.indigo,
+  },
+  cornerChipTextSelected: {
+    color: Palette.indiaGreen,
+  },
   editRow: {
     flexDirection: 'row',
     gap: 8,
@@ -697,6 +792,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(0,0,0,0.09)',
     backgroundColor: '#F8FAFC',
+  },
+  editButtonDisabled: {
+    opacity: 0.45,
   },
   editButtonText: {
     fontSize: 13,

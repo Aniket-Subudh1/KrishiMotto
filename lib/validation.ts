@@ -30,3 +30,10 @@ export function isValidLocationField(value: string): boolean {
 export function isValidCrop(value: string): boolean {
   return value.trim().length <= 80;
 }
+
+export function isValidSeason(value: string): boolean {
+  return value.trim().length <= 40;
+}
+
+export const INDIAN_CROP_SEASONS = ['Kharif', 'Rabi', 'Zaid'] as const;
+export type CropSeason = (typeof INDIAN_CROP_SEASONS)[number];

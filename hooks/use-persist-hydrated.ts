@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 
+import { useAuthFlowStore } from '@/stores/auth-flow.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useLocaleStore } from '@/stores/locale.store';
 import { useOnboardingStore } from '@/stores/onboarding.store';
@@ -9,6 +10,7 @@ const HYDRATION_TIMEOUT_MS = 2000;
 function areStoresHydrated() {
   return (
     useAuthStore.persist.hasHydrated() &&
+    useAuthFlowStore.persist.hasHydrated() &&
     useOnboardingStore.persist.hasHydrated() &&
     useLocaleStore.persist.hasHydrated()
   );
@@ -28,12 +30,14 @@ export function usePersistHydrated() {
     check();
 
     const unsubAuth = useAuthStore.persist.onFinishHydration(check);
+    const unsubAuthFlow = useAuthFlowStore.persist.onFinishHydration(check);
     const unsubOnboarding = useOnboardingStore.persist.onFinishHydration(check);
     const unsubLocale = useLocaleStore.persist.onFinishHydration(check);
     const timeout = setTimeout(() => setHydrated(true), HYDRATION_TIMEOUT_MS);
 
     return () => {
       unsubAuth();
+      unsubAuthFlow();
       unsubOnboarding();
       unsubLocale();
       clearTimeout(timeout);

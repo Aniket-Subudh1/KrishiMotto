@@ -48,15 +48,10 @@ export function useAuthenticateFarmer() {
 }
 
 export function useUpdateFarmerProfile() {
-  const setProfileCompleted = useAuthStore((s) => s.setProfileCompleted);
-
   return useMutation({
     mutationFn: async (payload: FarmerProfileUpdatePayload) => {
       const { data } = await farmerService.updateProfile(payload);
       return data.data;
-    },
-    onSuccess: () => {
-      setProfileCompleted(true);
     },
   });
 }

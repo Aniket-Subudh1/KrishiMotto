@@ -39,6 +39,7 @@ export default function FarmerSignInScreen() {
   const sendOtp = useSendOtp();
   const authenticateFarmer = useAuthenticateFarmer();
   const setProfileCompleted = useAuthStore((s) => s.setProfileCompleted);
+  const setSignupStep = useAuthFlowStore((s) => s.setSignupStep);
 
   const [step, setStep] = useState<SignInStep>('phone');
   const [phoneNumber, setPhoneLocal] = useState('');
@@ -174,8 +175,11 @@ export default function FarmerSignInScreen() {
       setProfileCompleted(isComplete);
 
       if (isComplete) {
+        setSignupStep('complete');
+        setProfileCompleted(true);
         router.replace('/(tabs)' as Href);
       } else {
+        setSignupStep('profile');
         router.replace('/farmer/sign-up' as Href);
       }
     } catch (error) {
