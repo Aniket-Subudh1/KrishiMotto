@@ -1,0 +1,27 @@
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/preflight.css' layer(base);
+@import 'tailwindcss/utilities.css';
+
+@import 'nativewind/theme';
+
+@source './app/**/*.{js,jsx,ts,tsx}';
+@source './components/**/*.{js,jsx,ts,tsx}';
+
+@theme {
+  /* KrishiMotto tricolour palette */
+  --color-saffron: #f4a460;
+  --color-india-green: #46962f;
+  --color-indigo: #1a365d;
+  --color-marigold: #e9af43;
+  --color-paper: #f5f5f5;
+  --color-muted: #4a5568;
+  --color-border: #e2e8f0;
+
+  /* Semantic aliases */
+  --color-background: #ffffff;
+  --color-surface: #f5f5f5;
+  --color-primary: #46962f;
+  --color-accent: #e9af43;
+  --color-warm: #f4a460;
+  --color-splash-glow: rgba(244, 164, 96, 0.16);
+}

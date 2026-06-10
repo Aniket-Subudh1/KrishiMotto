@@ -1,45 +1,24 @@
 import { Image } from 'expo-image';
-import { StyleSheet, Text, View } from 'react-native';
-
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Text, View } from 'react-native';
 
 export default function HomeScreen() {
-  const colorScheme = useColorScheme() ?? 'light';
-  const colors = Colors[colorScheme];
-
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <Image
-        source={require('@/assets/images/logo.png')}
-        style={styles.logo}
-        contentFit="contain"
-      />
-      <Text style={[styles.title, { color: colors.text }]}>KrishiMotto</Text>
-      <Text style={[styles.subtitle, { color: colors.tint }]}>Your land, your data</Text>
+    <View className="flex-1 bg-background px-6 pb-[88px]">
+      <View className="w-full max-w-[360px] flex-1 items-center justify-center self-center">
+        <View className="h-[173px] w-[260px]">
+          <Image
+            source={require('@/assets/images/logo.png')}
+            style={{ width: '100%', height: '100%' }}
+            contentFit="contain"
+          />
+        </View>
+        <Text className="mb-2 mt-7 w-full text-center text-[32px] font-bold tracking-[0.3px] text-indigo">
+          KrishiMotto
+        </Text>
+        <Text className="w-full text-center text-[17px] font-medium leading-6 text-india-green">
+          Your land, your data
+        </Text>
+      </View>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
-  },
-  logo: {
-    width: 280,
-    height: 186,
-    marginBottom: 24,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: '700',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 18,
-    fontWeight: '500',
-  },
-});

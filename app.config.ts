@@ -11,6 +11,7 @@ const Palette = {
   indigo: '#1A365D',
   marigold: '#E9AF43',
   paper: '#F5F5F5',
+  white: '#FFFFFF',
 } as const;
 
 const APP_ICON = './assets/images/icon.png';
@@ -36,9 +37,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   orientation: 'portrait',
   icon: APP_ICON,
   scheme: 'krishimotto',
-  userInterfaceStyle: 'automatic',
+  userInterfaceStyle: 'light',
   newArchEnabled: true,
-  backgroundColor: Palette.paper,
+  backgroundColor: Palette.white,
   ios: {
     ...config.ios,
     supportsTablet: true,
@@ -53,6 +54,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   web: {
     ...config.web,
+    bundler: 'metro',
     output: 'static',
     favicon: './assets/images/favicon.png',
   },
@@ -61,14 +63,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     [
       'expo-splash-screen',
       {
-        backgroundColor: Palette.paper,
+        backgroundColor: Palette.white,
         image: './assets/images/logo.png',
         imageWidth: 280,
         resizeMode: 'contain',
-        dark: {
-          backgroundColor: Palette.indigo,
-          image: './assets/images/logo.png',
-        },
       },
     ],
   ],
