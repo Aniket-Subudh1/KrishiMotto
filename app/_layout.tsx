@@ -1,4 +1,5 @@
 import '../global.css';
+import '@/lib/i18n';
 
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from '@react-navigation/native';
@@ -14,6 +15,7 @@ import { AppSplash, SPLASH_DURATION_MS } from '@/components/app-splash';
 import { FontLoadMap } from '@/constants/fonts';
 import { Colors, Fonts, NavigationTheme } from '@/constants/theme';
 import { queryClient } from '@/lib/query-client';
+import { I18nProvider } from '@/providers/i18n-provider';
 
 SplashScreen.preventAutoHideAsync().catch(() => {
   // Expo Go does not support native splash customization.
@@ -61,38 +63,40 @@ export default function RootLayout() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <View className="flex-1 bg-background font-sans">
-        <ThemeProvider value={NavigationTheme}>
-          <Stack
-            screenOptions={{
-              contentStyle: { backgroundColor: Colors.background },
-              headerTitleStyle: {
-                fontFamily: Fonts.sansSemibold,
-                fontWeight: '600',
-              },
-            }}
-          >
-            <Stack.Screen name="index" options={{ headerShown: false }} />
-            <Stack.Screen name="get-started" options={{ headerShown: false }} />
-            <Stack.Screen name="sign-in" options={{ headerShown: false }} />
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen
-              name="modal"
-              options={{ presentation: 'modal', title: 'Modal' }}
-            />
-          </Stack>
-          <StatusBar style="dark" />
-        </ThemeProvider>
+      <I18nProvider>
+        <View className="flex-1 bg-background font-sans">
+          <ThemeProvider value={NavigationTheme}>
+            <Stack
+              screenOptions={{
+                contentStyle: { backgroundColor: Colors.background },
+                headerTitleStyle: {
+                  fontFamily: Fonts.sansSemibold,
+                  fontWeight: '600',
+                },
+              }}
+            >
+              <Stack.Screen name="index" options={{ headerShown: false }} />
+              <Stack.Screen name="get-started" options={{ headerShown: false }} />
+              <Stack.Screen name="sign-in" options={{ headerShown: false }} />
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen
+                name="modal"
+                options={{ presentation: 'modal', title: 'Modal' }}
+              />
+            </Stack>
+            <StatusBar style="dark" />
+          </ThemeProvider>
 
-        {!splashDone && (
-          <Animated.View
-            exiting={FadeOut.duration(500)}
-            className="absolute inset-0 z-100"
-          >
-            <AppSplash visible />
-          </Animated.View>
-        )}
-      </View>
+          {!splashDone && (
+            <Animated.View
+              exiting={FadeOut.duration(500)}
+              className="absolute inset-0 z-100"
+            >
+              <AppSplash visible />
+            </Animated.View>
+          )}
+        </View>
+      </I18nProvider>
     </QueryClientProvider>
   );
 }

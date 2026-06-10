@@ -50,7 +50,15 @@ export function Button({
       {loading ? (
         <ActivityIndicator size="small" color={variant === 'primary' ? '#fff' : '#46962F'} />
       ) : (
-        <Text className={`font-semibold ${text} ${sizeText} ${textClassName}`}>{children}</Text>
+        <Text
+          numberOfLines={2}
+          adjustsFontSizeToFit
+          minimumFontScale={0.8}
+          className={`shrink text-center font-semibold ${text} ${sizeText} ${textClassName}`}
+          style={{ flexShrink: 1 }}
+        >
+          {children}
+        </Text>
       )}
     </Pressable>
   );

@@ -1,0 +1,45 @@
+{
+  "getStarted": {
+    "tagline": "Empowered to Aspire",
+    "cta": "Get Started",
+    "alreadyHaveAccount": "Already have an account?",
+    "signIn": "Sign In"
+  },
+  "onboarding": {
+    "slides": {
+      "smart-farming": {
+        "tag": "Crop Management",
+        "headline": "Smart Farming,",
+        "accent": "Made Simple",
+        "description": "Crop calendars, drone spraying, soil & crop analytics, expert visits, credit & storage — all in your language.",
+        "badge": "Generate & diagnose with KrishiMotto AI"
+      },
+      "land-insights": {
+        "tag": "Land Analytics",
+        "headline": "Know Your Land,",
+        "accent": "Act with Confidence",
+        "description": "Multispectral & hyperspectral data turned into plain-language advice, treatment plans, and one-tap fertiliser schedules."
+      },
+      "experts-ai": {
+        "tag": "Expert Network",
+        "headline": "Experts & AI,",
+        "accent": "On Your Side",
+        "description": "AI pre-diagnosis before the expert arrives. Ask anything in Hindi, Odia, Telugu, or Tamil — best loan offers surfaced for you.",
+        "badge": "Powered by KrishiMotto AI"
+      }
+    }
+  },
+  "languageSelector": {
+    "title": "Choose Language",
+    "subtitle": "Select your preferred language"
+  },
+  "signIn": {
+    "welcomeBack": "Welcome back",
+    "subtitle": "Sign in with your phone number to continue to KrishiMotto.",
+    "comingSoon": "Sign-in flow coming soon.",
+    "continueHome": "Continue to Home"
+  },
+  "home": {
+    "tagline": "Your land, your data"
+  }
+}
