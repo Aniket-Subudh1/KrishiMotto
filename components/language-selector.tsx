@@ -9,7 +9,6 @@ import {
 } from 'react-native';
 
 import { FittedText } from '@/components/ui/fitted-text';
-import { Text } from '@/components/ui/text';
 import { LANGUAGES } from '@/constants/languages';
 import { Colors, Palette } from '@/constants/theme';
 import { useAppLocale } from '@/hooks/use-app-locale';
