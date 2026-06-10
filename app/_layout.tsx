@@ -2,14 +2,17 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
+import { useEffect, useState } from 'react';
+import { StyleSheet, View } from 'react-native';
+import Animated, { FadeOut } from 'react-native-reanimated';
 import 'react-native-reanimated';
 
+import { AppSplash } from '@/components/app-splash';
 import { Palette } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
-SplashScreen.setOptions({
-  duration: 600,
-  fade: true,
+SplashScreen.preventAutoHideAsync().catch(() => {
+  // Expo Go does not support native splash customization.
 });
 
 const KrishiLightTheme = {
@@ -42,14 +45,57 @@ export const unstable_settings = {
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  const [splashDone, setSplashDone] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function prepare() {
+      try {
+        await SplashScreen.hideAsync();
+      } catch {
+        // Native splash is unavailable in Expo Go.
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      if (!cancelled) {
+        setSplashDone(true);
+      }
+    }
+
+    prepare();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? KrishiDarkTheme : KrishiLightTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <View style={styles.root}>
+      <ThemeProvider value={colorScheme === 'dark' ? KrishiDarkTheme : KrishiLightTheme}>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+        </Stack>
+        <StatusBar style="auto" />
+      </ThemeProvider>
+
+      {!splashDone && (
+        <Animated.View exiting={FadeOut.duration(500)} style={styles.splashLayer}>
+          <AppSplash visible />
+        </Animated.View>
+      )}
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+  },
+  splashLayer: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 100,
+  },
+});

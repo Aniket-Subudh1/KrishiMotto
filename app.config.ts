@@ -62,17 +62,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       'expo-splash-screen',
       {
         backgroundColor: Palette.paper,
-        image: './assets/images/splash.png',
-        resizeMode: 'cover',
+        image: './assets/images/logo.png',
+        imageWidth: 280,
+        resizeMode: 'contain',
         dark: {
           backgroundColor: Palette.indigo,
-          image: './assets/images/splash-dark.png',
-        },
-        ios: {
-          enableFullScreenImage_legacy: true,
-        },
-        android: {
-          resizeMode: 'cover',
+          image: './assets/images/logo.png',
         },
       },
     ],
