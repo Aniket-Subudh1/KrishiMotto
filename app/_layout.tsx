@@ -1,6 +1,7 @@
 import "../global.css";
 
 import { ThemeProvider } from "@react-navigation/native";
+import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
@@ -10,7 +11,8 @@ import "react-native-reanimated";
 import Animated, { FadeOut } from "react-native-reanimated";
 
 import { AppSplash, SPLASH_DURATION_MS } from "@/components/app-splash";
-import { Colors, NavigationTheme } from "@/constants/theme";
+import { FontLoadMap } from "@/constants/fonts";
+import { Colors, Fonts, NavigationTheme } from "@/constants/theme";
 
 SplashScreen.preventAutoHideAsync().catch(() => {
   // Expo Go does not support native splash customization.
@@ -21,12 +23,17 @@ export const unstable_settings = {
 };
 
 export default function RootLayout() {
+  const [fontsLoaded, fontError] = useFonts(FontLoadMap);
   const [splashDone, setSplashDone] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
 
     async function prepare() {
+      if (!fontsLoaded && !fontError) {
+        return;
+      }
+
       try {
         await SplashScreen.hideAsync();
       } catch {
@@ -45,14 +52,26 @@ export default function RootLayout() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [fontsLoaded, fontError]);
+
+  if (!fontsLoaded && !fontError) {
+    return (
+      <View className="flex-1 bg-background font-sans">
+        <AppSplash visible />
+      </View>
+    );
+  }
 
   return (
-    <View className="flex-1 bg-background">
+    <View className="flex-1 bg-background font-sans">
       <ThemeProvider value={NavigationTheme}>
         <Stack
           screenOptions={{
             contentStyle: { backgroundColor: Colors.background },
+            headerTitleStyle: {
+              fontFamily: Fonts.sansSemibold,
+              fontWeight: '600',
+            },
           }}
         >
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />

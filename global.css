@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&display=swap');
+
 @import 'tailwindcss/theme.css' layer(theme);
 @import 'tailwindcss/preflight.css' layer(base);
 @import 'tailwindcss/utilities.css';
@@ -8,6 +10,9 @@
 @source './components/**/*.{js,jsx,ts,tsx}';
 
 @theme {
+  --font-sans: Outfit, ui-sans-serif, system-ui, sans-serif;
+  --font-condensed: 'Roboto Condensed', ui-sans-serif, system-ui, sans-serif;
+
   /* KrishiMotto tricolour palette */
   --color-saffron: #f4a460;
   --color-india-green: #46962f;
@@ -24,4 +29,71 @@
   --color-accent: #e9af43;
   --color-warm: #f4a460;
   --color-splash-glow: rgba(244, 164, 96, 0.16);
+}
+
+:root {
+  @media android {
+    --font-sans: Outfit_400Regular;
+    --font-sans-medium: Outfit_500Medium;
+    --font-sans-semibold: Outfit_600SemiBold;
+    --font-sans-bold: Outfit_700Bold;
+    --font-condensed: RobotoCondensed_400Regular;
+    --font-condensed-medium: RobotoCondensed_500Medium;
+    --font-condensed-semibold: RobotoCondensed_600SemiBold;
+    --font-condensed-bold: RobotoCondensed_700Bold;
+  }
+
+  @media ios {
+    --font-sans: Outfit;
+    --font-condensed: Roboto Condensed;
+  }
+}
+
+@utility font-sans {
+  font-family: var(--font-sans);
+}
+
+@utility font-condensed {
+  font-family: var(--font-condensed);
+}
+
+@utility font-normal {
+  font-family: var(--font-sans);
+  font-weight: 400;
+}
+
+@utility font-medium {
+  font-family: var(--font-sans-medium, var(--font-sans));
+  font-weight: 500;
+}
+
+@utility font-semibold {
+  font-family: var(--font-sans-semibold, var(--font-sans));
+  font-weight: 600;
+}
+
+@utility font-bold {
+  font-family: var(--font-sans-bold, var(--font-sans));
+  font-weight: 700;
+}
+
+@utility font-condensed-medium {
+  font-family: var(--font-condensed-medium, var(--font-condensed));
+  font-weight: 500;
+}
+
+@utility font-condensed-semibold {
+  font-family: var(--font-condensed-semibold, var(--font-condensed));
+  font-weight: 600;
+}
+
+@utility font-condensed-bold {
+  font-family: var(--font-condensed-bold, var(--font-condensed));
+  font-weight: 700;
+}
+
+@layer base {
+  :root {
+    font-family: var(--font-sans);
+  }
 }

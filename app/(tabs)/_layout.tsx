@@ -3,7 +3,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Tabs } from 'expo-router';
 import { View } from 'react-native';
 
-import { Colors } from '@/constants/theme';
+import { Colors, Fonts } from '@/constants/theme';
 
 export default function TabLayout() {
   return (
@@ -20,6 +20,7 @@ export default function TabLayout() {
           paddingTop: 6,
         },
         tabBarLabelStyle: {
+          fontFamily: Fonts.condensedSemibold,
           fontSize: 12,
           fontWeight: '600',
           marginBottom: 4,

@@ -2,7 +2,9 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useEffect, useState } from "react";
-import { Platform, Text, View } from "react-native";
+import { Platform, View } from "react-native";
+
+import { Text } from "@/components/ui/text";
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -11,7 +13,7 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { GradientBand } from "@/components/gradient-band";
-import { Palette } from "@/constants/theme";
+import { Fonts, Palette } from "@/constants/theme";
 
 export const SPLASH_DURATION_MS = 3000;
 
@@ -155,6 +157,7 @@ export function AppSplash({ visible }: AppSplashProps) {
                 adjustsFontSizeToFit
                 minimumFontScale={0.85}
                 style={{
+                  fontFamily: Fonts.sansSemibold,
                   fontSize: 26,
                   fontWeight: "600",
                   color: Palette.indiaGreen,
@@ -232,10 +235,10 @@ export function AppSplash({ visible }: AppSplashProps) {
         </View>
       </Animated.View>
 
-      {/* Bottom section */}
+    
       <View className="px-8 pb-10">
         <Text
-          className="mb-2 text-center text-[12px] font-semibold tracking-[0.8px] text-muted"
+          className="mb-2 text-center font-condensed-semibold text-[12px] tracking-[0.8px] text-muted"
           style={{ textTransform: "uppercase" }}
         >
           A One-Stop Solution for Farmers
