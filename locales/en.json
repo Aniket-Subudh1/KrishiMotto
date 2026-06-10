@@ -33,9 +33,30 @@
     "title": "Choose Language",
     "subtitle": "Select your preferred language"
   },
+  "selectRole": {
+    "back": "Go back",
+    "registerTitle": "Join Krishi Motto",
+    "registerSubtitle": "Tell us who you are so we can set up the right experience for you.",
+    "signInTitle": "Sign in as",
+    "signInSubtitle": "Select the account type you registered with.",
+    "farmer": {
+      "title": "Farmer",
+      "description": "Manage crops, land insights, loans, and connect with agri-experts."
+    },
+    "expert": {
+      "title": "Agri-Expert",
+      "description": "Advise farmers, review diagnoses, and grow your agricultural practice."
+    },
+    "continueRegister": "Continue to Sign Up",
+    "continueSignIn": "Continue to Sign In",
+    "hint": "Your role helps us personalise your KrishiMotto experience."
+  },
   "signIn": {
     "welcomeBack": "Welcome back",
+    "createAccount": "Create your account",
     "subtitle": "Sign in with your phone number to continue to KrishiMotto.",
+    "registerSubtitle": "Sign up with your phone number to start using KrishiMotto.",
+    "changeRole": "Change",
     "comingSoon": "Sign-in flow coming soon.",
     "continueHome": "Continue to Home"
   },

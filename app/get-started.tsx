@@ -1,6 +1,7 @@
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { Redirect, router, type Href } from "expo-router";
+import { useEffect } from "react";
 import { Pressable, View, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -12,8 +13,8 @@ import { Text } from "@/components/ui/text";
 import { Palette } from "@/constants/theme";
 import { OnboardingCarousel } from "@/features/onboarding/components/onboarding-carousel";
 import { useAppLocale } from "@/hooks/use-app-locale";
+import { useAuthFlowStore } from "@/stores/auth-flow.store";
 import { useAuthStore } from "@/stores/auth.store";
-import { useOnboardingStore } from "@/stores/onboarding.store";
 
 const BOTTOM_FIXED = 156;
 const HEADER_H = 88;
@@ -21,9 +22,14 @@ const HEADER_H = 88;
 export default function GetStartedScreen() {
   const { t } = useAppLocale();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  const completeOnboarding = useOnboardingStore((s) => s.completeOnboarding);
+  const clearAuthFlow = useAuthFlowStore((s) => s.clearAuthFlow);
+  const markEnteredFromGetStarted = useAuthFlowStore((s) => s.markEnteredFromGetStarted);
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
+
+  useEffect(() => {
+    clearAuthFlow();
+  }, [clearAuthFlow]);
 
   if (isAuthenticated) {
     return <Redirect href="/(tabs)" />;
@@ -33,13 +39,13 @@ export default function GetStartedScreen() {
     height - insets.top - insets.bottom - HEADER_H - BOTTOM_FIXED;
 
   function handleGetStarted() {
-    completeOnboarding();
-    router.replace("/sign-in" as Href);
+    markEnteredFromGetStarted();
+    router.push("/select-role?intent=register" as Href);
   }
 
   function handleSignIn() {
-    completeOnboarding();
-    router.replace("/sign-in" as Href);
+    markEnteredFromGetStarted();
+    router.push("/select-role?intent=sign-in" as Href);
   }
 
   return (
