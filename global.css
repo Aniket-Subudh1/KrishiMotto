@@ -8,6 +8,7 @@
 
 @source './app/**/*.{js,jsx,ts,tsx}';
 @source './components/**/*.{js,jsx,ts,tsx}';
+@source './features/**/*.{js,jsx,ts,tsx}';
 
 @theme {
   --font-sans: Outfit, ui-sans-serif, system-ui, sans-serif;
