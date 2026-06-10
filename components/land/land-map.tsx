@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Platform, StyleSheet, Text as RNText, View } from 'react-native';
 import type MapView from 'react-native-maps';
 import type {
@@ -29,10 +29,7 @@ type LandMapProps = {
   initialRegion: Region;
   points: MapPoint[];
   minPoints: number;
-  selectedIndex: number | null;
   onMapPress: (coordinate: LatLng) => void;
-  onMarkerPress: (index: number) => void;
-  onPointDrag: (index: number, coord: LatLng) => void;
   unavailableMessage: string;
   loadingMessage: string;
 };
@@ -44,32 +41,21 @@ function LandMapInner({
   initialRegion,
   points,
   minPoints,
-  selectedIndex,
   onMapPress,
-  onMarkerPress,
-  onPointDrag,
 }: Omit<LandMapProps, 'unavailableMessage' | 'loadingMessage'> & {
   mapsModule: MapsModule;
 }) {
   const MapView = mapsModule.default;
   const { Marker, Polygon, Polyline } = mapsModule;
-  const markerTouchedRef = useRef(false);
 
-  function handleMapPress(coordinate: LatLng) {
-    if (markerTouchedRef.current) {
-      markerTouchedRef.current = false;
-      return;
-    }
+  const mapCoordinates = useMemo(
+    () => points.map(({ latitude, longitude }) => ({ latitude, longitude })),
+    [points],
+  );
+
+  function handleMapPress(coordinate: LatLng | undefined) {
+    if (!coordinate) return;
     onMapPress(coordinate);
-  }
-
-  function handleMarkerPress(index: number) {
-    markerTouchedRef.current = true;
-    onMarkerPress(index);
-  }
-
-  function handleDrag(index: number, coordinate: LatLng) {
-    onPointDrag(index, coordinate);
   }
 
   return (
@@ -87,7 +73,7 @@ function LandMapInner({
     >
       {points.length >= minPoints && (
         <Polygon
-          coordinates={points}
+          coordinates={mapCoordinates}
           strokeColor={Palette.indiaGreen}
           strokeWidth={3}
           fillColor="rgba(70, 150, 47, 0.30)"
@@ -96,7 +82,7 @@ function LandMapInner({
 
       {points.length >= 2 && points.length < minPoints && (
         <Polyline
-          coordinates={points}
+          coordinates={mapCoordinates}
           strokeColor={Palette.indiaGreen}
           strokeWidth={3}
           lineDashPattern={[8, 4]}
@@ -104,30 +90,19 @@ function LandMapInner({
       )}
 
       {points.map((point, index) => {
-        const selected = selectedIndex === index;
         const isFirst = index === 0;
+        const coordinate = mapCoordinates[index];
 
         return (
           <Marker
             key={point.id ?? `corner-${index}`}
-            coordinate={point}
+            coordinate={coordinate}
             anchor={{ x: 0.5, y: 0.5 }}
-            draggable
-            onPress={() => handleMarkerPress(index)}
-            onDrag={(e) => handleDrag(index, e.nativeEvent.coordinate)}
-            onDragEnd={(e) => handleDrag(index, e.nativeEvent.coordinate)}
-            tracksViewChanges={selected}
-            zIndex={selected ? 10 : 1}
+            tracksViewChanges
+            zIndex={1}
           >
-            <View style={styles.markerWrap}>
-              {selected ? <View style={styles.markerSelectedRing} /> : null}
-              <View
-                style={[
-                  styles.vertexMarker,
-                  isFirst && styles.vertexMarkerFirst,
-                  selected && styles.vertexMarkerSelected,
-                ]}
-              >
+            <View style={styles.markerWrap} collapsable={false}>
+              <View style={[styles.vertexMarker, isFirst && styles.vertexMarkerFirst]}>
                 <RNText style={styles.vertexLabel}>{index + 1}</RNText>
               </View>
             </View>
@@ -210,15 +185,6 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
   },
-  markerSelectedRing: {
-    position: 'absolute',
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    borderWidth: 2,
-    borderColor: Palette.indiaGreen,
-    backgroundColor: 'rgba(70, 150, 47, 0.15)',
-  },
   vertexMarker: {
     width: 30,
     height: 30,
@@ -240,11 +206,6 @@ const styles = StyleSheet.create({
   },
   vertexMarkerFirst: {
     backgroundColor: Palette.saffron,
-  },
-  vertexMarkerSelected: {
-    transform: [{ scale: 1.12 }],
-    borderColor: Palette.indiaGreen,
-    borderWidth: 3,
   },
   vertexLabel: {
     color: '#fff',

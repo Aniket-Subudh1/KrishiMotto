@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Redirect, router, type Href } from 'expo-router';
-import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -39,59 +39,6 @@ const INDIA_CENTER: Region = {
 const MIN_POINTS = 3;
 
 type BoundaryPoint = LatLng & { id: string };
-
-type BoundaryState = {
-  points: BoundaryPoint[];
-  selectedIndex: number | null;
-};
-
-type BoundaryAction =
-  | { type: 'add'; coordinate: LatLng; id: string }
-  | { type: 'update'; index: number; coordinate: LatLng }
-  | { type: 'toggle_select'; index: number }
-  | { type: 'undo' }
-  | { type: 'clear' };
-
-function boundaryReducer(state: BoundaryState, action: BoundaryAction): BoundaryState {
-  switch (action.type) {
-    case 'add': {
-      const points = [...state.points, { ...action.coordinate, id: action.id }];
-      return { points, selectedIndex: points.length - 1 };
-    }
-    case 'update': {
-      if (action.index < 0 || action.index >= state.points.length) return state;
-      const points = state.points.map((point, index) =>
-        index === action.index ? { ...point, ...action.coordinate } : point,
-      );
-      return { ...state, points };
-    }
-    case 'toggle_select':
-      return {
-        ...state,
-        selectedIndex: state.selectedIndex === action.index ? null : action.index,
-      };
-    case 'undo': {
-      if (state.points.length === 0) return state;
-      const removedIndex = state.points.length - 1;
-      const points = state.points.slice(0, -1);
-      let { selectedIndex } = state;
-
-      if (selectedIndex !== null) {
-        if (selectedIndex === removedIndex) {
-          selectedIndex = points.length > 0 ? points.length - 1 : null;
-        } else if (selectedIndex >= points.length) {
-          selectedIndex = null;
-        }
-      }
-
-      return { points, selectedIndex };
-    }
-    case 'clear':
-      return { points: [], selectedIndex: null };
-    default:
-      return state;
-  }
-}
 
 // Shoelace formula with equirectangular projection — accurate to <0.5% for parcels up to ~500 acres
 function computeAreaAcres(coords: LatLng[]): number {
@@ -135,10 +82,7 @@ export default function LandBoundaryScreen() {
   const createParcel = useCreateLandParcel();
   const isBusy = createParcel.isPending;
 
-  const [{ points, selectedIndex }, dispatchBoundary] = useReducer(boundaryReducer, {
-    points: [],
-    selectedIndex: null,
-  });
+  const [points, setPoints] = useState<BoundaryPoint[]>([]);
   const [mapType, setMapType] = useState<MapType>('hybrid');
   const [initialRegion, setInitialRegion] = useState<Region>(INDIA_CENTER);
   const [locationReady, setLocationReady] = useState(false);
@@ -228,37 +172,15 @@ export default function LandBoundaryScreen() {
 
   function handleMapPress(coordinate: LatLng) {
     if (isBusy) return;
-
-    if (selectedIndex !== null) {
-      dispatchBoundary({ type: 'update', index: selectedIndex, coordinate });
-      return;
-    }
-
-    dispatchBoundary({
-      type: 'add',
-      coordinate,
-      id: `corner-${pointIdRef.current++}`,
-    });
-  }
-
-  function handleMarkerPress(index: number) {
-    if (isBusy) return;
-    dispatchBoundary({ type: 'toggle_select', index });
-  }
-
-  function updatePoint(index: number, coord: LatLng) {
-    if (isBusy) return;
-    dispatchBoundary({ type: 'update', index, coordinate: coord });
-  }
-
-  function selectCorner(index: number) {
-    if (isBusy) return;
-    dispatchBoundary({ type: 'toggle_select', index });
+    setPoints((prev) => [
+      ...prev,
+      { ...coordinate, id: `corner-${pointIdRef.current++}` },
+    ]);
   }
 
   function undoLastPoint() {
     if (isBusy || points.length === 0) return;
-    dispatchBoundary({ type: 'undo' });
+    setPoints((prev) => prev.slice(0, -1));
   }
 
   function clearAll() {
@@ -268,7 +190,7 @@ export default function LandBoundaryScreen() {
       {
         text: t('landBoundary.clearConfirm'),
         style: 'destructive',
-        onPress: () => dispatchBoundary({ type: 'clear' }),
+        onPress: () => setPoints([]),
       },
     ]);
   }
@@ -305,10 +227,7 @@ export default function LandBoundaryScreen() {
           initialRegion={initialRegion}
           points={points}
           minPoints={MIN_POINTS}
-          selectedIndex={selectedIndex}
           onMapPress={handleMapPress}
-          onMarkerPress={handleMarkerPress}
-          onPointDrag={updatePoint}
           unavailableMessage={t('landBoundary.mapsUnavailable')}
           loadingMessage={t('landBoundary.loadingMap')}
         />
@@ -411,33 +330,6 @@ export default function LandBoundaryScreen() {
           </View>
         )}
 
-        {/* Corner selector chips */}
-        {points.length > 0 && (
-          <View style={styles.cornerRow}>
-            <RNText style={styles.cornerRowLabel}>{t('landBoundary.selectCorner')}</RNText>
-            <View style={styles.cornerChips}>
-              {points.map((point, index) => {
-                const selected = selectedIndex === index;
-                return (
-                  <Pressable
-                    key={point.id}
-                    onPress={() => selectCorner(index)}
-                    style={[styles.cornerChip, selected && styles.cornerChipSelected]}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected }}
-                  >
-                    <RNText
-                      style={[styles.cornerChipText, selected && styles.cornerChipTextSelected]}
-                    >
-                      {index + 1}
-                    </RNText>
-                  </Pressable>
-                );
-              })}
-            </View>
-          </View>
-        )}
-
         {/* Undo / Clear row */}
         {points.length > 0 && (
           <View style={styles.editRow}>
@@ -462,13 +354,9 @@ export default function LandBoundaryScreen() {
           </View>
         )}
 
-        {/* Drag hint (shown after first point) */}
+        {/* Hint text */}
         {points.length > 0 && (
-          <Text style={styles.dragHint}>
-            {selectedIndex !== null
-              ? t('landBoundary.moveSelectedHint', { corner: selectedIndex + 1 })
-              : t('landBoundary.dragHint')}
-          </Text>
+          <Text style={styles.dragHint}>{t('landBoundary.drawHint')}</Text>
         )}
 
         {/* Primary actions */}
@@ -738,44 +626,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#94A3B8',
     lineHeight: 17,
-  },
-  cornerRow: {
-    gap: 8,
-  },
-  cornerRowLabel: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#64748B',
-    textTransform: 'uppercase',
-    letterSpacing: 0.4,
-  },
-  cornerChips: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  cornerChip: {
-    minWidth: 40,
-    height: 40,
-    borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: 'rgba(0,0,0,0.10)',
-    backgroundColor: '#F8FAFC',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 10,
-  },
-  cornerChipSelected: {
-    borderColor: Palette.indiaGreen,
-    backgroundColor: 'rgba(70, 150, 47, 0.12)',
-  },
-  cornerChipText: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: Palette.indigo,
-  },
-  cornerChipTextSelected: {
-    color: Palette.indiaGreen,
   },
   editRow: {
     flexDirection: 'row',
