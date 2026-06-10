@@ -8,42 +8,20 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
-import 'react-native-reanimated';
 import Animated, { FadeOut } from 'react-native-reanimated';
 
 import { AppSplash, SPLASH_DURATION_MS } from '@/components/app-splash';
 import { FontLoadMap } from '@/constants/fonts';
 import { Colors, Fonts, NavigationTheme } from '@/constants/theme';
 import { queryClient } from '@/lib/query-client';
-import { useAuthStore } from '@/stores/auth.store';
-import { useAppStore } from '@/stores/app.store';
 
 SplashScreen.preventAutoHideAsync().catch(() => {
   // Expo Go does not support native splash customization.
 });
 
-export const unstable_settings = {
-  anchor: '(tabs)',
-};
-
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts(FontLoadMap);
   const [splashDone, setSplashDone] = useState(false);
-  const setHydrated = useAppStore((s) => s.setHydrated);
-
-  // Mark stores as hydrated once zustand-persist has rehydrated from AsyncStorage
-  useEffect(() => {
-    const unsub = useAuthStore.persist.onFinishHydration(() => {
-      setHydrated(true);
-    });
-
-    // If already hydrated (synchronous storage) resolve immediately
-    if (useAuthStore.persist.hasHydrated()) {
-      setHydrated(true);
-    }
-
-    return unsub;
-  }, [setHydrated]);
 
   useEffect(() => {
     let cancelled = false;
@@ -94,6 +72,9 @@ export default function RootLayout() {
               },
             }}
           >
+            <Stack.Screen name="index" options={{ headerShown: false }} />
+            <Stack.Screen name="get-started" options={{ headerShown: false }} />
+            <Stack.Screen name="sign-in" options={{ headerShown: false }} />
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen
               name="modal"
