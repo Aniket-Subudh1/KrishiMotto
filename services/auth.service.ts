@@ -28,5 +28,7 @@ export const authService = {
   logout: (refreshToken: string) =>
     apiClient.post('/auth/logout', { refreshToken }),
 
+  logoutAll: () => apiClient.post('/auth/logout-all'),
+
   me: () => apiClient.get<V1Response<AuthUser>>('/me'),
 };

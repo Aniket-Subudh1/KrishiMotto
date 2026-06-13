@@ -74,6 +74,7 @@ export default function LandBoundaryScreen() {
   const { t } = useAppLocale();
   const insets = useSafeAreaInsets();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const profileCompleted = useAuthStore((s) => s.profileCompleted);
   const setProfileCompleted = useAuthStore((s) => s.setProfileCompleted);
   const landType = useAuthFlowStore((s) => s.landType);
   const setSignupStep = useAuthFlowStore((s) => s.setSignupStep);
@@ -90,11 +91,16 @@ export default function LandBoundaryScreen() {
   const [headerHeight, setHeaderHeight] = useState(90);
   const [bottomHeight, setBottomHeight] = useState(180);
 
-  const finishOnboarding = useCallback(() => {
+  const finishFlow = useCallback(() => {
+    if (profileCompleted) {
+      router.back();
+      return;
+    }
+
     setSignupStep('complete');
     setProfileCompleted(true);
     router.replace('/(tabs)' as Href);
-  }, [setProfileCompleted, setSignupStep]);
+  }, [profileCompleted, setProfileCompleted, setSignupStep]);
 
   useEffect(() => {
     async function initLocation() {
@@ -125,6 +131,11 @@ export default function LandBoundaryScreen() {
   }, []);
 
   const handleBack = useCallback(() => {
+    if (profileCompleted) {
+      router.back();
+      return;
+    }
+
     Alert.alert(
       t('landBoundary.backWarningTitle'),
       t('landBoundary.backWarningMessage'),
@@ -133,11 +144,11 @@ export default function LandBoundaryScreen() {
         {
           text: t('landBoundary.backWarningSkip'),
           style: 'default',
-          onPress: finishOnboarding,
+          onPress: finishFlow,
         },
       ],
     );
-  }, [finishOnboarding, t]);
+  }, [finishFlow, profileCompleted, t]);
 
   useEffect(() => {
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -200,14 +211,14 @@ export default function LandBoundaryScreen() {
     try {
       const geometry = toGeoJsonPolygon(points);
       await createParcel.mutateAsync({ name: 'My Field', geometry, landType });
-      finishOnboarding();
+      finishFlow();
     } catch (error) {
       Alert.alert('', getLandParcelError(error, t('landBoundary.errors.save')));
     }
   }
 
   function handleSkip() {
-    finishOnboarding();
+    finishFlow();
   }
 
   if (!isAuthenticated) {

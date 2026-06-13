@@ -23,7 +23,9 @@ export default function GetStartedScreen() {
   const { t } = useAppLocale();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const clearAuthFlow = useAuthFlowStore((s) => s.clearAuthFlow);
-  const markEnteredFromGetStarted = useAuthFlowStore((s) => s.markEnteredFromGetStarted);
+  const markEnteredFromGetStarted = useAuthFlowStore(
+    (s) => s.markEnteredFromGetStarted,
+  );
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
 
@@ -74,7 +76,7 @@ export default function GetStartedScreen() {
           >
             <Image
               source={require("@/assets/images/logo.png")}
-              style={{ width: 80, height: 40 }}
+              style={{ width: 200, height: 70 }}
               contentFit="contain"
             />
           </View>
@@ -122,10 +124,7 @@ export default function GetStartedScreen() {
           {t("getStarted.cta")}
         </Button>
 
-        <Pressable
-          onPress={handleSignIn}
-          className="items-center px-1 py-3.5"
-        >
+        <Pressable onPress={handleSignIn} className="items-center px-1 py-3.5">
           <Text className="text-center text-[15px] leading-[22px] text-muted">
             {t("getStarted.alreadyHaveAccount")}{" "}
             <Text className="font-bold text-primary">

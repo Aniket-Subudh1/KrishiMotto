@@ -5,6 +5,7 @@ import type {
   FarmerProfile,
   FarmerProfileUpdatePayload,
   LandParcel,
+  UpdateLandParcelPayload,
 } from '@/types/farmer';
 
 export const farmerService = {
@@ -14,7 +15,14 @@ export const farmerService = {
     apiClient.put<V1Response<FarmerProfile>>('/farmer/profile', payload),
 
   createLandParcel: (payload: CreateLandParcelPayload) =>
-    apiClient.post<{ data: LandParcel }>('/farmer/land', payload),
+    apiClient.post<V1Response<LandParcel>>('/farmer/land', payload),
 
-  listLandParcels: () => apiClient.get<{ data: { items: LandParcel[] } }>('/farmer/land'),
+  listLandParcels: () => apiClient.get<V1Response<{ items: LandParcel[] }>>('/farmer/land'),
+
+  getLandParcel: (id: string) => apiClient.get<V1Response<LandParcel>>(`/farmer/land/${id}`),
+
+  updateLandParcel: (id: string, payload: UpdateLandParcelPayload) =>
+    apiClient.put<V1Response<LandParcel>>(`/farmer/land/${id}`, payload),
+
+  deleteLandParcel: (id: string) => apiClient.delete(`/farmer/land/${id}`),
 };

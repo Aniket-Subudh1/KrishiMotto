@@ -2,7 +2,6 @@ import { useMutation } from '@tanstack/react-query';
 
 import { getApiErrorMessage } from '@/lib/api-error';
 import { authService } from '@/services/auth.service';
-import { farmerService } from '@/services/farmer.service';
 import { useAuthStore } from '@/stores/auth.store';
 import type {
   FarmerAuthenticatePayload,
@@ -11,9 +10,9 @@ import type {
 } from '@/types/auth';
 import type { FarmerProfileUpdatePayload } from '@/types/farmer';
 
-export const FARMER_AUTH_KEYS = {
-  profile: ['farmer', 'profile'] as const,
-};
+import { useUpdateFarmerProfile as useUpdateFarmerProfileMutation } from './use-farmer-profile';
+
+export { FARMER_PROFILE_KEYS as FARMER_AUTH_KEYS } from './use-farmer-profile';
 
 export function useSendOtp() {
   return useMutation({
@@ -48,12 +47,7 @@ export function useAuthenticateFarmer() {
 }
 
 export function useUpdateFarmerProfile() {
-  return useMutation({
-    mutationFn: async (payload: FarmerProfileUpdatePayload) => {
-      const { data } = await farmerService.updateProfile(payload);
-      return data.data;
-    },
-  });
+  return useUpdateFarmerProfileMutation();
 }
 
 export function getMutationError(error: unknown, fallback: string) {

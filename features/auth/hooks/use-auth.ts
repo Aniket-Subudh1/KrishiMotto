@@ -1,4 +1,5 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { router } from 'expo-router';
 
 import { queryClient } from '@/lib/query-client';
 import { authService } from '@/services/auth.service';
@@ -45,6 +46,24 @@ export function useLogout() {
     onSettled: () => {
       clearAuth();
       queryClient.clear();
+    },
+  });
+}
+
+export function useLogoutAll() {
+  const clearAuth = useAuthStore((s) => s.clearAuth);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+
+  return useMutation({
+    mutationFn: async () => {
+      if (isAuthenticated) {
+        await authService.logoutAll();
+      }
+    },
+    onSettled: () => {
+      clearAuth();
+      queryClient.clear();
+      router.replace('/get-started');
     },
   });
 }

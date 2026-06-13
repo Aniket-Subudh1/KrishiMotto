@@ -1,14 +1,16 @@
-import { View } from 'react-native';
+import { Redirect } from 'expo-router';
 
-import { Text } from '@/components/ui/text';
+import { ToolsTab } from '@/features/home/components/tools-tab';
+import { useAppLocale } from '@/hooks/use-app-locale';
+import { useAuthStore } from '@/stores/auth.store';
 
 export default function ExploreScreen() {
-  return (
-    <View className="flex-1 bg-background px-6 pb-[88px] pt-16">
-      <Text className="mb-3 text-[28px] font-bold text-indigo">Explore</Text>
-      <Text className="text-base leading-[26px] text-muted">
-        Map-first land tools and regional crop data will live here.
-      </Text>
-    </View>
-  );
+  const { t } = useAppLocale();
+  const user = useAuthStore((s) => s.user);
+
+  if (!user) {
+    return <Redirect href="/get-started" />;
+  }
+
+  return <ToolsTab isFarmer={user.role === 'FARMER'} t={t} />;
 }

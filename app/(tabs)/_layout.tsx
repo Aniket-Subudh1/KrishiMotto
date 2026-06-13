@@ -1,56 +1,56 @@
-import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Tabs } from 'expo-router';
-import { View } from 'react-native';
+import { Redirect, Tabs } from 'expo-router';
 
-import { Colors, Fonts } from '@/constants/theme';
+import { AppTabBar } from '@/components/navigation/app-tab-bar';
+import { Colors } from '@/constants/theme';
+import { FarmerHomeProvider } from '@/features/home/context/farmer-home-context';
+import { useAppLocale } from '@/hooks/use-app-locale';
+import { useAuthStore } from '@/stores/auth.store';
 
 export default function TabLayout() {
+  const { t } = useAppLocale();
+  const user = useAuthStore((s) => s.user);
+  const isFarmer = user?.role === 'FARMER';
+
+  if (!user) {
+    return <Redirect href="/get-started" />;
+  }
+
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: Colors.tabIconSelected,
-        tabBarInactiveTintColor: Colors.tabIconDefault,
-        tabBarStyle: {
-          position: 'absolute',
-          borderTopWidth: 0,
-          elevation: 0,
-          height: 64,
-          paddingTop: 6,
-        },
-        tabBarLabelStyle: {
-          fontFamily: Fonts.condensedSemibold,
-          fontSize: 12,
-          fontWeight: '600',
-          marginBottom: 4,
-        },
-        sceneStyle: { backgroundColor: Colors.background },
-        tabBarBackground: () => (
-          <View className="absolute inset-0">
-            <LinearGradient
-              colors={[...Colors.appBarGradient]}
-              start={{ x: 0, y: 0.5 }}
-              end={{ x: 1, y: 0.5 }}
-              style={{ flex: 1 }}
-            />
-          </View>
-        ),
-      }}>
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <Ionicons name="home" size={26} color={color} />,
+    <FarmerHomeProvider>
+      <Tabs
+        tabBar={(props) => <AppTabBar {...props} />}
+        screenOptions={{
+          headerShown: false,
+          sceneStyle: { backgroundColor: Colors.background },
         }}
-      />
-      <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <Ionicons name="map" size={26} color={color} />,
-        }}
-      />
-    </Tabs>
+      >
+        <Tabs.Screen
+          name="index"
+          options={{
+            title: isFarmer ? t('home.tabs.home') : 'Home',
+          }}
+        />
+        <Tabs.Screen
+          name="land"
+          options={{
+            title: t('home.tabs.land'),
+            href: isFarmer ? undefined : null,
+          }}
+        />
+        <Tabs.Screen
+          name="explore"
+          options={{
+            title: t('home.tabs.tools'),
+          }}
+        />
+        <Tabs.Screen
+          name="profile"
+          options={{
+            title: t('home.tabs.profile'),
+            href: isFarmer ? undefined : null,
+          }}
+        />
+      </Tabs>
+    </FarmerHomeProvider>
   );
 }

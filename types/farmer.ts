@@ -28,6 +28,12 @@ export type CreateLandParcelPayload = {
   landType?: LandType;
 };
 
+export type UpdateLandParcelPayload = {
+  name?: string;
+  geometry?: GeoPolygon;
+  landType?: LandType;
+};
+
 export type FarmerProfile = {
   id: string;
   userId: string;

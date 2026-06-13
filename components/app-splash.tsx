@@ -108,10 +108,7 @@ export function AppSplash({ visible }: AppSplashProps) {
   }
 
   return (
-    <View
-      className="absolute inset-0 z-100 bg-background"
-      pointerEvents="none"
-    >
+    <View className="absolute inset-0 z-100 bg-background" pointerEvents="none">
       <GradientBand className="absolute top-0 left-0 right-0 h-[5px]" />
 
       <Animated.View
@@ -136,7 +133,7 @@ export function AppSplash({ visible }: AppSplashProps) {
               >
                 <Image
                   source={require("@/assets/images/logo.png")}
-                  style={{ width: 80, height: 80 }}
+                  style={{ width: 200, height: 200 }}
                   contentFit="contain"
                 />
               </View>
@@ -235,7 +232,6 @@ export function AppSplash({ visible }: AppSplashProps) {
         </View>
       </Animated.View>
 
-    
       <View className="px-8 pb-10">
         <Text
           className="mb-2 text-center font-condensed-semibold text-[12px] tracking-[0.8px] text-muted"
