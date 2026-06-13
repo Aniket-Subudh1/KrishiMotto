@@ -56,7 +56,6 @@ apiClient.interceptors.response.use(
     }
 
     try {
-      // Use a standalone axios call to avoid a require-cycle with auth.service
       const { data } = await axios.post(`${BASE_URL}/auth/refresh`, { refreshToken });
       const newToken: string = data.data.accessToken;
       const newRefreshToken: string = data.data.refreshToken;
