@@ -2,6 +2,8 @@ export type {
   AuthTokensResponse,
   AuthUser,
   BackendUserRole,
+  ExpertAuthenticatePayload,
+  ExpertRegisterPayload,
   FarmerAuthenticatePayload,
   FarmerRegisterPayload,
   RefreshTokenResponse,

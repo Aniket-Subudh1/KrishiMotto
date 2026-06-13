@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Redirect, router, type Href } from 'expo-router';
+import { Redirect, router, useLocalSearchParams, type Href } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -23,11 +23,17 @@ import {
 
 import { Text } from '@/components/ui/text';
 import { Palette } from '@/constants/theme';
-import { useCreateLandParcel, getLandParcelError } from '@/features/farmer/hooks/use-land-parcel';
+import {
+  getLandParcelError,
+  useCreateLandParcel,
+  useLandParcel,
+  useUpdateLandParcel,
+} from '@/features/farmer/hooks/use-land-parcel';
 import { useAppLocale } from '@/hooks/use-app-locale';
+import { computeAreaAcres, fromGeoJsonPolygon, regionFromCoords, toGeoJsonPolygon } from '@/lib/geo';
+import { formatAcres } from '@/lib/format';
 import { useAuthFlowStore } from '@/stores/auth-flow.store';
 import { useAuthStore } from '@/stores/auth.store';
-import type { GeoPolygon } from '@/types/farmer';
 
 const INDIA_CENTER: Region = {
   latitude: 22.5937,
@@ -40,38 +46,10 @@ const MIN_POINTS = 3;
 
 type BoundaryPoint = LatLng & { id: string };
 
-// Shoelace formula with equirectangular projection — accurate to <0.5% for parcels up to ~500 acres
-function computeAreaAcres(coords: LatLng[]): number {
-  if (coords.length < 3) return 0;
-  const toRad = (d: number) => (d * Math.PI) / 180;
-  const avgLat = coords.reduce((s, c) => s + c.latitude, 0) / coords.length;
-  const mPerLat = 111_320;
-  const mPerLon = 111_320 * Math.cos(toRad(avgLat));
-  let area = 0;
-  const n = coords.length;
-  for (let i = 0; i < n; i++) {
-    const j = (i + 1) % n;
-    area +=
-      coords[i].longitude * mPerLon * (coords[j].latitude * mPerLat) -
-      coords[j].longitude * mPerLon * (coords[i].latitude * mPerLat);
-  }
-  return Math.abs(area) / 2 / 4_047;
-}
-
-function toGeoJsonPolygon(coords: LatLng[]): GeoPolygon {
-  const ring = coords.map((c): [number, number] => [c.longitude, c.latitude]);
-  ring.push([coords[0].longitude, coords[0].latitude]); // close the ring
-  return { type: 'Polygon', coordinates: [ring] };
-}
-
-function formatArea(acres: number): string {
-  if (acres < 0.01) return '< 0.01 ac';
-  if (acres >= 1000) return `${(acres / 1000).toFixed(1)}k ac`;
-  return `${acres.toFixed(2)} ac`;
-}
-
 export default function LandBoundaryScreen() {
   const { t } = useAppLocale();
+  const { parcelId } = useLocalSearchParams<{ parcelId?: string }>();
+  const isEditMode = Boolean(parcelId);
   const insets = useSafeAreaInsets();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const profileCompleted = useAuthStore((s) => s.profileCompleted);
@@ -81,7 +59,11 @@ export default function LandBoundaryScreen() {
   const mapRef = useRef<MapView>(null);
   const pointIdRef = useRef(0);
   const createParcel = useCreateLandParcel();
-  const isBusy = createParcel.isPending;
+  const updateParcel = useUpdateLandParcel();
+  const { data: existingParcel, isLoading: parcelLoading, isError: parcelError } = useLandParcel(
+    isEditMode ? (parcelId ?? null) : null,
+  );
+  const isBusy = createParcel.isPending || updateParcel.isPending;
 
   const [points, setPoints] = useState<BoundaryPoint[]>([]);
   const [mapType, setMapType] = useState<MapType>('hybrid');
@@ -103,6 +85,8 @@ export default function LandBoundaryScreen() {
   }, [profileCompleted, setProfileCompleted, setSignupStep]);
 
   useEffect(() => {
+    if (isEditMode) return;
+
     async function initLocation() {
       try {
         const Location = await import('expo-location');
@@ -128,9 +112,40 @@ export default function LandBoundaryScreen() {
       }
     }
     initLocation();
-  }, []);
+  }, [isEditMode]);
+
+  useEffect(() => {
+    if (!isEditMode || !existingParcel) return;
+
+    const loaded = fromGeoJsonPolygon(existingParcel.geometry);
+    if (loaded.length >= MIN_POINTS) {
+      setPoints(loaded.map((coord, index) => ({ ...coord, id: `corner-${index}` })));
+      pointIdRef.current = loaded.length;
+      const region = regionFromCoords(loaded);
+      if (region) {
+        setInitialRegion(region);
+      }
+    }
+    setLocationReady(true);
+  }, [existingParcel, isEditMode]);
 
   const handleBack = useCallback(() => {
+    if (isEditMode) {
+      Alert.alert(
+        t('landBoundary.editBackWarningTitle'),
+        t('landBoundary.editBackWarningMessage'),
+        [
+          { text: t('landBoundary.editBackWarningKeep'), style: 'cancel' },
+          {
+            text: t('landBoundary.editBackWarningDiscard'),
+            style: 'destructive',
+            onPress: () => router.back(),
+          },
+        ],
+      );
+      return;
+    }
+
     if (profileCompleted) {
       router.back();
       return;
@@ -148,7 +163,7 @@ export default function LandBoundaryScreen() {
         },
       ],
     );
-  }, [finishFlow, profileCompleted, t]);
+  }, [finishFlow, isEditMode, profileCompleted, t]);
 
   useEffect(() => {
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -210,7 +225,17 @@ export default function LandBoundaryScreen() {
     if (points.length < MIN_POINTS) return;
     try {
       const geometry = toGeoJsonPolygon(points);
-      await createParcel.mutateAsync({ name: 'My Field', geometry, landType });
+      if (isEditMode && parcelId) {
+        await updateParcel.mutateAsync({ id: parcelId, payload: { geometry } });
+        Alert.alert('', t('home.land.updateSuccess'));
+        router.back();
+        return;
+      }
+      await createParcel.mutateAsync({
+        name: t('landBoundary.defaultFieldName'),
+        geometry,
+        landType,
+      });
       finishFlow();
     } catch (error) {
       Alert.alert('', getLandParcelError(error, t('landBoundary.errors.save')));
@@ -223,6 +248,26 @@ export default function LandBoundaryScreen() {
 
   if (!isAuthenticated) {
     return <Redirect href={'/get-started' as Href} />;
+  }
+
+  if (isEditMode && parcelLoading) {
+    return (
+      <View style={[styles.container, styles.mapLoading]}>
+        <ActivityIndicator size="large" color={Palette.indiaGreen} />
+        <RNText style={styles.loadingText}>{t('landBoundary.loadingMap')}</RNText>
+      </View>
+    );
+  }
+
+  if (isEditMode && (parcelError || !existingParcel)) {
+    return (
+      <View style={[styles.container, styles.mapLoading]}>
+        <RNText style={styles.loadingText}>{t('home.land.loadError')}</RNText>
+        <Pressable style={styles.skipButton} onPress={() => router.back()}>
+          <RNText style={styles.skipText}>{t('home.land.close')}</RNText>
+        </Pressable>
+      </View>
+    );
   }
 
   const area = computeAreaAcres(points);
@@ -261,9 +306,13 @@ export default function LandBoundaryScreen() {
 
           <View style={styles.headerCenter}>
             <View style={styles.stepBadge}>
-              <Text style={styles.stepBadgeText}>{t('landBoundary.stepLabel')}</Text>
+              <Text style={styles.stepBadgeText}>
+                {isEditMode ? t('landBoundary.editStepLabel') : t('landBoundary.stepLabel')}
+              </Text>
             </View>
-            <Text style={styles.headerTitle}>{t('landBoundary.title')}</Text>
+            <Text style={styles.headerTitle}>
+              {isEditMode ? t('landBoundary.editTitle') : t('landBoundary.title')}
+            </Text>
           </View>
 
           {/* Map type toggle */}
@@ -326,7 +375,7 @@ export default function LandBoundaryScreen() {
             {canConfirm && (
               <View style={[styles.statCard, styles.statCardAccent]}>
                 <Text style={[styles.statValue, styles.statValueAccent]}>
-                  {formatArea(area)}
+                  {formatAcres(area)}
                 </Text>
                 <Text style={[styles.statLabel, styles.statLabelAccent]}>
                   {t('landBoundary.areaLabel')}
@@ -372,12 +421,18 @@ export default function LandBoundaryScreen() {
 
         {/* Primary actions */}
         <View style={styles.primaryRow}>
-          <Pressable style={styles.skipButton} onPress={handleSkip} disabled={isBusy}>
-            <RNText style={styles.skipText}>{t('landBoundary.skip')}</RNText>
-          </Pressable>
+          {!isEditMode ? (
+            <Pressable style={styles.skipButton} onPress={handleSkip} disabled={isBusy}>
+              <RNText style={styles.skipText}>{t('landBoundary.skip')}</RNText>
+            </Pressable>
+          ) : null}
 
           <Pressable
-            style={[styles.confirmButton, !canConfirm && styles.confirmButtonDisabled]}
+            style={[
+              styles.confirmButton,
+              !canConfirm && styles.confirmButtonDisabled,
+              isEditMode && { flex: 1 },
+            ]}
             onPress={handleConfirm}
             disabled={!canConfirm || isBusy}
           >
@@ -393,7 +448,7 @@ export default function LandBoundaryScreen() {
                 <RNText
                   style={[styles.confirmText, !canConfirm && styles.confirmTextDisabled]}
                 >
-                  {t('landBoundary.confirm')}
+                  {isEditMode ? t('landBoundary.updateConfirm') : t('landBoundary.confirm')}
                 </RNText>
               </>
             )}

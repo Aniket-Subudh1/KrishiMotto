@@ -40,6 +40,21 @@ export type FarmerAuthenticatePayload = {
   otp: string;
 };
 
+export type ExpertRegisterPayload = {
+  username: string;
+  email: string;
+  phoneNumber: string;
+};
+
+export type ExpertRegisterResponse = {
+  id: string;
+};
+
+export type ExpertAuthenticatePayload = {
+  phoneNumber: string;
+  otp: string;
+};
+
 export type AuthTokensResponse = {
   token: string;
   refreshToken: string;

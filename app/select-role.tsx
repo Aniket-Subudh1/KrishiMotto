@@ -63,6 +63,16 @@ export default function SelectRoleScreen() {
       return;
     }
 
+    if (selectedRole === "expert" && intent === "register") {
+      router.push("/expert/sign-up" as Href);
+      return;
+    }
+
+    if (selectedRole === "expert" && intent === "sign-in") {
+      router.push("/expert/sign-in" as Href);
+      return;
+    }
+
     router.push("/sign-in" as Href);
   }
 

@@ -13,11 +13,24 @@ import { LANGUAGES } from '@/constants/languages';
 import { Colors, Palette } from '@/constants/theme';
 import { useAppLocale } from '@/hooks/use-app-locale';
 
-export function LanguageSelector() {
+type LanguageSelectorProps = {
+  variant?: 'default' | 'hero';
+};
+
+const heroShadow = {
+  shadowColor: Palette.indigo,
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.12,
+  shadowRadius: 6,
+  elevation: 3,
+};
+
+export function LanguageSelector({ variant = 'default' }: LanguageSelectorProps) {
   const { t, locale, setLocale } = useAppLocale();
   const [open, setOpen] = useState(false);
 
   const current = LANGUAGES.find((lang) => lang.code === locale) ?? LANGUAGES[0];
+  const isHero = variant === 'hero';
 
   function handleSelect(code: typeof locale) {
     setLocale(code);
@@ -28,24 +41,39 @@ export function LanguageSelector() {
     <>
       <Pressable
         onPress={() => setOpen(true)}
-        className="max-w-[92px] shrink-0 flex-row items-center gap-1 rounded-full border border-border bg-surface px-2 py-1"
+        className={
+          isHero
+            ? 'h-10 max-w-[88px] shrink-0 flex-row items-center gap-1 rounded-full bg-white px-2.5'
+            : 'max-w-[92px] shrink-0 flex-row items-center gap-1 rounded-full border border-border bg-surface px-2 py-1'
+        }
+        style={isHero ? heroShadow : undefined}
         accessibilityRole="button"
         accessibilityLabel={t('languageSelector.title')}
       >
-        <Ionicons name="language-outline" size={12} color={Palette.indigo} />
+        <Ionicons
+          name="language-outline"
+          size={isHero ? 16 : 12}
+          color={Palette.indiaGreen}
+        />
         <FittedText
           fit
           shrink
           maxLines={1}
           minScale={0.75}
-          className="max-w-[56px] font-condensed-semibold text-[10px] tracking-[0.1px] text-muted"
+          className={
+            isHero
+              ? 'max-w-[44px] font-condensed-semibold text-[10px] text-indigo'
+              : 'max-w-[56px] font-condensed-semibold text-[10px] tracking-[0.1px] text-muted'
+          }
           style={
             Platform.OS === 'android' ? { includeFontPadding: false } : undefined
           }
         >
           {current.nativeLabel}
         </FittedText>
-        <Ionicons name="chevron-down" size={10} color={Colors.textMuted} />
+        {!isHero ? (
+          <Ionicons name="chevron-down" size={10} color={Colors.textMuted} />
+        ) : null}
       </Pressable>
 
       <Modal

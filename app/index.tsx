@@ -27,6 +27,16 @@ export default function Index() {
       }
     }
 
+    if (user?.role === 'EXPERT') {
+      if (signupStep === 'kyc') {
+        return <Redirect href={'/expert/sign-up' as Href} />;
+      }
+
+      if (!profileCompleted) {
+        return <Redirect href={'/expert/sign-up' as Href} />;
+      }
+    }
+
     return <Redirect href="/(tabs)" />;
   }
 

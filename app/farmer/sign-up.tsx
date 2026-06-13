@@ -340,7 +340,7 @@ export default function FarmerSignUpScreen() {
         name: name.trim(),
         district: district.trim(),
         state: state.trim(),
-        country: 'India',
+        country: t('farmerSignUp.countryValue'),
         landType,
         primaryCrop: primaryCrop.trim() || null,
         currentSeason: currentSeason || null,
@@ -532,7 +532,7 @@ export default function FarmerSignUpScreen() {
         <Input
           fieldId="profile-country"
           label={t('farmerSignUp.countryLabel')}
-          value="India"
+          value={t('farmerSignUp.countryValue')}
           editable={false}
           icon="flag-outline"
         />

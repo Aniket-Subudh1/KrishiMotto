@@ -46,6 +46,7 @@ export function useLogout() {
     onSettled: () => {
       clearAuth();
       queryClient.clear();
+      router.replace('/get-started');
     },
   });
 }

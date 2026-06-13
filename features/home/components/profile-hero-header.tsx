@@ -5,6 +5,7 @@ import { Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Text } from '@/components/ui/text';
+import { FarmerHeaderActions } from '@/features/home/components/farmer-header-actions';
 import { AppBarGradient, Palette } from '@/constants/theme';
 import type { FarmerProfile } from '@/types/farmer';
 
@@ -59,21 +60,23 @@ export function ProfileHeroHeader({
             </Text>
           </View>
 
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('home.profile.edit')}
-            onPress={onEditPress}
-            className="h-10 w-10 items-center justify-center rounded-full bg-white"
-            style={{
-              shadowColor: Palette.indigo,
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.12,
-              shadowRadius: 6,
-              elevation: 3,
-            }}
-          >
-            <Ionicons name="create-outline" size={20} color={Palette.indiaGreen} />
-          </Pressable>
+          <FarmerHeaderActions>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('home.profile.edit')}
+              onPress={onEditPress}
+              className="h-10 w-10 items-center justify-center rounded-full bg-white"
+              style={{
+                shadowColor: Palette.indigo,
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.12,
+                shadowRadius: 6,
+                elevation: 3,
+              }}
+            >
+              <Ionicons name="create-outline" size={20} color={Palette.indiaGreen} />
+            </Pressable>
+          </FarmerHeaderActions>
         </View>
       </LinearGradient>
 

@@ -4,6 +4,7 @@ import { Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Text } from '@/components/ui/text';
+import { FarmerHeaderActions } from '@/features/home/components/farmer-header-actions';
 import { AppBarGradient, Palette } from '@/constants/theme';
 import type { FarmerProfile } from '@/types/farmer';
 
@@ -64,21 +65,23 @@ export function HomeHeroHeader({
             </Text>
           </View>
 
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('home.dashboard.notifications')}
-            className="h-10 w-10 items-center justify-center rounded-full bg-white"
-            style={{
-              shadowColor: Palette.indigo,
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.12,
-              shadowRadius: 6,
-              elevation: 3,
-            }}
-          >
-            <Ionicons name="notifications-outline" size={20} color={Palette.indigo} />
-            <View className="absolute right-2.5 top-2 h-2 w-2 rounded-full bg-red-500" />
-          </Pressable>
+          <FarmerHeaderActions>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('home.dashboard.notifications')}
+              className="h-10 w-10 items-center justify-center rounded-full bg-white"
+              style={{
+                shadowColor: Palette.indigo,
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.12,
+                shadowRadius: 6,
+                elevation: 3,
+              }}
+            >
+              <Ionicons name="notifications-outline" size={20} color={Palette.indigo} />
+              <View className="absolute right-2.5 top-2 h-2 w-2 rounded-full bg-red-500" />
+            </Pressable>
+          </FarmerHeaderActions>
         </View>
       </LinearGradient>
 

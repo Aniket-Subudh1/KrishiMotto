@@ -11,7 +11,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Text } from '@/components/ui/text';
-import { useLogoutAll } from '@/features/auth/hooks/use-auth';
+import { useLogout, useLogoutAll } from '@/features/auth/hooks/use-auth';
 import { ProfileHeroHeader } from '@/features/home/components/profile-hero-header';
 import {
   getFarmerProfileError,
@@ -38,6 +38,7 @@ export function ProfileTab({
   t,
 }: ProfileTabProps) {
   const user = useAuthStore((s) => s.user);
+  const logout = useLogout();
   const logoutAll = useLogoutAll();
   const updateProfile = useUpdateFarmerProfile();
 
@@ -70,6 +71,16 @@ export function ProfileTab({
     } catch (error) {
       Alert.alert('', getFarmerProfileError(error, t('home.profile.updateError')));
     }
+  }
+
+  function handleLogout() {
+    Alert.alert(t('home.profile.logoutTitle'), t('home.profile.logoutMessage'), [
+      { text: t('home.profile.logoutCancel'), style: 'cancel' },
+      {
+        text: t('home.profile.logoutConfirm'),
+        onPress: () => logout.mutate(),
+      },
+    ]);
   }
 
   function handleLogoutAll() {
@@ -228,15 +239,24 @@ export function ProfileTab({
                 />
               </View>
 
-              <Button
-                variant="danger"
-                size="lg"
-                className="mt-4"
-                loading={logoutAll.isPending}
-                onPress={handleLogoutAll}
-              >
-                {t('home.profile.logoutAll')}
-              </Button>
+              <View className="mt-4 gap-3">
+                <Button
+                  variant="secondary"
+                  size="lg"
+                  loading={logout.isPending}
+                  onPress={handleLogout}
+                >
+                  {t('home.profile.logout')}
+                </Button>
+                <Button
+                  variant="danger"
+                  size="lg"
+                  loading={logoutAll.isPending}
+                  onPress={handleLogoutAll}
+                >
+                  {t('home.profile.logoutAll')}
+                </Button>
+              </View>
             </View>
           </>
         )}

@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { router, type Href } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -210,6 +211,16 @@ export function LandParcelSheet({ parcelId, visible, onClose }: LandParcelSheetP
                     label={t('home.land.centroidLabel')}
                     value={`${parcel.centroid.coordinates[1].toFixed(4)}°, ${parcel.centroid.coordinates[0].toFixed(4)}°`}
                   />
+
+                  <Button
+                    variant="secondary"
+                    onPress={() => {
+                      handleClose();
+                      router.push(`/farmer/land-boundary?parcelId=${parcel.id}` as Href);
+                    }}
+                  >
+                    {t('home.land.editBoundary')}
+                  </Button>
                 </View>
               )}
 

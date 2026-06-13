@@ -4,6 +4,7 @@ import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Text } from '@/components/ui/text';
+import { FarmerHeaderActions } from '@/features/home/components/farmer-header-actions';
 import { AppBarGradient, Palette } from '@/constants/theme';
 
 type ToolsHeroHeaderProps = {
@@ -37,18 +38,20 @@ export function ToolsHeroHeader({ quickActionCount, serviceCount, t }: ToolsHero
             </Text>
           </View>
 
-          <View
-            className="h-10 w-10 items-center justify-center rounded-full bg-white"
-            style={{
-              shadowColor: Palette.indigo,
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.12,
-              shadowRadius: 6,
-              elevation: 3,
-            }}
-          >
-            <Ionicons name="grid-outline" size={20} color={Palette.indiaGreen} />
-          </View>
+          <FarmerHeaderActions>
+            <View
+              className="h-10 w-10 items-center justify-center rounded-full bg-white"
+              style={{
+                shadowColor: Palette.indigo,
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.12,
+                shadowRadius: 6,
+                elevation: 3,
+              }}
+            >
+              <Ionicons name="grid-outline" size={20} color={Palette.indiaGreen} />
+            </View>
+          </FarmerHeaderActions>
         </View>
       </LinearGradient>
 

@@ -83,6 +83,7 @@ export default function RootLayout() {
               <Stack.Screen name="get-started" options={{ headerShown: false }} />
               <Stack.Screen name="select-role" options={{ headerShown: false }} />
               <Stack.Screen name="farmer" options={{ headerShown: false }} />
+              <Stack.Screen name="expert" options={{ headerShown: false }} />
               <Stack.Screen name="sign-in" options={{ headerShown: false }} />
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
               <Stack.Screen

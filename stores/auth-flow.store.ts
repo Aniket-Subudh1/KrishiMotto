@@ -7,7 +7,10 @@ import type { LandType } from '@/types/farmer';
 
 export type AuthIntent = 'register' | 'sign-in';
 
-export type FarmerSignupStep = 'details' | 'otp' | 'profile' | 'land' | 'complete';
+export type SignupStep = 'details' | 'otp' | 'profile' | 'land' | 'kyc' | 'complete';
+
+/** @deprecated Use SignupStep */
+export type FarmerSignupStep = SignupStep;
 
 type AuthFlowState = {
   intent: AuthIntent | null;
@@ -15,13 +18,15 @@ type AuthFlowState = {
   hasEnteredFromGetStarted: boolean;
   phoneNumber: string;
   username: string;
-  signupStep: FarmerSignupStep;
+  signupStep: SignupStep;
   landType: LandType;
+  storedEmail: string;
   markEnteredFromGetStarted: () => void;
   setAuthFlow: (intent: AuthIntent, role: SelectableRole) => void;
   setPhoneNumber: (phoneNumber: string) => void;
   setUsername: (username: string) => void;
-  setSignupStep: (step: FarmerSignupStep) => void;
+  setStoredEmail: (email: string) => void;
+  setSignupStep: (step: SignupStep) => void;
   setLandType: (landType: LandType) => void;
   clearAuthFlow: () => void;
 };
@@ -36,6 +41,7 @@ export const useAuthFlowStore = create<AuthFlowState>()(
       username: '',
       signupStep: 'details',
       landType: 'OWNED',
+      storedEmail: '',
 
       markEnteredFromGetStarted: () => set({ hasEnteredFromGetStarted: true }),
 
@@ -44,6 +50,8 @@ export const useAuthFlowStore = create<AuthFlowState>()(
       setPhoneNumber: (phoneNumber) => set({ phoneNumber }),
 
       setUsername: (username) => set({ username }),
+
+      setStoredEmail: (storedEmail) => set({ storedEmail }),
 
       setSignupStep: (signupStep) => set({ signupStep }),
 
@@ -58,6 +66,7 @@ export const useAuthFlowStore = create<AuthFlowState>()(
           username: '',
           signupStep: 'details',
           landType: 'OWNED',
+          storedEmail: '',
         }),
     }),
     {
@@ -68,6 +77,7 @@ export const useAuthFlowStore = create<AuthFlowState>()(
         landType: state.landType,
         phoneNumber: state.phoneNumber,
         username: state.username,
+        storedEmail: state.storedEmail,
       }),
     },
   ),

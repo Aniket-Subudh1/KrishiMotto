@@ -4,6 +4,9 @@ import type { LegacyResponse, V1Response } from '@/types/api';
 import type {
   AuthTokensResponse,
   AuthUser,
+  ExpertAuthenticatePayload,
+  ExpertRegisterPayload,
+  ExpertRegisterResponse,
   FarmerAuthenticatePayload,
   FarmerRegisterPayload,
   FarmerRegisterResponse,
@@ -21,6 +24,12 @@ export const authService = {
 
   authenticateFarmer: (payload: FarmerAuthenticatePayload) =>
     authClient.post<LegacyResponse<AuthTokensResponse>>('/farmer/authenticate', payload),
+
+  registerExpert: (payload: ExpertRegisterPayload) =>
+    authClient.post<LegacyResponse<ExpertRegisterResponse>>('/expert/register', payload),
+
+  authenticateExpert: (payload: ExpertAuthenticatePayload) =>
+    authClient.post<LegacyResponse<AuthTokensResponse>>('/expert/authenticate', payload),
 
   refreshToken: (refreshToken: string) =>
     apiClient.post<V1Response<RefreshTokenResponse>>('/auth/refresh', { refreshToken }),
