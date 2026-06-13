@@ -9,6 +9,7 @@ import {
   ErrorBanner,
   FormCard,
 } from '@/components/auth/auth-screen-layout';
+import { AuthRedirect } from '@/components/auth/auth-redirect';
 import { Input, PhoneInput } from '@/components/ui/input';
 import { OtpHint, OtpInput, ResendLink } from '@/components/ui/otp-input';
 import { SlideButton } from '@/components/ui/slide-button';
@@ -70,6 +71,7 @@ export default function ExpertSignUpScreen() {
   const user = useAuthStore((s) => s.user);
   const profileCompleted = useAuthStore((s) => s.profileCompleted);
   const clearAuth = useAuthStore((s) => s.clearAuth);
+  const clearAuthFlow = useAuthFlowStore((s) => s.clearAuthFlow);
   const setProfileCompleted = useAuthStore((s) => s.setProfileCompleted);
   const intent = useAuthFlowStore((s) => s.intent);
   const selectedRole = useAuthFlowStore((s) => s.selectedRole);
@@ -153,6 +155,7 @@ export default function ExpertSignUpScreen() {
     if (step === 'profile') {
       showBackConfirmation(t('expertSignUp.backFromProfileMessage'), () => {
         clearAuth();
+        clearAuthFlow();
         setOtp('');
         setFormError(null);
         setInfoMessage(null);
@@ -171,7 +174,7 @@ export default function ExpertSignUpScreen() {
     }
 
     router.back();
-  }, [clearAuth, showBackConfirmation, step, t]);
+  }, [clearAuth, clearAuthFlow, showBackConfirmation, step, t]);
 
   useEffect(() => {
     if (step === 'details') {
@@ -187,7 +190,7 @@ export default function ExpertSignUpScreen() {
   }, [handleBack, step]);
 
   if (isAuthenticated && profileCompleted) {
-    return <Redirect href="/(tabs)" />;
+    return <AuthRedirect />;
   }
 
   if (

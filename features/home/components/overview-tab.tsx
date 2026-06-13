@@ -6,6 +6,7 @@ import { ActivityIndicator, Pressable, RefreshControl, ScrollView, View } from '
 import { Text } from '@/components/ui/text';
 import { HomeHeroHeader } from '@/features/home/components/home-hero-header';
 import { HomeServicesGrid } from '@/features/home/components/home-services-grid';
+import { showComingSoonAlert } from '@/lib/coming-soon';
 import { Palette } from '@/constants/theme';
 import type { FarmerProfile } from '@/types/farmer';
 import type { LandParcel } from '@/types/farmer';
@@ -90,7 +91,6 @@ export function OverviewTab({
                       : t('home.dashboard.aiInsightDefault')}
                   </Text>
                 </View>
-                <Ionicons name="chevron-forward" size={18} color="#94A3B8" />
               </View>
             </View>
           </>
@@ -100,7 +100,7 @@ export function OverviewTab({
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={t('home.dashboard.askAi')}
-        onPress={() => {}}
+        onPress={() => showComingSoonAlert(t)}
         className="absolute bottom-5 right-5 flex-row items-center gap-2 rounded-full bg-india-green px-5 py-3.5"
         style={{
           shadowColor: Palette.indiaGreen,

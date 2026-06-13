@@ -4,6 +4,13 @@ import { API_URL } from '@/constants/api';
 import { forceLogout } from '@/lib/auth-session';
 import { useAuthStore } from '@/stores/auth.store';
 
+declare module 'axios' {
+  export interface AxiosRequestConfig {
+    skipAuthRefresh?: boolean;
+    _retry?: boolean;
+  }
+}
+
 const BASE_URL = `${API_URL}/api/v1`;
 
 export const apiClient = axios.create({
@@ -28,6 +35,10 @@ apiClient.interceptors.response.use(
     const status = error.response?.status;
 
     if (!originalRequest || status !== 401 || originalRequest._retry) {
+      return Promise.reject(error);
+    }
+
+    if (originalRequest.skipAuthRefresh) {
       return Promise.reject(error);
     }
 

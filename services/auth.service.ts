@@ -35,9 +35,9 @@ export const authService = {
     apiClient.post<V1Response<RefreshTokenResponse>>('/auth/refresh', { refreshToken }),
 
   logout: (refreshToken: string) =>
-    apiClient.post('/auth/logout', { refreshToken }),
+    apiClient.post('/auth/logout', { refreshToken }, { skipAuthRefresh: true }),
 
-  logoutAll: () => apiClient.post('/auth/logout-all'),
+  logoutAll: () => apiClient.post('/auth/logout-all', undefined, { skipAuthRefresh: true }),
 
   me: () => apiClient.get<V1Response<AuthUser>>('/me'),
 };

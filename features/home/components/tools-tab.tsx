@@ -7,6 +7,7 @@ import { Text } from '@/components/ui/text';
 import { ALL_SERVICES, QUICK_ACTIONS } from '@/features/home/constants/services';
 import { ServicesGrid } from '@/features/home/components/services-grid';
 import { ToolsHeroHeader } from '@/features/home/components/tools-hero-header';
+import { showComingSoonAlert } from '@/lib/coming-soon';
 import { Palette } from '@/constants/theme';
 
 type ToolsTabProps = {
@@ -95,7 +96,7 @@ export function ToolsTab({ isFarmer, t }: ToolsTabProps) {
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={t('home.dashboard.askAi')}
-        onPress={() => {}}
+        onPress={() => showComingSoonAlert(t)}
         className="absolute bottom-5 right-5 flex-row items-center gap-2 rounded-full bg-india-green px-5 py-3.5"
         style={{
           shadowColor: Palette.indiaGreen,

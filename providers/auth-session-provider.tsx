@@ -2,8 +2,8 @@ import { router } from 'expo-router';
 import { useEffect, useRef } from 'react';
 
 import { usePersistHydrated } from '@/hooks/use-persist-hydrated';
-import { notifySessionExpired, setSessionExpiredHandler } from '@/lib/auth-session';
-import { queryClient } from '@/lib/query-client';
+import { syncAuthCompletionState } from '@/lib/auth-routing';
+import { clearLocalSession, setSessionExpiredHandler } from '@/lib/auth-session';
 import { authService } from '@/services/auth.service';
 import { useAuthStore } from '@/stores/auth.store';
 
@@ -11,13 +11,12 @@ import { useAuthStore } from '@/stores/auth.store';
 export function AuthSessionProvider({ children }: { children: React.ReactNode }) {
   const hydrated = usePersistHydrated();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const user = useAuthStore((s) => s.user);
   const updateUser = useAuthStore((s) => s.updateUser);
-  const clearAuth = useAuthStore((s) => s.clearAuth);
   const validatedRef = useRef(false);
 
   useEffect(() => {
     setSessionExpiredHandler(() => {
-      queryClient.clear();
       router.replace('/get-started');
     });
 
@@ -25,7 +24,7 @@ export function AuthSessionProvider({ children }: { children: React.ReactNode })
   }, []);
 
   useEffect(() => {
-    if (!hydrated || !isAuthenticated) {
+    if (!hydrated || !isAuthenticated || !user) {
       validatedRef.current = false;
       return;
     }
@@ -38,15 +37,15 @@ export function AuthSessionProvider({ children }: { children: React.ReactNode })
 
     authService
       .me()
-      .then(({ data }) => {
+      .then(async ({ data }) => {
         updateUser(data.data);
+        await syncAuthCompletionState(data.data);
       })
-      .catch(() => {
-        clearAuth();
-        queryClient.clear();
+      .catch(async () => {
+        await clearLocalSession();
         router.replace('/get-started');
       });
-  }, [clearAuth, hydrated, isAuthenticated, updateUser]);
+  }, [hydrated, isAuthenticated, updateUser, user]);
 
   return children;
 }

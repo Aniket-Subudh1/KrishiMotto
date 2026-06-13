@@ -7,6 +7,7 @@ import {
   ErrorBanner,
   FormCard,
 } from '@/components/auth/auth-screen-layout';
+import { AuthRedirect } from '@/components/auth/auth-redirect';
 import { PhoneInput } from '@/components/ui/input';
 import { OtpHint, OtpInput, ResendLink } from '@/components/ui/otp-input';
 import { SlideButton } from '@/components/ui/slide-button';
@@ -16,14 +17,17 @@ import {
   useAuthenticateExpert,
   useSendOtp,
 } from '@/features/expert/hooks/use-expert-auth';
-import { isExpertKycSubmitted, isExpertProfileComplete } from '@/lib/expert-profile';
+import {
+  applyAuthCompletion,
+  deriveAuthCompletion,
+  getAuthRedirectHref,
+} from '@/lib/auth-routing';
 import { useAppLocale } from '@/hooks/use-app-locale';
 import {
   isValidIndianPhone,
   isValidOtp,
   normalizePhoneInput,
 } from '@/lib/validation';
-import { expertService } from '@/services/expert.service';
 import { useAuthFlowStore } from '@/stores/auth-flow.store';
 import { useAuthStore } from '@/stores/auth.store';
 
@@ -36,8 +40,6 @@ export default function ExpertSignInScreen() {
   const selectedRole = useAuthFlowStore((s) => s.selectedRole);
   const hasEnteredFromGetStarted = useAuthFlowStore((s) => s.hasEnteredFromGetStarted);
   const setPhoneNumber = useAuthFlowStore((s) => s.setPhoneNumber);
-  const setProfileCompleted = useAuthStore((s) => s.setProfileCompleted);
-  const setSignupStep = useAuthFlowStore((s) => s.setSignupStep);
 
   const sendOtp = useSendOtp();
   const authenticateExpert = useAuthenticateExpert();
@@ -49,6 +51,7 @@ export default function ExpertSignInScreen() {
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
   const [slideResetKey, setSlideResetKey] = useState(0);
   const [otpResetKey, setOtpResetKey] = useState(0);
+  const [isPostAuthRouting, setIsPostAuthRouting] = useState(false);
 
   useEffect(() => {
     setSlideResetKey((key) => key + 1);
@@ -97,8 +100,8 @@ export default function ExpertSignInScreen() {
     return () => subscription.remove();
   }, [handleBack, step]);
 
-  if (isAuthenticated) {
-    return <Redirect href="/(tabs)" />;
+  if (isAuthenticated && !isPostAuthRouting && !authenticateExpert.isPending) {
+    return <AuthRedirect />;
   }
 
   if (
@@ -165,36 +168,31 @@ export default function ExpertSignInScreen() {
     }
 
     try {
+      setIsPostAuthRouting(true);
       await authenticateExpert.mutateAsync({
         phoneNumber,
         otp,
       });
 
-      const { data } = await expertService.getProfile();
-      const profile = data.data;
-      const profileComplete = isExpertProfileComplete(profile);
-      const kycSubmitted = isExpertKycSubmitted(profile);
-
-      setProfileCompleted(profileComplete && kycSubmitted);
-
-      if (!profileComplete) {
-        setSignupStep('profile');
-        router.replace('/expert/sign-up' as Href);
+      const user = useAuthStore.getState().user;
+      if (!user) {
         return;
       }
 
-      if (!kycSubmitted) {
-        setSignupStep('kyc');
-        router.replace('/expert/sign-up' as Href);
-        return;
-      }
-
-      setSignupStep('complete');
-      router.replace('/(tabs)' as Href);
+      const derived = await deriveAuthCompletion(
+        user,
+        useAuthFlowStore.getState().signupStep,
+      );
+      applyAuthCompletion(derived.profileCompleted, derived.signupStep);
+      router.replace(
+        getAuthRedirectHref(user, derived.profileCompleted, derived.signupStep),
+      );
     } catch (error) {
       setFormError(getMutationError(error, t('expertSignIn.errors.otpInvalid')));
       resetOtpInput();
       bumpSlideReset();
+    } finally {
+      setIsPostAuthRouting(false);
     }
   }
 

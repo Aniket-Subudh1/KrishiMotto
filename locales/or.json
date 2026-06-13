@@ -31,7 +31,8 @@
   },
   "languageSelector": {
     "title": "ଭାଷା ବାଛନ୍ତୁ",
-    "subtitle": "ଆପଣଙ୍କ ପସନ୍ଦର ଭାଷା ବାଛନ୍ତୁ"
+    "subtitle": "ଆପଣଙ୍କ ପସନ୍ଦର ଭାଷା ବାଛନ୍ତୁ",
+    "close": "ବନ୍ଦ କରନ୍ତୁ"
   },
   "selectRole": {
     "back": "ପଛକୁ ଯାଆନ୍ତୁ",
@@ -58,7 +59,8 @@
     "registerSubtitle": "KrishiMotto ବ୍ୟବହାର ଆରମ୍ଭ କରିବା ପାଇଁ ଆପଣଙ୍କ ମୋବାଇଲ୍ ନମ୍ବର ସହ ସାଇନ୍ ଅପ୍ କରନ୍ତୁ।",
     "changeRole": "ବଦଳାନ୍ତୁ",
     "comingSoon": "ସାଇନ୍-ଇନ୍ ସୁବିଧା ଶୀଘ୍ର ଆସୁଛି।",
-    "continueHome": "ହୋମକୁ ଯାଆନ୍ତୁ"
+    "continueHome": "ହୋମକୁ ଯାଆନ୍ତୁ",
+    "backToStart": "ଆରମ୍ଭକୁ ଫେରନ୍ତୁ"
   },
   "farmerSignUp": {
     "stepAccount": "ପଦକ୍ଷେପ 1 / 4",
@@ -276,6 +278,7 @@
       "landTypeLabel": "ଜମିର ସ୍ୱାମିତ୍ୱ",
       "landOwned": "ନିଜର",
       "landLeased": "ଭଡ଼ା",
+      "leasedCountLabel": "{{count}} ଭଡ଼ା",
       "areaLabel": "କ୍ଷେତ୍ରଫଳ",
       "addedLabel": "ଯୋଡାଗଲା",
       "centroidLabel": "କେନ୍ଦ୍ର ବିନ୍ଦୁ",
@@ -290,7 +293,10 @@
       "deleteError": "ଜମି ହଟାଯାଇପାରିଲା ନାହିଁ। ଦୟାକରି ପୁନଃ ଚେଷ୍ଟା କରନ୍ତୁ।",
       "loadError": "ଜମି ବିବରଣୀ ଲୋଡ୍ ହୋଇପାରିଲା ନାହିଁ।",
       "close": "ବନ୍ଦ କରନ୍ତୁ",
-      "editBoundary": "ସୀମା ସମ୍ପାଦନ କରନ୍ତୁ"
+      "editBoundary": "ସୀମା ସମ୍ପାଦନ କରନ୍ତୁ",
+      "errors": {
+        "nameRequired": "ଦୟାକରି ଜମିର ନାମ ଲେଖନ୍ତୁ।"
+      }
     },
     "profile": {
       "subtitle": "ଆପଣଙ୍କ ଖେତ ବିବରଣୀ ଏବଂ ଖାତା ସେଟିଂସ୍",
@@ -322,7 +328,13 @@
       "logoutAllTitle": "ସମସ୍ତ ଡିଭାଇସ୍‌ରୁ ସାଇନ୍ ଆଉଟ୍ କରିବେ କି?",
       "logoutAllMessage": "ଏହା ପ୍ରତ୍ୟେକ ଡିଭାଇସ୍‌ରେ ସକ୍ରିୟ ସେସନ୍‌ଗୁଡିକୁ ସମାପ୍ତ କରିଦେବ।",
       "logoutAllCancel": "ବାତିଲ୍",
-      "logoutAllConfirm": "ସାଇନ୍ ଆଉଟ୍"
+      "logoutAllConfirm": "ସାଇନ୍ ଆଉଟ୍",
+      "notSet": "ସେଟ ନାହିଁ",
+      "errors": {
+        "name": "ଦୟାକରି ଆପଣଙ୍କ ନାମ ଲେଖନ୍ତୁ।",
+        "district": "ଦୟାକରି ଆପଣଙ୍କ ଜିଲ୍ଲା ଲେଖନ୍ତୁ।",
+        "state": "ଦୟାକରି ଆପଣଙ୍କ ରାଜ୍ୟ ଲେଖନ୍ତୁ।"
+      }
     },
     "tools": {
       "title": "ଫାର୍ମ ଟୁଲ୍ସ",

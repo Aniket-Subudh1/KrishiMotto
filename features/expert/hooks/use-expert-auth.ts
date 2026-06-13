@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { useSendOtp } from '@/features/auth/hooks/use-send-otp';
 import { getApiErrorMessage } from '@/lib/api-error';
 import { authService } from '@/services/auth.service';
 import { expertService } from '@/services/expert.service';
@@ -7,7 +8,6 @@ import { useAuthStore } from '@/stores/auth.store';
 import type {
   ExpertAuthenticatePayload,
   ExpertRegisterPayload,
-  SendOtpPayload,
 } from '@/types/auth';
 import type {
   ExpertDocumentSubmitPayload,
@@ -18,14 +18,7 @@ export const EXPERT_PROFILE_KEYS = {
   profile: ['expert', 'profile'] as const,
 };
 
-export function useSendOtp() {
-  return useMutation({
-    mutationFn: async (payload: SendOtpPayload) => {
-      const { data } = await authService.sendOtp(payload);
-      return data.response;
-    },
-  });
-}
+export { useSendOtp };
 
 export function useRegisterExpert() {
   return useMutation({

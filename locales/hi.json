@@ -31,7 +31,8 @@
   },
   "languageSelector": {
     "title": "भाषा चुनें",
-    "subtitle": "अपनी पसंदीदा भाषा चुनें"
+    "subtitle": "अपनी पसंदीदा भाषा चुनें",
+    "close": "बंद करें"
   },
   "selectRole": {
     "back": "वापस जाएँ",
@@ -58,7 +59,8 @@
     "registerSubtitle": "KrishiMotto का उपयोग शुरू करने के लिए अपने मोबाइल नंबर से साइन अप करें।",
     "changeRole": "बदलें",
     "comingSoon": "साइन-इन सुविधा जल्द उपलब्ध होगी।",
-    "continueHome": "होम पर जाएँ"
+    "continueHome": "होम पर जाएँ",
+    "backToStart": "शुरुआत पर वापस जाएँ"
   },
   "farmerSignUp": {
     "stepAccount": "चरण 1 / 4",
@@ -357,6 +359,7 @@
       "landTypeLabel": "ज़मीन का स्वामित्व",
       "landOwned": "अपनी",
       "landLeased": "पट्टे पर",
+      "leasedCountLabel": "{{count}} पट्टे पर",
       "areaLabel": "क्षेत्रफल",
       "addedLabel": "जोड़ा गया",
       "centroidLabel": "केंद्र बिंदु",
@@ -371,7 +374,10 @@
       "deleteError": "खेत हटाया नहीं जा सका। कृपया पुनः प्रयास करें।",
       "loadError": "खेत का विवरण लोड नहीं हो सका।",
       "close": "बंद करें",
-      "editBoundary": "सीमा संपादित करें"
+      "editBoundary": "सीमा संपादित करें",
+      "errors": {
+        "nameRequired": "कृपया खेत का नाम दर्ज करें।"
+      }
     },
     "profile": {
       "subtitle": "आपके खेत का विवरण और खाता सेटिंग्स",
@@ -403,7 +409,13 @@
       "logoutAllTitle": "सभी डिवाइस से साइन आउट करें?",
       "logoutAllMessage": "यह हर डिवाइस पर सभी सक्रिय सत्र समाप्त कर देगा।",
       "logoutAllCancel": "रद्द करें",
-      "logoutAllConfirm": "साइन आउट"
+      "logoutAllConfirm": "साइन आउट",
+      "notSet": "सेट नहीं",
+      "errors": {
+        "name": "कृपया अपना नाम दर्ज करें।",
+        "district": "कृपया अपना ज़िला दर्ज करें।",
+        "state": "कृपया अपना राज्य दर्ज करें।"
+      }
     },
     "tools": {
       "title": "फार्म टूल्स",

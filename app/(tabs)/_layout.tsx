@@ -1,5 +1,6 @@
 import { Redirect, Tabs } from 'expo-router';
 
+import { AuthRedirect } from '@/components/auth/auth-redirect';
 import { AppTabBar } from '@/components/navigation/app-tab-bar';
 import { Colors } from '@/constants/theme';
 import { FarmerHomeProvider } from '@/features/home/context/farmer-home-context';
@@ -9,10 +10,15 @@ import { useAuthStore } from '@/stores/auth.store';
 export default function TabLayout() {
   const { t } = useAppLocale();
   const user = useAuthStore((s) => s.user);
+  const profileCompleted = useAuthStore((s) => s.profileCompleted);
   const isFarmer = user?.role === 'FARMER';
 
   if (!user) {
     return <Redirect href="/get-started" />;
+  }
+
+  if (!profileCompleted) {
+    return <AuthRedirect />;
   }
 
   return (
@@ -27,7 +33,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="index"
           options={{
-            title: isFarmer ? t('home.tabs.home') : 'Home',
+            title: t('home.tabs.home'),
           }}
         />
         <Tabs.Screen

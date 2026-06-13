@@ -105,7 +105,7 @@ export function LandHeroHeader({ profile, parcels, t }: LandHeroHeaderProps) {
             valueColor={Palette.saffron}
             bottom={
               leasedCount > 0
-                ? `${leasedCount} ${t('home.land.landLeased').toLowerCase()}`
+                ? t('home.land.leasedCountLabel').replace('{{count}}', String(leasedCount))
                 : t('home.land.landOwned')
             }
           />

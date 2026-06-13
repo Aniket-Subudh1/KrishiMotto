@@ -1,12 +1,13 @@
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
-import { Redirect, router, type Href } from "expo-router";
+import { router, type Href } from "expo-router";
 import { useEffect } from "react";
 import { Pressable, View, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { GradientBand } from "@/components/gradient-band";
 import { LanguageSelector } from "@/components/language-selector";
+import { AuthRedirect } from "@/components/auth/auth-redirect";
 import { Button } from "@/components/ui/button";
 import { FittedText } from "@/components/ui/fitted-text";
 import { Text } from "@/components/ui/text";
@@ -30,11 +31,13 @@ export default function GetStartedScreen() {
   const insets = useSafeAreaInsets();
 
   useEffect(() => {
-    clearAuthFlow();
-  }, [clearAuthFlow]);
+    if (!isAuthenticated) {
+      clearAuthFlow();
+    }
+  }, [clearAuthFlow, isAuthenticated]);
 
   if (isAuthenticated) {
-    return <Redirect href="/(tabs)" />;
+    return <AuthRedirect />;
   }
 
   const carouselHeight =

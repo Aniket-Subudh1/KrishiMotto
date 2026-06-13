@@ -1,4 +1,11 @@
 import type { ExpertProfile } from '@/types/expert';
+import type { FarmerProfile } from '@/types/farmer';
+
+export function isFarmerProfileComplete(profile: Pick<FarmerProfile, 'name' | 'district' | 'state'>): boolean {
+  return Boolean(
+    profile.name?.trim() && profile.district?.trim() && profile.state?.trim(),
+  );
+}
 
 export function isExpertProfileComplete(profile: ExpertProfile): boolean {
   return Boolean(
@@ -12,6 +19,10 @@ export function isExpertProfileComplete(profile: ExpertProfile): boolean {
   );
 }
 
+/** KYC docs uploaded and awaiting or passed verification (rejected requires resubmission). */
 export function isExpertKycSubmitted(profile: ExpertProfile): boolean {
-  return profile.kycDocs.length > 0 && profile.kycStatus !== 'UNVERIFIED';
+  return (
+    profile.kycDocs.length > 0 &&
+    (profile.kycStatus === 'PENDING' || profile.kycStatus === 'VERIFIED')
+  );
 }

@@ -73,6 +73,9 @@ export const useAuthFlowStore = create<AuthFlowState>()(
       name: 'krishimotto-auth-flow',
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({
+        intent: state.intent,
+        selectedRole: state.selectedRole,
+        hasEnteredFromGetStarted: state.hasEnteredFromGetStarted,
         signupStep: state.signupStep,
         landType: state.landType,
         phoneNumber: state.phoneNumber,

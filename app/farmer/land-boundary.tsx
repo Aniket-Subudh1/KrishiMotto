@@ -29,6 +29,7 @@ import {
   useLandParcel,
   useUpdateLandParcel,
 } from '@/features/farmer/hooks/use-land-parcel';
+import { useFarmerProfile } from '@/features/farmer/hooks/use-farmer-profile';
 import { useAppLocale } from '@/hooks/use-app-locale';
 import { computeAreaAcres, fromGeoJsonPolygon, regionFromCoords, toGeoJsonPolygon } from '@/lib/geo';
 import { formatAcres } from '@/lib/format';
@@ -52,10 +53,16 @@ export default function LandBoundaryScreen() {
   const isEditMode = Boolean(parcelId);
   const insets = useSafeAreaInsets();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const user = useAuthStore((s) => s.user);
   const profileCompleted = useAuthStore((s) => s.profileCompleted);
   const setProfileCompleted = useAuthStore((s) => s.setProfileCompleted);
-  const landType = useAuthFlowStore((s) => s.landType);
+  const signupLandType = useAuthFlowStore((s) => s.landType);
   const setSignupStep = useAuthFlowStore((s) => s.setSignupStep);
+  const { data: farmerProfile } = useFarmerProfile();
+  const createLandType =
+    profileCompleted || isEditMode
+      ? (farmerProfile?.landType ?? 'OWNED')
+      : signupLandType;
   const mapRef = useRef<MapView>(null);
   const pointIdRef = useRef(0);
   const createParcel = useCreateLandParcel();
@@ -222,7 +229,10 @@ export default function LandBoundaryScreen() {
   }
 
   async function handleConfirm() {
-    if (points.length < MIN_POINTS) return;
+    if (points.length < MIN_POINTS) {
+      Alert.alert('', t('landBoundary.errors.minPoints'));
+      return;
+    }
     try {
       const geometry = toGeoJsonPolygon(points);
       if (isEditMode && parcelId) {
@@ -234,7 +244,7 @@ export default function LandBoundaryScreen() {
       await createParcel.mutateAsync({
         name: t('landBoundary.defaultFieldName'),
         geometry,
-        landType,
+        landType: createLandType,
       });
       finishFlow();
     } catch (error) {
@@ -248,6 +258,10 @@ export default function LandBoundaryScreen() {
 
   if (!isAuthenticated) {
     return <Redirect href={'/get-started' as Href} />;
+  }
+
+  if (user?.role !== 'FARMER') {
+    return <Redirect href={'/(tabs)' as Href} />;
   }
 
   if (isEditMode && parcelLoading) {
@@ -318,7 +332,7 @@ export default function LandBoundaryScreen() {
           {/* Map type toggle */}
           <Pressable
             style={styles.mapTypeButton}
-            onPress={() => setMapType((t) => (t === 'hybrid' ? 'standard' : 'hybrid'))}
+            onPress={() => setMapType((current) => (current === 'hybrid' ? 'standard' : 'hybrid'))}
           >
             <Ionicons
               name={mapType === 'hybrid' ? 'map-outline' : 'globe-outline'}

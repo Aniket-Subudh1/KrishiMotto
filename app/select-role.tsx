@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { GradientBand } from "@/components/gradient-band";
 import { LanguageSelector } from "@/components/language-selector";
+import { AuthRedirect } from "@/components/auth/auth-redirect";
 import { Button } from "@/components/ui/button";
 import { FittedText } from "@/components/ui/fitted-text";
 import { Text } from "@/components/ui/text";
@@ -37,7 +38,7 @@ export default function SelectRoleScreen() {
   const [selectedRole, setSelectedRole] = useState<SelectableRole | null>(null);
 
   if (isAuthenticated) {
-    return <Redirect href="/(tabs)" />;
+    return <AuthRedirect />;
   }
 
   if (!hasEnteredFromGetStarted || !intent) {
@@ -73,7 +74,7 @@ export default function SelectRoleScreen() {
       return;
     }
 
-    router.push("/sign-in" as Href);
+    router.push("/get-started" as Href);
   }
 
   return (

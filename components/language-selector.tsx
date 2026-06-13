@@ -111,7 +111,7 @@ export function LanguageSelector({ variant = 'default' }: LanguageSelectorProps)
                 onPress={() => setOpen(false)}
                 className="h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface"
                 accessibilityRole="button"
-                accessibilityLabel="Close"
+                accessibilityLabel={t('languageSelector.close')}
               >
                 <Ionicons name="close" size={18} color={Palette.indigo} />
               </Pressable>

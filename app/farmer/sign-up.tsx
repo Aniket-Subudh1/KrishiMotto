@@ -1,3 +1,4 @@
+import { AuthRedirect } from '@/components/auth/auth-redirect';
 import { Redirect, router, type Href } from 'expo-router';
 import { Image } from 'expo-image';
 import { useCallback, useEffect, useState } from 'react';
@@ -53,6 +54,7 @@ export default function FarmerSignUpScreen() {
   const user = useAuthStore((s) => s.user);
   const profileCompleted = useAuthStore((s) => s.profileCompleted);
   const clearAuth = useAuthStore((s) => s.clearAuth);
+  const clearAuthFlow = useAuthFlowStore((s) => s.clearAuthFlow);
   const intent = useAuthFlowStore((s) => s.intent);
   const selectedRole = useAuthFlowStore((s) => s.selectedRole);
   const hasEnteredFromGetStarted = useAuthFlowStore((s) => s.hasEnteredFromGetStarted);
@@ -122,6 +124,7 @@ export default function FarmerSignUpScreen() {
     if (step === 'profile') {
       showBackConfirmation(t('farmerSignUp.backFromProfileMessage'), () => {
         clearAuth();
+        clearAuthFlow();
         setOtp('');
         setFormError(null);
         setInfoMessage(null);
@@ -131,7 +134,7 @@ export default function FarmerSignUpScreen() {
     }
 
     router.back();
-  }, [clearAuth, showBackConfirmation, step, t]);
+  }, [clearAuth, clearAuthFlow, showBackConfirmation, step, t]);
 
   useEffect(() => {
     if (step === 'details') {
@@ -147,7 +150,7 @@ export default function FarmerSignUpScreen() {
   }, [handleBack, step]);
 
   if (isAuthenticated && profileCompleted) {
-    return <Redirect href="/(tabs)" />;
+    return <AuthRedirect />;
   }
 
   if (isAuthenticated && signupStep === 'land') {

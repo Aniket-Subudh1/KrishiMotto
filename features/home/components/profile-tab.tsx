@@ -18,6 +18,10 @@ import {
   useUpdateFarmerProfile,
 } from '@/features/farmer/hooks/use-farmer-profile';
 import { formatAcres } from '@/lib/format';
+import {
+  isValidLocationField,
+  isValidProfileName,
+} from '@/lib/validation';
 import { Palette } from '@/constants/theme';
 import { useAuthStore } from '@/stores/auth.store';
 import type { FarmerProfile } from '@/types/farmer';
@@ -59,11 +63,24 @@ export function ProfileTab({
   }
 
   async function handleSave() {
+    if (!isValidProfileName(name)) {
+      Alert.alert('', t('home.profile.errors.name'));
+      return;
+    }
+    if (!isValidLocationField(district)) {
+      Alert.alert('', t('home.profile.errors.district'));
+      return;
+    }
+    if (!isValidLocationField(state)) {
+      Alert.alert('', t('home.profile.errors.state'));
+      return;
+    }
+
     try {
       await updateProfile.mutateAsync({
-        name: name.trim() || undefined,
-        district: district.trim() || undefined,
-        state: state.trim() || undefined,
+        name: name.trim(),
+        district: district.trim(),
+        state: state.trim(),
         primaryCrop: primaryCrop.trim() || null,
       });
       setIsEditing(false);
@@ -182,7 +199,7 @@ export function ProfileTab({
                     <ProfileDetail
                       icon="resize-outline"
                       label={t('home.profile.totalAcres')}
-                      value={profile?.totalAcres != null ? formatAcres(profile.totalAcres) : '—'}
+                      value={profile?.totalAcres != null ? formatAcres(profile.totalAcres) : t('home.profile.notSet')}
                     />
                     <ProfileDetail
                       icon="document-text-outline"
@@ -192,18 +209,18 @@ export function ProfileTab({
                           ? t('home.land.landLeased')
                           : profile?.landType === 'OWNED'
                             ? t('home.land.landOwned')
-                            : '—'
+                            : t('home.profile.notSet')
                       }
                     />
                     <ProfileDetail
                       icon="leaf-outline"
                       label={t('home.profile.cropLabel')}
-                      value={profile?.primaryCrop ?? '—'}
+                      value={profile?.primaryCrop ?? t('home.profile.notSet')}
                     />
                     <ProfileDetail
                       icon="calendar-outline"
                       label={t('home.profile.seasonLabel')}
-                      value={profile?.currentSeason ?? '—'}
+                      value={profile?.currentSeason ?? t('home.profile.notSet')}
                     />
                   </View>
                 </>
@@ -227,7 +244,7 @@ export function ProfileTab({
                 <ProfileDetail
                   icon="call-outline"
                   label={t('home.profile.phoneLabel')}
-                  value={user?.phoneNumber ? `+91 ${user.phoneNumber}` : '—'}
+                  value={user?.phoneNumber ? `+91 ${user.phoneNumber}` : t('home.profile.notSet')}
                   compact
                 />
                 <View className="h-px bg-border" />

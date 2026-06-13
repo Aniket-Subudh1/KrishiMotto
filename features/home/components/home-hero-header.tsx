@@ -8,6 +8,7 @@ import { FarmerHeaderActions } from '@/features/home/components/farmer-header-ac
 import { AppBarGradient, Palette } from '@/constants/theme';
 import type { FarmerProfile } from '@/types/farmer';
 
+import { showComingSoonAlert } from '@/lib/coming-soon';
 import { formatAcres } from '@/lib/format';
 
 type HomeHeroHeaderProps = {
@@ -41,7 +42,7 @@ export function HomeHeroHeader({
     .join(' · ');
 
   const totalAcres =
-    profile?.totalAcres != null ? formatAcres(profile.totalAcres) : '—';
+    profile?.totalAcres != null ? formatAcres(profile.totalAcres) : t('home.profile.notSet');
 
   return (
     <View>
@@ -69,6 +70,7 @@ export function HomeHeroHeader({
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={t('home.dashboard.notifications')}
+              onPress={() => showComingSoonAlert(t)}
               className="h-10 w-10 items-center justify-center rounded-full bg-white"
               style={{
                 shadowColor: Palette.indigo,

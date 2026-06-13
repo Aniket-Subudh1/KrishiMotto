@@ -54,8 +54,19 @@ export function LandParcelSheet({ parcelId, visible, onClose }: LandParcelSheetP
     onClose();
   }
 
+  function toggleEditing() {
+    if (isEditing && parcel) {
+      setName(parcel.name);
+      setLandType(parcel.landType);
+    }
+    setIsEditing((value) => !value);
+  }
+
   async function handleSave() {
-    if (!parcelId || !name.trim()) return;
+    if (!parcelId || !name.trim()) {
+      Alert.alert('', t('home.land.errors.nameRequired'));
+      return;
+    }
 
     try {
       await updateParcel.mutateAsync({
@@ -129,7 +140,7 @@ export function LandParcelSheet({ parcelId, visible, onClose }: LandParcelSheetP
                   <Text className="mt-1 text-[24px] font-bold text-indigo">{parcel.name}</Text>
                 </View>
                 <Pressable
-                  onPress={() => setIsEditing((value) => !value)}
+                  onPress={toggleEditing}
                   className="h-10 w-10 items-center justify-center rounded-xl bg-surface"
                 >
                   <Ionicons

@@ -31,7 +31,8 @@
   },
   "languageSelector": {
     "title": "Choose Language",
-    "subtitle": "Select your preferred language"
+    "subtitle": "Select your preferred language",
+    "close": "Close"
   },
   "selectRole": {
     "back": "Go back",
@@ -58,7 +59,8 @@
     "registerSubtitle": "Sign up with your phone number to start using KrishiMotto.",
     "changeRole": "Change",
     "comingSoon": "Sign-in flow coming soon.",
-    "continueHome": "Continue to Home"
+    "continueHome": "Continue to Home",
+    "backToStart": "Back to start"
   },
   "farmerSignUp": {
     "stepAccount": "Step 1 of 4",
@@ -357,6 +359,7 @@
       "landTypeLabel": "Land ownership",
       "landOwned": "Owned",
       "landLeased": "Leased",
+      "leasedCountLabel": "{{count}} leased",
       "areaLabel": "Area",
       "addedLabel": "Added on",
       "centroidLabel": "Centre point",
@@ -371,7 +374,10 @@
       "deleteError": "Could not delete the field. Please try again.",
       "loadError": "Could not load field details.",
       "close": "Close",
-      "editBoundary": "Edit boundary"
+      "editBoundary": "Edit boundary",
+      "errors": {
+        "nameRequired": "Please enter a field name."
+      }
     },
     "profile": {
       "subtitle": "Your farm details and account settings",
@@ -403,7 +409,13 @@
       "logoutAllTitle": "Sign out everywhere?",
       "logoutAllMessage": "This will end all active sessions on every device.",
       "logoutAllCancel": "Cancel",
-      "logoutAllConfirm": "Sign out"
+      "logoutAllConfirm": "Sign out",
+      "notSet": "Not set",
+      "errors": {
+        "name": "Please enter your name.",
+        "district": "Please enter your district.",
+        "state": "Please enter your state."
+      }
     },
     "tools": {
       "title": "Farm tools",

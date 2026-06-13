@@ -7,6 +7,7 @@ import {
   ErrorBanner,
   FormCard,
 } from '@/components/auth/auth-screen-layout';
+import { AuthRedirect } from '@/components/auth/auth-redirect';
 import { PhoneInput } from '@/components/ui/input';
 import { OtpHint, OtpInput, ResendLink } from '@/components/ui/otp-input';
 import { SlideButton } from '@/components/ui/slide-button';
@@ -18,11 +19,15 @@ import {
 } from '@/features/farmer/hooks/use-farmer-auth';
 import { useAppLocale } from '@/hooks/use-app-locale';
 import {
+  applyAuthCompletion,
+  deriveAuthCompletion,
+  getAuthRedirectHref,
+} from '@/lib/auth-routing';
+import {
   isValidIndianPhone,
   isValidOtp,
   normalizePhoneInput,
 } from '@/lib/validation';
-import { farmerService } from '@/services/farmer.service';
 import { useAuthFlowStore } from '@/stores/auth-flow.store';
 import { useAuthStore } from '@/stores/auth.store';
 
@@ -38,8 +43,6 @@ export default function FarmerSignInScreen() {
 
   const sendOtp = useSendOtp();
   const authenticateFarmer = useAuthenticateFarmer();
-  const setProfileCompleted = useAuthStore((s) => s.setProfileCompleted);
-  const setSignupStep = useAuthFlowStore((s) => s.setSignupStep);
 
   const [step, setStep] = useState<SignInStep>('phone');
   const [phoneNumber, setPhoneLocal] = useState('');
@@ -48,6 +51,7 @@ export default function FarmerSignInScreen() {
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
   const [slideResetKey, setSlideResetKey] = useState(0);
   const [otpResetKey, setOtpResetKey] = useState(0);
+  const [isPostAuthRouting, setIsPostAuthRouting] = useState(false);
 
   useEffect(() => {
     setSlideResetKey((key) => key + 1);
@@ -96,8 +100,8 @@ export default function FarmerSignInScreen() {
     return () => subscription.remove();
   }, [handleBack, step]);
 
-  if (isAuthenticated) {
-    return <Redirect href="/(tabs)" />;
+  if (isAuthenticated && !isPostAuthRouting && !authenticateFarmer.isPending) {
+    return <AuthRedirect />;
   }
 
   if (
@@ -164,28 +168,31 @@ export default function FarmerSignInScreen() {
     }
 
     try {
+      setIsPostAuthRouting(true);
       await authenticateFarmer.mutateAsync({
         phoneNumber: phoneNumber,
         otp,
       });
 
-      const { data } = await farmerService.getProfile();
-      const profile = data.data;
-      const isComplete = Boolean(profile.name && profile.district && profile.state);
-      setProfileCompleted(isComplete);
-
-      if (isComplete) {
-        setSignupStep('complete');
-        setProfileCompleted(true);
-        router.replace('/(tabs)' as Href);
-      } else {
-        setSignupStep('profile');
-        router.replace('/farmer/sign-up' as Href);
+      const user = useAuthStore.getState().user;
+      if (!user) {
+        return;
       }
+
+      const derived = await deriveAuthCompletion(
+        user,
+        useAuthFlowStore.getState().signupStep,
+      );
+      applyAuthCompletion(derived.profileCompleted, derived.signupStep);
+      router.replace(
+        getAuthRedirectHref(user, derived.profileCompleted, derived.signupStep),
+      );
     } catch (error) {
       setFormError(getMutationError(error, t('farmerSignIn.errors.otpInvalid')));
       resetOtpInput();
       bumpSlideReset();
+    } finally {
+      setIsPostAuthRouting(false);
     }
   }
 
