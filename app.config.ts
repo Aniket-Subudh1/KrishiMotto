@@ -33,8 +33,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   icon: APP_ICON,
   scheme: "krishimotto",
   userInterfaceStyle: "light",
-  // react-native-maps is still unstable on Android/Fabric in our Expo SDK 54 stack.
-  newArchEnabled: false,
+  newArchEnabled: true,
   backgroundColor: Palette.white,
   ios: {
     ...config.ios,
