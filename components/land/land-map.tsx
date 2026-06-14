@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { ActivityIndicator, Platform, StyleSheet, Text as RNText, View } from 'react-native';
 import type MapView from 'react-native-maps';
 import type {
@@ -22,6 +22,49 @@ type MapsModule = {
 };
 
 type MapPoint = LatLng & { id?: string };
+
+// On Android (New Architecture / Fabric), custom View children inside Marker crash.
+// Use pinColor-only markers on Android; keep numbered circle markers on iOS.
+function BoundaryMarker({
+  Marker,
+  coordinate,
+  index,
+  isFirst,
+}: {
+  Marker: typeof MarkerType;
+  coordinate: LatLng;
+  index: number;
+  isFirst: boolean;
+}) {
+  if (Platform.OS === 'android') {
+    return (
+      <Marker
+        coordinate={coordinate}
+        pinColor={isFirst ? Palette.saffron : Palette.indigo}
+        zIndex={1}
+        tracksViewChanges={false}
+      />
+    );
+  }
+
+  return (
+    <Marker
+      coordinate={coordinate}
+      anchor={{ x: 0.5, y: 0.5 }}
+      tracksViewChanges={false}
+      zIndex={1}
+    >
+      <View style={styles.markerWrap} collapsable={false}>
+        <View
+          style={[styles.vertexMarker, isFirst && styles.vertexMarkerFirst]}
+          collapsable={false}
+        >
+          <RNText style={styles.vertexLabel}>{index + 1}</RNText>
+        </View>
+      </View>
+    </Marker>
+  );
+}
 
 type LandMapProps = {
   mapRef: React.RefObject<MapView | null>;
@@ -92,33 +135,15 @@ function LandMapInner({
         />
       )}
 
-      {points.map((point, index) => {
-        const isFirst = index === 0;
-        const coordinate = mapCoordinates[index];
-
-        return (
-          <Marker
-            key={point.id ?? `corner-${index}`}
-            coordinate={coordinate}
-            anchor={Platform.OS === 'ios' ? { x: 0.5, y: 0.5 } : undefined}
-            pinColor={Platform.OS === 'android' ? (isFirst ? Palette.saffron : Palette.indigo) : undefined}
-            tracksViewChanges={Platform.OS === 'ios' ? false : undefined}
-            zIndex={1}
-            title={Platform.OS === 'android' ? `Point ${index + 1}` : undefined}
-          >
-            {Platform.OS === 'ios' ? (
-              <View style={styles.markerWrap} collapsable={false}>
-                <View
-                  style={[styles.vertexMarker, isFirst && styles.vertexMarkerFirst]}
-                  collapsable={false}
-                >
-                  <RNText style={styles.vertexLabel}>{index + 1}</RNText>
-                </View>
-              </View>
-            ) : null}
-          </Marker>
-        );
-      })}
+      {points.map((point, index) => (
+        <BoundaryMarker
+          key={point.id ?? `corner-${index}`}
+          Marker={Marker}
+          coordinate={mapCoordinates[index]}
+          index={index}
+          isFirst={index === 0}
+        />
+      ))}
     </MapView>
   );
 }
@@ -205,15 +230,6 @@ const styles = StyleSheet.create({
     borderColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.35,
-        shadowRadius: 4,
-      },
-      android: { elevation: 5 },
-    }),
   },
   vertexMarkerFirst: {
     backgroundColor: Palette.saffron,

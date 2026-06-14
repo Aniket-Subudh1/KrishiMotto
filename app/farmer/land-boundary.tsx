@@ -105,15 +105,21 @@ export default function LandBoundaryScreen() {
           setLocationReady(true);
           return;
         }
-        const loc = await Location.getCurrentPositionAsync({
-          accuracy: Location.Accuracy.Balanced,
-        });
-        setInitialRegion({
-          latitude: loc.coords.latitude,
-          longitude: loc.coords.longitude,
-          latitudeDelta: 0.003,
-          longitudeDelta: 0.003,
-        });
+        const timeout = new Promise<null>((resolve) =>
+          setTimeout(() => resolve(null), 8000),
+        );
+        const loc = await Promise.race([
+          Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }),
+          timeout,
+        ]);
+        if (loc) {
+          setInitialRegion({
+            latitude: loc.coords.latitude,
+            longitude: loc.coords.longitude,
+            latitudeDelta: 0.003,
+            longitudeDelta: 0.003,
+          });
+        }
       } catch {
         // fallback to India center already set
       } finally {
@@ -190,9 +196,14 @@ export default function LandBoundaryScreen() {
         setLocationDenied(true);
         return;
       }
-      const loc = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Balanced,
-      });
+      const timeout = new Promise<null>((resolve) =>
+        setTimeout(() => resolve(null), 8000),
+      );
+      const loc = await Promise.race([
+        Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }),
+        timeout,
+      ]);
+      if (!loc) return;
       mapRef.current?.animateToRegion(
         {
           latitude: loc.coords.latitude,

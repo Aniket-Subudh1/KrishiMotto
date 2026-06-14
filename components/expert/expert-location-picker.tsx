@@ -141,20 +141,31 @@ export function ExpertLocationPicker({
           return;
         }
 
-        const loc = await Location.getCurrentPositionAsync({
-          accuracy: Location.Accuracy.Balanced,
-        });
-        const region = {
-          latitude: loc.coords.latitude,
-          longitude: loc.coords.longitude,
-          latitudeDelta: 0.003,
-          longitudeDelta: 0.003,
-        };
-        setInitialRegion(region);
-        setSelectedLocation({
-          latitude: loc.coords.latitude,
-          longitude: loc.coords.longitude,
-        });
+        const timeout = new Promise<null>((resolve) =>
+          setTimeout(() => resolve(null), 8000),
+        );
+        const loc = await Promise.race([
+          Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }),
+          timeout,
+        ]);
+        if (loc) {
+          const region = {
+            latitude: loc.coords.latitude,
+            longitude: loc.coords.longitude,
+            latitudeDelta: 0.003,
+            longitudeDelta: 0.003,
+          };
+          setInitialRegion(region);
+          setSelectedLocation({
+            latitude: loc.coords.latitude,
+            longitude: loc.coords.longitude,
+          });
+        } else {
+          setSelectedLocation({
+            latitude: INDIA_CENTER.latitude,
+            longitude: INDIA_CENTER.longitude,
+          });
+        }
       } catch {
         setSelectedLocation({
           latitude: INDIA_CENTER.latitude,
@@ -178,9 +189,14 @@ export function ExpertLocationPicker({
       }
 
       setLocationDenied(false);
-      const loc = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Balanced,
-      });
+      const timeout = new Promise<null>((resolve) =>
+        setTimeout(() => resolve(null), 8000),
+      );
+      const loc = await Promise.race([
+        Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }),
+        timeout,
+      ]);
+      if (!loc) return;
       const region = {
         latitude: loc.coords.latitude,
         longitude: loc.coords.longitude,
