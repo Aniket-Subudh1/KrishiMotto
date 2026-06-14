@@ -14,13 +14,13 @@ const Palette = {
 } as const;
 
 const APP_ICON = "./assets/images/icon.png";
+const SPLASH_IMAGE = "./assets/images/splash-icon.png";
 const ANDROID_ADAPTIVE_ICON = {
   foregroundImage: APP_ICON,
   backgroundColor: Palette.paper,
 } as const;
 
 const IOS_BUILD_NUMBER = "1";
-const ANDROID_VERSION_CODE = 1;
 
 const API_URL = "https://krishiaadhar.gramtarang.org";
 
@@ -43,7 +43,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   android: {
     ...config.android,
     package: "com.krishimottto.app",
-    versionCode: ANDROID_VERSION_CODE,
     adaptiveIcon: ANDROID_ADAPTIVE_ICON,
     edgeToEdgeEnabled: true,
     predictiveBackGestureEnabled: false,
@@ -78,6 +77,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       "expo-splash-screen",
       {
         backgroundColor: Palette.white,
+        image: SPLASH_IMAGE,
+        imageWidth: 200,
+        resizeMode: "contain",
       },
     ],
   ],
