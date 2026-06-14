@@ -17,6 +17,11 @@ export type ExpertKycDoc = {
   documentUrl?: string;
 };
 
+export type ExpertLocation = {
+  longitude: number;
+  latitude: number;
+};
+
 export type ExpertProfile = {
   id: string;
   userId: string;
@@ -34,6 +39,7 @@ export type ExpertProfile = {
   canAcceptOrders: boolean;
   profilePicKey?: string;
   profilePicUrl?: string;
+  location?: ExpertLocation;
   createdAt: string;
   updatedAt: string;
 };
@@ -58,4 +64,17 @@ export type ExpertDocumentInput = {
 
 export type ExpertDocumentSubmitPayload = {
   documents: ExpertDocumentInput[];
+  longitude: number;
+  latitude: number;
 };
+
+export type ExpertKycStatusResponse =
+  | { applicable: false }
+  | {
+      applicable: true;
+      status: KycStatus;
+      approved: boolean;
+      canProceed: boolean;
+      canAcceptOrders: boolean;
+      verifiedBadge: boolean;
+    };

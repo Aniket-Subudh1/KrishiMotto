@@ -1,43 +1,38 @@
-import type { ConfigContext, ExpoConfig } from 'expo/config';
+import type { ConfigContext, ExpoConfig } from "expo/config";
 
-const APP_NAME = 'KrishiMotto';
-const APP_SLUG = 'KrishiMotto';
-const APP_VERSION = '1.0.0';
+const APP_NAME = "KrishiMotto";
+const APP_SLUG = "KrishiMotto";
+const APP_VERSION = "1.0.0";
 
-/** Tricolour-inspired palette */
 const Palette = {
-  saffron: '#F4A460',
-  indiaGreen: '#46962F',
-  indigo: '#1A365D',
-  marigold: '#E9AF43',
-  paper: '#F5F5F5',
-  white: '#FFFFFF',
+  saffron: "#F4A460",
+  indiaGreen: "#46962F",
+  indigo: "#1A365D",
+  marigold: "#E9AF43",
+  paper: "#F5F5F5",
+  white: "#FFFFFF",
 } as const;
 
-const APP_ICON = './assets/images/icon.png';
+const APP_ICON = "./assets/images/icon.png";
 const ANDROID_ADAPTIVE_ICON = {
-  foregroundImage: './assets/images/android-icon-foreground.png',
-  backgroundImage: './assets/images/android-icon-background.png',
-  monochromeImage: './assets/images/android-icon-monochrome.png',
+  foregroundImage: APP_ICON,
   backgroundColor: Palette.paper,
 } as const;
 
-const IOS_BUILD_NUMBER = '1';
+const IOS_BUILD_NUMBER = "1";
 const ANDROID_VERSION_CODE = 1;
 
-const BACKEND_HOST = process.env.EXPO_PUBLIC_API_HOST ?? 'localhost';
-const BACKEND_PORT = Number(process.env.EXPO_PUBLIC_API_PORT ?? '5000');
-const API_URL = `http://${BACKEND_HOST}:${BACKEND_PORT}`;
+const API_URL = `https://krishiaadhar.gramtarang.org`;
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: APP_NAME,
   slug: APP_SLUG,
   version: APP_VERSION,
-  orientation: 'portrait',
+  orientation: "portrait",
   icon: APP_ICON,
-  scheme: 'krishimotto',
-  userInterfaceStyle: 'light',
+  scheme: "krishimotto",
+  userInterfaceStyle: "light",
   newArchEnabled: true,
   backgroundColor: Palette.white,
   ios: {
@@ -47,43 +42,45 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   android: {
     ...config.android,
+    package: "com.krishimottto.app",
     versionCode: ANDROID_VERSION_CODE,
     adaptiveIcon: ANDROID_ADAPTIVE_ICON,
     edgeToEdgeEnabled: true,
     predictiveBackGestureEnabled: false,
-    softwareKeyboardLayoutMode: 'resize',
+    softwareKeyboardLayoutMode: "resize",
   },
   web: {
     ...config.web,
-    bundler: 'metro',
-    output: 'static',
-    favicon: './assets/images/favicon.png',
+    bundler: "metro",
+    output: "static",
+    favicon: APP_ICON,
   },
   plugins: [
-    'expo-router',
-    'expo-localization',
+    "expo-router",
+    "expo-localization",
     [
-      'expo-image-picker',
+      "expo-image-picker",
       {
-        photosPermission: 'KrishiMotto needs access to your photos to set a profile picture.',
+        photosPermission:
+          "KrishiMotto needs access to your photos to set a profile picture.",
       },
     ],
     [
-      'expo-location',
+      "expo-location",
       {
         locationWhenInUsePermission:
-          'KrishiMotto needs your location to centre the map on your field.',
+          "KrishiMotto needs your location to centre the map on your field.",
         locationAlwaysAndWhenInUsePermission:
-          'KrishiMotto needs your location to centre the map on your field.',
+          "KrishiMotto needs your location to centre the map on your field.",
       },
     ],
     [
-      'expo-splash-screen',
+      "expo-splash-screen",
       {
         backgroundColor: Palette.white,
-        image: './assets/images/logo.png',
+        image: "./assets/images/logo.png",
         imageWidth: 280,
-        resizeMode: 'contain',
+        resizeMode: "contain",
       },
     ],
   ],
@@ -93,8 +90,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   extra: {
     ...config.extra,
+    eas: {
+      projectId: "000b27c8-ab72-4bf2-83f4-62761d0232db",
+    },
     apiUrl: API_URL,
-    apiHost: BACKEND_HOST,
-    apiPort: BACKEND_PORT,
   },
 });

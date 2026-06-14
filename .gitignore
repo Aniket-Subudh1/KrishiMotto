@@ -9,7 +9,10 @@ Krishiaadhar-backend/
 dist/
 web-build/
 expo-env.d.ts
+.env*
+.env
 
+env/
 # Native
 .kotlin/
 *.orig.*

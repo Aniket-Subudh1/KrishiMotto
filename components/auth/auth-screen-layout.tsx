@@ -32,6 +32,7 @@ type AuthScreenLayoutProps = {
   totalSteps?: number;
   stepLabels?: string[];
   onBack?: () => void;
+  showBackButton?: boolean;
   children: React.ReactNode;
   footer?: React.ReactNode;
   footerHint?: string;
@@ -48,6 +49,7 @@ export function AuthScreenLayout({
   totalSteps = 3,
   stepLabels,
   onBack,
+  showBackButton = true,
   children,
   footer,
   footerHint,
@@ -167,13 +169,17 @@ export function AuthScreenLayout({
           <View style={{ height: insets.top }} />
 
           <View className="flex-row items-center justify-between px-5 py-2">
-            <Pressable
-              onPress={onBack ?? (() => router.back())}
-              className="h-10 w-10 items-center justify-center rounded-full bg-surface"
-              accessibilityRole="button"
-            >
-              <Ionicons name="chevron-back" size={20} color={Palette.indigo} />
-            </Pressable>
+            {showBackButton ? (
+              <Pressable
+                onPress={onBack ?? (() => router.back())}
+                className="h-10 w-10 items-center justify-center rounded-full bg-surface"
+                accessibilityRole="button"
+              >
+                <Ionicons name="chevron-back" size={20} color={Palette.indigo} />
+              </Pressable>
+            ) : (
+              <View className="h-10 w-10" />
+            )}
             <LanguageSelector />
           </View>
 

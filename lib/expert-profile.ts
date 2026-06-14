@@ -19,10 +19,23 @@ export function isExpertProfileComplete(profile: ExpertProfile): boolean {
   );
 }
 
-/** KYC docs uploaded and awaiting or passed verification (rejected requires resubmission). */
+/** KYC docs and location submitted — awaiting or passed admin review. */
 export function isExpertKycSubmitted(profile: ExpertProfile): boolean {
   return (
     profile.kycDocs.length > 0 &&
+    Boolean(profile.location) &&
     (profile.kycStatus === 'PENDING' || profile.kycStatus === 'VERIFIED')
   );
+}
+
+export function isExpertAwaitingVerification(profile: ExpertProfile): boolean {
+  return profile.kycStatus === 'PENDING' && isExpertKycSubmitted(profile);
+}
+
+export function isExpertVerified(profile: ExpertProfile): boolean {
+  return profile.kycStatus === 'VERIFIED' && profile.verifiedBadge;
+}
+
+export function isExpertKycRejected(profile: ExpertProfile): boolean {
+  return profile.kycStatus === 'REJECTED';
 }

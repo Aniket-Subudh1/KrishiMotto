@@ -27,6 +27,7 @@ export default function GetStartedScreen() {
   const markEnteredFromGetStarted = useAuthFlowStore(
     (s) => s.markEnteredFromGetStarted,
   );
+  const setAuthIntent = useAuthFlowStore((s) => s.setAuthIntent);
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
 
@@ -50,7 +51,8 @@ export default function GetStartedScreen() {
 
   function handleSignIn() {
     markEnteredFromGetStarted();
-    router.push("/select-role?intent=sign-in" as Href);
+    setAuthIntent('sign-in');
+    router.push('/sign-in' as Href);
   }
 
   return (

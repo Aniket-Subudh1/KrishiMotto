@@ -1,8 +1,11 @@
 import type { Href } from 'expo-router';
 
 import {
+  isExpertAwaitingVerification,
+  isExpertKycRejected,
   isExpertKycSubmitted,
   isExpertProfileComplete,
+  isExpertVerified,
   isFarmerProfileComplete,
 } from '@/lib/expert-profile';
 import { expertService } from '@/services/expert.service';
@@ -32,7 +35,16 @@ export function getAuthRedirectHref(
   }
 
   if (user.role === 'EXPERT') {
-    if (signupStep === 'kyc' || !profileCompleted) {
+    if (signupStep === 'pending') {
+      return '/expert/pending' as Href;
+    }
+
+    if (
+      signupStep === 'kyc' ||
+      signupStep === 'location' ||
+      signupStep === 'profile' ||
+      !profileCompleted
+    ) {
       return '/expert/sign-up' as Href;
     }
   }
@@ -71,21 +83,40 @@ export async function deriveAuthCompletion(
       const { data } = await expertService.getProfile();
       const profile = data.data;
       const profileComplete = isExpertProfileComplete(profile);
-      const kycSubmitted = isExpertKycSubmitted(profile);
 
       if (!profileComplete) {
         return { profileCompleted: false, signupStep: 'profile' };
       }
 
-      if (!kycSubmitted) {
+      if (isExpertVerified(profile)) {
+        return { profileCompleted: true, signupStep: 'complete' };
+      }
+
+      if (isExpertAwaitingVerification(profile)) {
+        return { profileCompleted: false, signupStep: 'pending' };
+      }
+
+      if (isExpertKycRejected(profile)) {
         return { profileCompleted: false, signupStep: 'kyc' };
       }
 
-      return { profileCompleted: true, signupStep: 'complete' };
+      if (!isExpertKycSubmitted(profile)) {
+        const step =
+          currentSignupStep === 'location' ? 'location' : 'kyc';
+        return { profileCompleted: false, signupStep: step };
+      }
+
+      return { profileCompleted: false, signupStep: 'kyc' };
     } catch {
+      const fallbackStep =
+        currentSignupStep === 'location'
+          ? 'location'
+          : currentSignupStep === 'kyc'
+            ? 'kyc'
+            : 'profile';
       return {
         profileCompleted: false,
-        signupStep: currentSignupStep === 'kyc' ? 'kyc' : 'profile',
+        signupStep: fallbackStep,
       };
     }
   }

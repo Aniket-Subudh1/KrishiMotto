@@ -7,7 +7,15 @@ import type { LandType } from '@/types/farmer';
 
 export type AuthIntent = 'register' | 'sign-in';
 
-export type SignupStep = 'details' | 'otp' | 'profile' | 'land' | 'kyc' | 'complete';
+export type SignupStep =
+  | 'details'
+  | 'otp'
+  | 'profile'
+  | 'land'
+  | 'kyc'
+  | 'location'
+  | 'pending'
+  | 'complete';
 
 /** @deprecated Use SignupStep */
 export type FarmerSignupStep = SignupStep;
@@ -22,6 +30,7 @@ type AuthFlowState = {
   landType: LandType;
   storedEmail: string;
   markEnteredFromGetStarted: () => void;
+  setAuthIntent: (intent: AuthIntent) => void;
   setAuthFlow: (intent: AuthIntent, role: SelectableRole) => void;
   setPhoneNumber: (phoneNumber: string) => void;
   setUsername: (username: string) => void;
@@ -44,6 +53,8 @@ export const useAuthFlowStore = create<AuthFlowState>()(
       storedEmail: '',
 
       markEnteredFromGetStarted: () => set({ hasEnteredFromGetStarted: true }),
+
+      setAuthIntent: (intent) => set({ intent }),
 
       setAuthFlow: (intent, role) => set({ intent, selectedRole: role }),
 

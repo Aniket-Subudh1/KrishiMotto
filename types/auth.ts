@@ -33,6 +33,7 @@ export type SendOtpPayload = {
 
 export type SendOtpResponse = {
   sent: boolean;
+  accountRole?: 'FARMER' | 'EXPERT';
 };
 
 export type FarmerAuthenticatePayload = {

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Alert, BackHandler, Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
+import { ExpertLocationPicker } from '@/components/expert/expert-location-picker';
 import {
   AuthScreenLayout,
   ErrorBanner,
@@ -42,13 +43,20 @@ import { useAuthFlowStore } from '@/stores/auth-flow.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { KYC_DOCUMENT_TYPES, type KycDocumentType } from '@/types/expert';
 
-type SignupStep = 'details' | 'otp' | 'profile' | 'kyc';
+type SignupStep = 'details' | 'otp' | 'profile' | 'kyc' | 'location';
 
 const STEP_INDEX: Record<SignupStep, number> = {
   details: 1,
   otp: 2,
   profile: 3,
   kyc: 4,
+  location: 5,
+};
+
+type UploadedDocument = {
+  type: KycDocumentType;
+  assetKey: string;
+  label?: string;
 };
 
 type PendingDocument = {
@@ -72,7 +80,6 @@ export default function ExpertSignUpScreen() {
   const profileCompleted = useAuthStore((s) => s.profileCompleted);
   const clearAuth = useAuthStore((s) => s.clearAuth);
   const clearAuthFlow = useAuthFlowStore((s) => s.clearAuthFlow);
-  const setProfileCompleted = useAuthStore((s) => s.setProfileCompleted);
   const intent = useAuthFlowStore((s) => s.intent);
   const selectedRole = useAuthFlowStore((s) => s.selectedRole);
   const hasEnteredFromGetStarted = useAuthFlowStore((s) => s.hasEnteredFromGetStarted);
@@ -92,10 +99,18 @@ export default function ExpertSignUpScreen() {
   const submitDocuments = useSubmitExpertDocuments();
 
   const resumeProfile =
-    isAuthenticated && user?.role === 'EXPERT' && !profileCompleted && signupStep !== 'kyc';
-  const resumeKyc = isAuthenticated && user?.role === 'EXPERT' && signupStep === 'kyc';
+    isAuthenticated &&
+    user?.role === 'EXPERT' &&
+    !profileCompleted &&
+    signupStep !== 'kyc' &&
+    signupStep !== 'location';
+  const resumeKyc =
+    isAuthenticated && user?.role === 'EXPERT' && signupStep === 'kyc';
+  const resumeLocation =
+    isAuthenticated && user?.role === 'EXPERT' && signupStep === 'location';
 
   const [step, setStep] = useState<SignupStep>(() => {
+    if (resumeLocation) return 'location';
     if (resumeKyc) return 'kyc';
     if (resumeProfile) return 'profile';
     if (isAuthenticated && user?.role === 'EXPERT') return 'profile';
@@ -116,6 +131,7 @@ export default function ExpertSignUpScreen() {
   const [servicePincodesInput, setServicePincodesInput] = useState('');
   const [profilePhotoUri, setProfilePhotoUri] = useState<string | null>(null);
   const [pendingDocuments, setPendingDocuments] = useState<Partial<Record<KycDocumentType, PendingDocument>>>({});
+  const [uploadedDocuments, setUploadedDocuments] = useState<UploadedDocument[]>([]);
   const [formError, setFormError] = useState<string | null>(null);
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
   const [slideResetKey, setSlideResetKey] = useState(0);
@@ -168,7 +184,17 @@ export default function ExpertSignUpScreen() {
       showBackConfirmation(t('expertSignUp.backFromKycMessage'), () => {
         setFormError(null);
         setInfoMessage(null);
+        setUploadedDocuments([]);
         setStep('profile');
+      });
+      return;
+    }
+
+    if (step === 'location') {
+      showBackConfirmation(t('expertSignUp.backFromLocationMessage'), () => {
+        setFormError(null);
+        setInfoMessage(null);
+        setStep('kyc');
       });
       return;
     }
@@ -193,9 +219,14 @@ export default function ExpertSignUpScreen() {
     return <AuthRedirect />;
   }
 
+  if (isAuthenticated && signupStep === 'pending') {
+    return <Redirect href={'/expert/pending' as Href} />;
+  }
+
   if (
     !resumeProfile &&
     !resumeKyc &&
+    !resumeLocation &&
     (!hasEnteredFromGetStarted || intent !== 'register' || selectedRole !== 'expert')
   ) {
     return <Redirect href={'/get-started' as Href} />;
@@ -213,6 +244,7 @@ export default function ExpertSignUpScreen() {
     t('expertSignUp.stepVerify'),
     t('expertSignUp.stepProfile'),
     t('expertSignUp.stepKyc'),
+    t('expertSignUp.stepLocation'),
   ];
 
   function bumpSlideReset() {
@@ -495,14 +527,37 @@ export default function ExpertSignUpScreen() {
         }),
       );
 
-      await submitDocuments.mutateAsync({ documents: uploaded });
-
-      setSignupStep('complete');
-      setProfileCompleted(true);
-      router.replace('/(tabs)' as Href);
+      setUploadedDocuments(uploaded);
+      setSignupStep('location');
+      setStep('location');
     } catch (error) {
       setFormError(getMutationError(error, t('expertSignUp.errors.generic')));
       bumpSlideReset();
+    }
+  }
+
+  async function handleLocationSubmit(confirmedLatitude: number, confirmedLongitude: number) {
+    setFormError(null);
+    setInfoMessage(null);
+
+    if (uploadedDocuments.length === 0) {
+      setFormError(t('expertSignUp.errors.documentsRequired'));
+      setSignupStep('kyc');
+      setStep('kyc');
+      return;
+    }
+
+    try {
+      await submitDocuments.mutateAsync({
+        documents: uploadedDocuments,
+        latitude: confirmedLatitude,
+        longitude: confirmedLongitude,
+      });
+
+      setSignupStep('pending');
+      router.replace('/expert/pending' as Href);
+    } catch (error) {
+      setFormError(getMutationError(error, t('expertSignUp.errors.generic')));
     }
   }
 
@@ -510,7 +565,7 @@ export default function ExpertSignUpScreen() {
     return (
       <AuthScreenLayout
         currentStep={STEP_INDEX.details}
-        totalSteps={4}
+        totalSteps={5}
         stepLabels={stepLabels}
         title={t('expertSignUp.detailsTitle')}
         subtitle={t('expertSignUp.detailsSubtitle')}
@@ -573,7 +628,7 @@ export default function ExpertSignUpScreen() {
     return (
       <AuthScreenLayout
         currentStep={STEP_INDEX.otp}
-        totalSteps={4}
+        totalSteps={5}
         stepLabels={stepLabels}
         title={t('expertSignUp.otpTitle')}
         subtitle={t('expertSignUp.otpSubtitle')}
@@ -622,7 +677,7 @@ export default function ExpertSignUpScreen() {
     return (
       <AuthScreenLayout
         currentStep={STEP_INDEX.profile}
-        totalSteps={4}
+        totalSteps={5}
         stepLabels={stepLabels}
         title={t('expertSignUp.profileTitle')}
         subtitle={t('expertSignUp.profileSubtitle')}
@@ -755,68 +810,89 @@ export default function ExpertSignUpScreen() {
     );
   }
 
-  return (
-    <AuthScreenLayout
-      currentStep={STEP_INDEX.kyc}
-      totalSteps={4}
-      stepLabels={stepLabels}
-      title={t('expertSignUp.kycTitle')}
-      subtitle={t('expertSignUp.kycSubtitle')}
-      onBack={handleBack}
-      footer={
-        <SlideButton
-          label={t('expertSignUp.submitKyc')}
-          hint={t('expertSignUp.slideHint')}
-          loading={isBusy}
-          resetKey={slideResetKey}
-          onComplete={handleKycSubmit}
-        />
-      }
-      footerHint={t('expertSignUp.kycFooterHint')}
-    >
-      <FormCard title={t('expertSignUp.kycSection')}>
-        {KYC_DOCUMENT_TYPES.map((type) => {
-          const uploaded = pendingDocuments[type];
-          const isRequired = type === 'ID_CERTIFICATE';
+  if (step === 'kyc') {
+    return (
+      <AuthScreenLayout
+        currentStep={STEP_INDEX.kyc}
+        totalSteps={5}
+        stepLabels={stepLabels}
+        title={t('expertSignUp.kycTitle')}
+        subtitle={t('expertSignUp.kycSubtitle')}
+        onBack={handleBack}
+        footer={
+          <SlideButton
+            label={t('expertSignUp.continueToLocation')}
+            hint={t('expertSignUp.slideHint')}
+            loading={isBusy}
+            resetKey={slideResetKey}
+            onComplete={handleKycSubmit}
+          />
+        }
+        footerHint={t('expertSignUp.kycFooterHint')}
+      >
+        <FormCard title={t('expertSignUp.kycSection')}>
+          {KYC_DOCUMENT_TYPES.map((type) => {
+            const uploaded = pendingDocuments[type];
+            const isRequired = type === 'ID_CERTIFICATE';
 
-          return (
-            <Pressable
-              key={type}
-              onPress={() => pickKycDocument(type)}
-              className="flex-row items-center gap-3 rounded-xl border border-border bg-background px-3.5 py-3.5"
-            >
-              <View
-                className="h-10 w-10 items-center justify-center rounded-full"
-                style={{ backgroundColor: 'rgba(244, 164, 96, 0.16)' }}
+            return (
+              <Pressable
+                key={type}
+                onPress={() => pickKycDocument(type)}
+                className="flex-row items-center gap-3 rounded-xl border border-border bg-background px-3.5 py-3.5"
               >
-                <Ionicons
-                  name={uploaded ? 'checkmark-circle' : 'document-outline'}
-                  size={22}
-                  color={uploaded ? Palette.indiaGreen : Palette.saffron}
-                />
-              </View>
-              <View className="min-w-0 flex-1">
-                <Text className="text-[14px] font-semibold text-indigo">
-                  {t(`expertSignUp.kycDocs.${KYC_DOC_LABELS[type]}` as 'expertSignUp.kycDocs.idCertificate')}
-                  {isRequired ? ' *' : ''}
-                </Text>
-                <Text className="mt-0.5 text-[12px] text-muted">
-                  {uploaded
-                    ? t('expertSignUp.kycUploaded')
-                    : t('expertSignUp.kycTapToUpload')}
-                </Text>
-              </View>
-              <Ionicons name="cloud-upload-outline" size={20} color={Palette.saffron} />
-            </Pressable>
-          );
-        })}
-      </FormCard>
+                <View
+                  className="h-10 w-10 items-center justify-center rounded-full"
+                  style={{ backgroundColor: 'rgba(244, 164, 96, 0.16)' }}
+                >
+                  <Ionicons
+                    name={uploaded ? 'checkmark-circle' : 'document-outline'}
+                    size={22}
+                    color={uploaded ? Palette.indiaGreen : Palette.saffron}
+                  />
+                </View>
+                <View className="min-w-0 flex-1">
+                  <Text className="text-[14px] font-semibold text-indigo">
+                    {t(`expertSignUp.kycDocs.${KYC_DOC_LABELS[type]}` as 'expertSignUp.kycDocs.idCertificate')}
+                    {isRequired ? ' *' : ''}
+                  </Text>
+                  <Text className="mt-0.5 text-[12px] text-muted">
+                    {uploaded
+                      ? t('expertSignUp.kycUploaded')
+                      : t('expertSignUp.kycTapToUpload')}
+                  </Text>
+                </View>
+                <Ionicons name="cloud-upload-outline" size={20} color={Palette.saffron} />
+              </Pressable>
+            );
+          })}
+        </FormCard>
 
-      {formError ? (
-        <View className="mt-4">
-          <ErrorBanner message={formError} />
-        </View>
-      ) : null}
-    </AuthScreenLayout>
+        {formError ? (
+          <View className="mt-4">
+            <ErrorBanner message={formError} />
+          </View>
+        ) : null}
+      </AuthScreenLayout>
+    );
+  }
+
+  return (
+    <ExpertLocationPicker
+      stepLabel={t('expertSignUp.stepLocation')}
+      title={t('expertSignUp.locationTitle')}
+      subtitle={t('expertSignUp.locationSubtitle')}
+      instructionTitle={t('expertSignUp.locationInstructionTitle')}
+      instructionBody={t('expertSignUp.locationInstructionBody')}
+      confirmLabel={t('expertSignUp.locationConfirm')}
+      coordsLabel={t('expertSignUp.locationCoords')}
+      locationDeniedLabel={t('expertSignUp.locationDenied')}
+      mapsUnavailableLabel={t('expertSignUp.mapsUnavailable')}
+      loadingMapLabel={t('expertSignUp.loadingMap')}
+      onBack={handleBack}
+      onConfirm={handleLocationSubmit}
+      isSubmitting={isBusy}
+      error={formError}
+    />
   );
 }

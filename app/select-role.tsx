@@ -45,6 +45,10 @@ export default function SelectRoleScreen() {
     return <Redirect href={"/get-started" as Href} />;
   }
 
+  if (intent === "sign-in") {
+    return <Redirect href={"/sign-in" as Href} />;
+  }
+
   const isRegister = intent === "register";
 
   function handleContinue() {

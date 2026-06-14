@@ -16,6 +16,7 @@ import type {
 
 export const EXPERT_PROFILE_KEYS = {
   profile: ['expert', 'profile'] as const,
+  kycStatus: ['expert', 'kyc-status'] as const,
 };
 
 export { useSendOtp };
@@ -54,6 +55,18 @@ export function useExpertProfile(enabled = true) {
   });
 }
 
+export function useExpertKycStatus(enabled = true, refetchInterval?: number) {
+  return useQuery({
+    queryKey: EXPERT_PROFILE_KEYS.kycStatus,
+    queryFn: async () => {
+      const { data } = await expertService.getKycStatus();
+      return data.data;
+    },
+    enabled,
+    refetchInterval,
+  });
+}
+
 export function useUpdateExpertProfile() {
   const queryClient = useQueryClient();
 
@@ -78,6 +91,7 @@ export function useSubmitExpertDocuments() {
     },
     onSuccess: (profile) => {
       queryClient.setQueryData(EXPERT_PROFILE_KEYS.profile, profile);
+      queryClient.invalidateQueries({ queryKey: EXPERT_PROFILE_KEYS.kycStatus });
     },
   });
 }
