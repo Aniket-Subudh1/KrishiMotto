@@ -1,13 +1,15 @@
-import Constants from 'expo-constants';
+import Constants from "expo-constants";
+
+const DEFAULT_API_URL = "https://krishiaadhar.gramtarang.org";
 
 type AppExtra = {
   apiUrl?: string;
-  apiHost?: string;
-  apiPort?: number;
 };
+
+function normalizeApiUrl(url: string): string {
+  return url.replace(/\/+$/, "");
+}
 
 const extra = (Constants.expoConfig?.extra ?? {}) as AppExtra;
 
-export const API_URL = extra.apiUrl ?? 'http://localhost:5000';
-export const API_HOST = extra.apiHost ?? 'localhost';
-export const API_PORT = extra.apiPort ?? 5000;
+export const API_URL = normalizeApiUrl(extra.apiUrl ?? DEFAULT_API_URL);

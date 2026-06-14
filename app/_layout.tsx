@@ -11,6 +11,7 @@ import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import Animated, { FadeOut } from 'react-native-reanimated';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AppSplash, SPLASH_DURATION_MS } from '@/components/app-splash';
 import { FontLoadMap } from '@/constants/fonts';
@@ -24,35 +25,21 @@ SplashScreen.preventAutoHideAsync().catch(() => {
 });
 
 export default function RootLayout() {
+  'use no memo';
   const [fontsLoaded, fontError] = useFonts(FontLoadMap);
   const [splashDone, setSplashDone] = useState(false);
 
   useEffect(() => {
-    let cancelled = false;
-
-    async function prepare() {
-      if (!fontsLoaded && !fontError) {
-        return;
-      }
-
-      try {
-        await SplashScreen.hideAsync();
-      } catch {
-        // Native splash is unavailable in Expo Go.
-      }
-
-      await new Promise((resolve) => setTimeout(resolve, SPLASH_DURATION_MS));
-
-      if (!cancelled) {
-        setSplashDone(true);
-      }
+    if (!fontsLoaded && !fontError) {
+      return;
     }
 
-    prepare();
+    SplashScreen.hideAsync().catch(() => {
+      // Native splash is unavailable in Expo Go.
+    });
 
-    return () => {
-      cancelled = true;
-    };
+    const timer = setTimeout(() => setSplashDone(true), SPLASH_DURATION_MS);
+    return () => clearTimeout(timer);
   }, [fontsLoaded, fontError]);
 
   if (!fontsLoaded && !fontError) {
@@ -65,47 +52,49 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <QueryClientProvider client={queryClient}>
-        <AuthSessionProvider>
-          <I18nProvider>
-          <View className="flex-1 bg-background font-sans">
-          <ThemeProvider value={NavigationTheme}>
-            <Stack
-              screenOptions={{
-                contentStyle: { backgroundColor: Colors.background },
-                headerTitleStyle: {
-                  fontFamily: Fonts.sansSemibold,
-                  fontWeight: '600',
-                },
-              }}
-            >
-              <Stack.Screen name="index" options={{ headerShown: false }} />
-              <Stack.Screen name="get-started" options={{ headerShown: false }} />
-              <Stack.Screen name="select-role" options={{ headerShown: false }} />
-              <Stack.Screen name="sign-in" options={{ headerShown: false }} />
-              <Stack.Screen name="farmer" options={{ headerShown: false }} />
-              <Stack.Screen name="expert" options={{ headerShown: false }} />
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              <Stack.Screen
-                name="modal"
-                options={{ presentation: 'modal', title: 'Modal' }}
-              />
-            </Stack>
-            <StatusBar style="dark" />
-          </ThemeProvider>
+      <SafeAreaProvider>
+        <QueryClientProvider client={queryClient}>
+          <AuthSessionProvider>
+            <I18nProvider>
+              <View className="flex-1 bg-background font-sans">
+                <ThemeProvider value={NavigationTheme}>
+                  <Stack
+                    screenOptions={{
+                      contentStyle: { backgroundColor: Colors.background },
+                      headerTitleStyle: {
+                        fontFamily: Fonts.sansSemibold,
+                        fontWeight: '600',
+                      },
+                    }}
+                  >
+                    <Stack.Screen name="index" options={{ headerShown: false }} />
+                    <Stack.Screen name="get-started" options={{ headerShown: false }} />
+                    <Stack.Screen name="select-role" options={{ headerShown: false }} />
+                    <Stack.Screen name="sign-in" options={{ headerShown: false }} />
+                    <Stack.Screen name="farmer" options={{ headerShown: false }} />
+                    <Stack.Screen name="expert" options={{ headerShown: false }} />
+                    <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                    <Stack.Screen
+                      name="modal"
+                      options={{ presentation: 'modal', title: 'Modal' }}
+                    />
+                  </Stack>
+                  <StatusBar style="dark" />
+                </ThemeProvider>
 
-          {!splashDone && (
-            <Animated.View
-              exiting={FadeOut.duration(500)}
-              className="absolute inset-0 z-100"
-            >
-              <AppSplash visible />
-            </Animated.View>
-          )}
-        </View>
-        </I18nProvider>
-        </AuthSessionProvider>
-      </QueryClientProvider>
+                {!splashDone && (
+                  <Animated.View
+                    exiting={FadeOut.duration(500)}
+                    className="absolute inset-0 z-100"
+                  >
+                    <AppSplash visible />
+                  </Animated.View>
+                )}
+              </View>
+            </I18nProvider>
+          </AuthSessionProvider>
+        </QueryClientProvider>
+      </SafeAreaProvider>
     </GestureHandlerRootView>
   );
 }

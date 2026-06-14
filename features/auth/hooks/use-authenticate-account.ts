@@ -1,9 +1,9 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation } from "@tanstack/react-query";
 
-import type { SelectableRole } from '@/constants/roles';
-import { authService } from '@/services/auth.service';
-import { useAuthStore } from '@/stores/auth.store';
-import type { FarmerAuthenticatePayload } from '@/types/auth';
+import type { SelectableRole } from "@/constants/roles";
+import { authService } from "@/services/auth.service";
+import { useAuthStore } from "@/stores/auth.store";
+import type { FarmerAuthenticatePayload } from "@/types/auth";
 
 type AuthenticateAccountPayload = FarmerAuthenticatePayload & {
   role: SelectableRole;
@@ -15,7 +15,7 @@ export function useAuthenticateAccount() {
   return useMutation({
     mutationFn: async ({ role, ...payload }: AuthenticateAccountPayload) => {
       const authenticate =
-        role === 'farmer'
+        role === "farmer"
           ? authService.authenticateFarmer
           : authService.authenticateExpert;
       const { data } = await authenticate(payload);

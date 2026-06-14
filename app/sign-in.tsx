@@ -1,53 +1,55 @@
-import { Redirect, router, type Href } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
-import { Alert, BackHandler, View } from 'react-native';
+import { Redirect, router, type Href } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
+import { Alert, BackHandler, View } from "react-native";
 
+import { AuthRedirect } from "@/components/auth/auth-redirect";
 import {
-  AuthScreenLayout,
-  ErrorBanner,
-  FormCard,
-} from '@/components/auth/auth-screen-layout';
-import { AuthRedirect } from '@/components/auth/auth-redirect';
-import { PhoneInput } from '@/components/ui/input';
-import { OtpHint, OtpInput, ResendLink } from '@/components/ui/otp-input';
-import { SlideButton } from '@/components/ui/slide-button';
-import { Text } from '@/components/ui/text';
-import { useAuthenticateAccount } from '@/features/auth/hooks/use-authenticate-account';
-import { useSendOtp } from '@/features/auth/hooks/use-send-otp';
-import type { SelectableRole } from '@/constants/roles';
-import { useAppLocale } from '@/hooks/use-app-locale';
+    AuthScreenLayout,
+    ErrorBanner,
+    FormCard,
+} from "@/components/auth/auth-screen-layout";
+import { PhoneInput } from "@/components/ui/input";
+import { OtpHint, OtpInput, ResendLink } from "@/components/ui/otp-input";
+import { SlideButton } from "@/components/ui/slide-button";
+import { Text } from "@/components/ui/text";
+import type { SelectableRole } from "@/constants/roles";
+import { useAuthenticateAccount } from "@/features/auth/hooks/use-authenticate-account";
+import { useSendOtp } from "@/features/auth/hooks/use-send-otp";
+import { useAppLocale } from "@/hooks/use-app-locale";
+import { getApiErrorMessage, isNotFoundError } from "@/lib/api-error";
 import {
-  applyAuthCompletion,
-  deriveAuthCompletion,
-  getAuthRedirectHref,
-} from '@/lib/auth-routing';
-import { getApiErrorMessage } from '@/lib/api-error';
-import { toSelectableRole } from '@/lib/roles';
+    applyAuthCompletion,
+    deriveAuthCompletion,
+    getAuthRedirectHref,
+} from "@/lib/auth-routing";
+import { toSelectableRole } from "@/lib/roles";
 import {
-  isValidIndianPhone,
-  isValidOtp,
-  normalizePhoneInput,
-} from '@/lib/validation';
-import { useAuthFlowStore } from '@/stores/auth-flow.store';
-import { useAuthStore } from '@/stores/auth.store';
+    isValidIndianPhone,
+    isValidOtp,
+    normalizePhoneInput,
+} from "@/lib/validation";
+import { useAuthFlowStore } from "@/stores/auth-flow.store";
+import { useAuthStore } from "@/stores/auth.store";
 
-type SignInStep = 'phone' | 'otp';
+type SignInStep = "phone" | "otp";
 
 export default function SignInScreen() {
   const { t } = useAppLocale();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const intent = useAuthFlowStore((s) => s.intent);
-  const hasEnteredFromGetStarted = useAuthFlowStore((s) => s.hasEnteredFromGetStarted);
+  const hasEnteredFromGetStarted = useAuthFlowStore(
+    (s) => s.hasEnteredFromGetStarted,
+  );
   const setAuthFlow = useAuthFlowStore((s) => s.setAuthFlow);
   const setPhoneNumber = useAuthFlowStore((s) => s.setPhoneNumber);
 
   const sendOtp = useSendOtp();
   const authenticateAccount = useAuthenticateAccount();
 
-  const [step, setStep] = useState<SignInStep>('phone');
+  const [step, setStep] = useState<SignInStep>("phone");
   const [resolvedRole, setResolvedRole] = useState<SelectableRole | null>(null);
-  const [phoneNumber, setPhoneLocal] = useState('');
-  const [otp, setOtp] = useState('');
+  const [phoneNumber, setPhoneLocal] = useState("");
+  const [otp, setOtp] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
   const [slideResetKey, setSlideResetKey] = useState(0);
@@ -62,11 +64,11 @@ export default function SignInScreen() {
 
   const showBackConfirmation = useCallback(
     (message: string, onConfirm: () => void) => {
-      Alert.alert(t('signIn.backWarningTitle'), message, [
-        { text: t('signIn.backWarningCancel'), style: 'cancel' },
+      Alert.alert(t("signIn.backWarningTitle"), message, [
+        { text: t("signIn.backWarningCancel"), style: "cancel" },
         {
-          text: t('signIn.backWarningConfirm'),
-          style: 'destructive',
+          text: t("signIn.backWarningConfirm"),
+          style: "destructive",
           onPress: onConfirm,
         },
       ]);
@@ -75,12 +77,12 @@ export default function SignInScreen() {
   );
 
   const handleBack = useCallback(() => {
-    if (step === 'otp') {
-      showBackConfirmation(t('signIn.backFromOtpMessage'), () => {
-        setOtp('');
+    if (step === "otp") {
+      showBackConfirmation(t("signIn.backFromOtpMessage"), () => {
+        setOtp("");
         setFormError(null);
         setInfoMessage(null);
-        setStep('phone');
+        setStep("phone");
       });
       return;
     }
@@ -89,14 +91,17 @@ export default function SignInScreen() {
   }, [showBackConfirmation, step, t]);
 
   useEffect(() => {
-    if (step === 'phone') {
+    if (step === "phone") {
       return;
     }
 
-    const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
-      handleBack();
-      return true;
-    });
+    const subscription = BackHandler.addEventListener(
+      "hardwareBackPress",
+      () => {
+        handleBack();
+        return true;
+      },
+    );
 
     return () => subscription.remove();
   }, [handleBack, step]);
@@ -105,8 +110,8 @@ export default function SignInScreen() {
     return <AuthRedirect />;
   }
 
-  if (!hasEnteredFromGetStarted || intent !== 'sign-in') {
-    return <Redirect href={'/get-started' as Href} />;
+  if (!hasEnteredFromGetStarted || intent !== "sign-in") {
+    return <Redirect href={"/get-started" as Href} />;
   }
 
   const isBusy = sendOtp.isPending || authenticateAccount.isPending;
@@ -116,7 +121,7 @@ export default function SignInScreen() {
   }
 
   function resetOtpInput() {
-    setOtp('');
+    setOtp("");
     setOtpResetKey((key) => key + 1);
   }
 
@@ -133,31 +138,36 @@ export default function SignInScreen() {
     const normalizedPhone = normalizePhoneInput(phoneNumber);
 
     if (!isValidIndianPhone(normalizedPhone)) {
-      setFormError(t('signIn.errors.phone'));
+      setFormError(t("signIn.errors.phone"));
       bumpSlideReset();
       return;
     }
 
     try {
-      const response = await sendOtp.mutateAsync({ phoneNumber: normalizedPhone });
+      const response = await sendOtp.mutateAsync({
+        phoneNumber: normalizedPhone,
+      });
       const role = response.accountRole
         ? toSelectableRole(response.accountRole)
         : null;
 
       if (!role) {
-        setFormError(t('signIn.errors.notRegistered'));
+        setFormError(t("signIn.errors.notRegistered"));
         bumpSlideReset();
         return;
       }
 
       setResolvedRole(role);
-      setAuthFlow('sign-in', role);
+      setAuthFlow("sign-in", role);
       setPhoneNumber(normalizedPhone);
       setPhoneLocal(normalizedPhone);
       resetOtpInput();
-      setStep('otp');
+      setStep("otp");
     } catch (error) {
-      setFormError(getApiErrorMessage(error, t('signIn.errors.generic')));
+      const fallback = isNotFoundError(error)
+        ? t("signIn.errors.notRegistered")
+        : t("signIn.errors.generic");
+      setFormError(getApiErrorMessage(error, fallback));
       bumpSlideReset();
     }
   }
@@ -167,13 +177,13 @@ export default function SignInScreen() {
     setInfoMessage(null);
 
     if (!resolvedRole) {
-      setFormError(t('signIn.errors.generic'));
+      setFormError(t("signIn.errors.generic"));
       bumpSlideReset();
       return;
     }
 
     if (!isValidOtp(otp)) {
-      setFormError(t('signIn.errors.otp'));
+      setFormError(t("signIn.errors.otp"));
       bumpSlideReset();
       return;
     }
@@ -182,7 +192,7 @@ export default function SignInScreen() {
       setIsPostAuthRouting(true);
       await authenticateAccount.mutateAsync({
         role: resolvedRole,
-        phoneNumber,
+        phoneNumber: normalizePhoneInput(phoneNumber),
         otp,
       });
 
@@ -200,7 +210,7 @@ export default function SignInScreen() {
         getAuthRedirectHref(user, derived.profileCompleted, derived.signupStep),
       );
     } catch (error) {
-      setFormError(getApiErrorMessage(error, t('signIn.errors.otpInvalid')));
+      setFormError(getApiErrorMessage(error, t("signIn.errors.otpInvalid")));
       resetOtpInput();
       bumpSlideReset();
     } finally {
@@ -218,29 +228,32 @@ export default function SignInScreen() {
         : resolvedRole;
 
       if (!role) {
-        setFormError(t('signIn.errors.notRegistered'));
+        setFormError(t("signIn.errors.notRegistered"));
         return;
       }
 
       setResolvedRole(role);
-      setAuthFlow('sign-in', role);
+      setAuthFlow("sign-in", role);
       resetOtpInput();
-      setInfoMessage(t('signIn.otpResent'));
+      setInfoMessage(t("signIn.otpResent"));
     } catch (error) {
-      setFormError(getApiErrorMessage(error, t('signIn.errors.generic')));
+      const fallback = isNotFoundError(error)
+        ? t("signIn.errors.notRegistered")
+        : t("signIn.errors.generic");
+      setFormError(getApiErrorMessage(error, fallback));
     }
   }
 
-  if (step === 'phone') {
+  if (step === "phone") {
     return (
       <AuthScreenLayout
-        title={t('signIn.welcomeBack')}
-        subtitle={t('signIn.subtitle')}
+        title={t("signIn.welcomeBack")}
+        subtitle={t("signIn.subtitle")}
         onBack={handleBack}
         footer={
           <SlideButton
-            label={t('signIn.sendOtp')}
-            hint={t('farmerSignUp.slideHint')}
+            label={t("signIn.sendOtp")}
+            hint={t("farmerSignUp.slideHint")}
             loading={isBusy}
             resetKey={slideResetKey}
             onComplete={handlePhoneSubmit}
@@ -250,11 +263,11 @@ export default function SignInScreen() {
         <FormCard>
           <PhoneInput
             fieldId="signin-phone"
-            label={t('signIn.phoneLabel')}
+            label={t("signIn.phoneLabel")}
             value={phoneNumber}
             onChangeText={(text) => setPhoneLocal(normalizePhoneInput(text))}
-            placeholder={t('signIn.phonePlaceholder')}
-            hint={t('signIn.phoneHint')}
+            placeholder={t("signIn.phonePlaceholder")}
+            hint={t("signIn.phoneHint")}
           />
         </FormCard>
 
@@ -269,14 +282,14 @@ export default function SignInScreen() {
 
   return (
     <AuthScreenLayout
-      title={t('signIn.otpTitle')}
-      subtitle={t('signIn.otpSubtitle')}
+      title={t("signIn.otpTitle")}
+      subtitle={t("signIn.otpSubtitle")}
       onBack={handleBack}
       footer={
         <View>
           <SlideButton
-            label={t('signIn.verifyOtp')}
-            hint={t('farmerSignUp.slideHint')}
+            label={t("signIn.verifyOtp")}
+            hint={t("farmerSignUp.slideHint")}
             loading={isBusy}
             resetKey={slideResetKey}
             onComplete={handleOtpSubmit}
@@ -284,7 +297,7 @@ export default function SignInScreen() {
           <ResendLink
             onPress={handleResendOtp}
             loading={sendOtp.isPending}
-            label={t('signIn.resendOtp')}
+            label={t("signIn.resendOtp")}
           />
         </View>
       }

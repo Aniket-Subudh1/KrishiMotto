@@ -49,14 +49,17 @@ function LocationMap({
   mapRef,
   mapType,
   initialRegion,
+  showsUserLocation,
   onRegionChangeComplete,
 }: {
   mapsModule: MapsModule;
   mapRef: React.RefObject<MapView | null>;
   mapType: MapType;
   initialRegion: Region;
+  showsUserLocation: boolean;
   onRegionChangeComplete: (region: Region) => void;
 }) {
+  'use no memo';
   const MapView = mapsModule.default;
 
   return (
@@ -66,7 +69,7 @@ function LocationMap({
       mapType={mapType}
       initialRegion={initialRegion}
       onRegionChangeComplete={onRegionChangeComplete}
-      showsUserLocation
+      showsUserLocation={showsUserLocation}
       showsMyLocationButton={false}
       showsCompass={false}
       toolbarEnabled={false}
@@ -90,11 +93,14 @@ export function ExpertLocationPicker({
   isSubmitting = false,
   error,
 }: ExpertLocationPickerProps) {
+  'use no memo';
   const insets = useSafeAreaInsets();
   const mapRef = useRef<MapView>(null);
   const [mapsModule, setMapsModule] = useState<MapsModule | null>(null);
   const [mapsFailed, setMapsFailed] = useState(false);
-  const [mapType, setMapType] = useState<MapType>('hybrid');
+  const [mapType, setMapType] = useState<MapType>(
+    Platform.OS === 'android' ? 'standard' : 'hybrid',
+  );
   const [initialRegion, setInitialRegion] = useState<Region>(INDIA_CENTER);
   const [selectedLocation, setSelectedLocation] = useState<LatLng | null>(null);
   const [locationReady, setLocationReady] = useState(false);
@@ -205,7 +211,7 @@ export function ExpertLocationPicker({
     onConfirm(selectedLocation.latitude, selectedLocation.longitude);
   }
 
-  const canConfirm = selectedLocation != null && !locationDenied;
+  const canConfirm = selectedLocation != null;
 
   return (
     <View style={styles.container}>
@@ -224,6 +230,7 @@ export function ExpertLocationPicker({
             mapRef={mapRef}
             mapType={mapType}
             initialRegion={initialRegion}
+            showsUserLocation={!locationDenied}
             onRegionChangeComplete={handleRegionChange}
           />
         </ErrorBoundary>
@@ -265,10 +272,18 @@ export function ExpertLocationPicker({
 
           <Pressable
             style={styles.mapTypeButton}
-            onPress={() => setMapType((current) => (current === 'hybrid' ? 'standard' : 'hybrid'))}
+            onPress={() =>
+              setMapType((current) => {
+                if (Platform.OS === 'android') {
+                  return current === 'standard' ? 'satellite' : 'standard';
+                }
+
+                return current === 'hybrid' ? 'standard' : 'hybrid';
+              })
+            }
           >
             <Ionicons
-              name={mapType === 'hybrid' ? 'map-outline' : 'globe-outline'}
+              name={mapType === 'standard' ? 'globe-outline' : 'map-outline'}
               size={16}
               color={Palette.indigo}
             />

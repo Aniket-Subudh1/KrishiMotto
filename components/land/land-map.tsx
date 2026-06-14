@@ -32,6 +32,7 @@ type LandMapProps = {
   onMapPress: (coordinate: LatLng) => void;
   unavailableMessage: string;
   loadingMessage: string;
+  showsUserLocation?: boolean;
 };
 
 function LandMapInner({
@@ -42,9 +43,11 @@ function LandMapInner({
   points,
   minPoints,
   onMapPress,
+  showsUserLocation = true,
 }: Omit<LandMapProps, 'unavailableMessage' | 'loadingMessage'> & {
   mapsModule: MapsModule;
 }) {
+  'use no memo';
   const MapView = mapsModule.default;
   const { Marker, Polygon, Polyline } = mapsModule;
 
@@ -65,7 +68,7 @@ function LandMapInner({
       mapType={mapType}
       initialRegion={initialRegion}
       onPress={(e) => handleMapPress(e.nativeEvent.coordinate)}
-      showsUserLocation
+      showsUserLocation={showsUserLocation}
       showsMyLocationButton={false}
       showsCompass={false}
       toolbarEnabled={false}
@@ -97,15 +100,22 @@ function LandMapInner({
           <Marker
             key={point.id ?? `corner-${index}`}
             coordinate={coordinate}
-            anchor={{ x: 0.5, y: 0.5 }}
-            tracksViewChanges
+            anchor={Platform.OS === 'ios' ? { x: 0.5, y: 0.5 } : undefined}
+            pinColor={Platform.OS === 'android' ? (isFirst ? Palette.saffron : Palette.indigo) : undefined}
+            tracksViewChanges={Platform.OS === 'ios' ? false : undefined}
             zIndex={1}
+            title={Platform.OS === 'android' ? `Point ${index + 1}` : undefined}
           >
-            <View style={styles.markerWrap} collapsable={false}>
-              <View style={[styles.vertexMarker, isFirst && styles.vertexMarkerFirst]}>
-                <RNText style={styles.vertexLabel}>{index + 1}</RNText>
+            {Platform.OS === 'ios' ? (
+              <View style={styles.markerWrap} collapsable={false}>
+                <View
+                  style={[styles.vertexMarker, isFirst && styles.vertexMarkerFirst]}
+                  collapsable={false}
+                >
+                  <RNText style={styles.vertexLabel}>{index + 1}</RNText>
+                </View>
               </View>
-            </View>
+            ) : null}
           </Marker>
         );
       })}
@@ -114,6 +124,7 @@ function LandMapInner({
 }
 
 export function LandMap(props: LandMapProps) {
+  'use no memo';
   const [mapsModule, setMapsModule] = useState<MapsModule | null>(null);
   const [loadFailed, setLoadFailed] = useState(false);
 

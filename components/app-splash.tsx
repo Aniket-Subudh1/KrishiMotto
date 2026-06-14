@@ -51,6 +51,7 @@ const HIGHLIGHTS = [
 const ROTATE_MS = 700;
 
 export function AppSplash({ visible }: AppSplashProps) {
+  'use no memo';
   const progress = useSharedValue(0);
   const fadeIn = useSharedValue(0);
   const taglineOpacity = useSharedValue(1);

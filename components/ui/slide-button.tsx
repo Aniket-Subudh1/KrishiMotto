@@ -37,6 +37,7 @@ export function SlideButton({
   disabled = false,
   resetKey = 0,
 }: SlideButtonProps) {
+  'use no memo';
   const [trackWidth, setTrackWidth] = useState(0);
   const translateX = useSharedValue(0);
   const maxSlide = useSharedValue(0);

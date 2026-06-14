@@ -8,6 +8,17 @@ type ApiErrorBody = {
   };
 };
 
+export function isNotFoundError(error: unknown): boolean {
+  if (axios.isAxiosError<ApiErrorBody>(error)) {
+    return (
+      error.response?.status === 404 ||
+      error.response?.data?.error?.code === 'NOT_FOUND'
+    );
+  }
+
+  return false;
+}
+
 export function getApiErrorMessage(error: unknown, fallback = 'Something went wrong'): string {
   
   if (axios.isAxiosError<ApiErrorBody>(error)) {

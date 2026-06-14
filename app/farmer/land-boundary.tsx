@@ -73,7 +73,9 @@ export default function LandBoundaryScreen() {
   const isBusy = createParcel.isPending || updateParcel.isPending;
 
   const [points, setPoints] = useState<BoundaryPoint[]>([]);
-  const [mapType, setMapType] = useState<MapType>('hybrid');
+  const [mapType, setMapType] = useState<MapType>(
+    Platform.OS === 'android' ? 'standard' : 'hybrid',
+  );
   const [initialRegion, setInitialRegion] = useState<Region>(INDIA_CENTER);
   const [locationReady, setLocationReady] = useState(false);
   const [locationDenied, setLocationDenied] = useState(false);
@@ -300,6 +302,7 @@ export default function LandBoundaryScreen() {
           onMapPress={handleMapPress}
           unavailableMessage={t('landBoundary.mapsUnavailable')}
           loadingMessage={t('landBoundary.loadingMap')}
+          showsUserLocation={!locationDenied}
         />
       ) : (
         <View style={[styles.map, styles.mapLoading]}>
@@ -332,15 +335,25 @@ export default function LandBoundaryScreen() {
           {/* Map type toggle */}
           <Pressable
             style={styles.mapTypeButton}
-            onPress={() => setMapType((current) => (current === 'hybrid' ? 'standard' : 'hybrid'))}
+            onPress={() =>
+              setMapType((current) => {
+                if (Platform.OS === 'android') {
+                  return current === 'standard' ? 'satellite' : 'standard';
+                }
+
+                return current === 'hybrid' ? 'standard' : 'hybrid';
+              })
+            }
           >
             <Ionicons
-              name={mapType === 'hybrid' ? 'map-outline' : 'globe-outline'}
+              name={mapType === 'standard' ? 'globe-outline' : 'map-outline'}
               size={16}
               color={Palette.indigo}
             />
             <RNText style={styles.mapTypeText}>
-              {mapType === 'hybrid' ? t('landBoundary.mapView') : t('landBoundary.satelliteView')}
+              {mapType === 'standard'
+                ? t('landBoundary.satelliteView')
+                : t('landBoundary.mapView')}
             </RNText>
           </Pressable>
         </View>

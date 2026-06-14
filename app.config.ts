@@ -22,7 +22,7 @@ const ANDROID_ADAPTIVE_ICON = {
 const IOS_BUILD_NUMBER = "1";
 const ANDROID_VERSION_CODE = 1;
 
-const API_URL = `https://krishiaadhar.gramtarang.org`;
+const API_URL = "https://krishiaadhar.gramtarang.org";
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
@@ -33,7 +33,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   icon: APP_ICON,
   scheme: "krishimotto",
   userInterfaceStyle: "light",
-  newArchEnabled: true,
+  // react-native-maps is still unstable on Android/Fabric in our Expo SDK 54 stack.
+  newArchEnabled: false,
   backgroundColor: Palette.white,
   ios: {
     ...config.ios,
@@ -78,9 +79,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       "expo-splash-screen",
       {
         backgroundColor: Palette.white,
-        image: "./assets/images/logo.png",
-        imageWidth: 280,
-        resizeMode: "contain",
       },
     ],
   ],
