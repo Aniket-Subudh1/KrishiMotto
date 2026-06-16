@@ -9,11 +9,17 @@ import { AppBarGradient, Palette } from '@/constants/theme';
 
 type ToolsHeroHeaderProps = {
   quickActionCount: number;
-  serviceCount: number;
+  bookableCount: number;
+  totalServiceCount: number;
   t: (key: string) => string;
 };
 
-export function ToolsHeroHeader({ quickActionCount, serviceCount, t }: ToolsHeroHeaderProps) {
+export function ToolsHeroHeader({
+  quickActionCount,
+  bookableCount,
+  totalServiceCount,
+  t,
+}: ToolsHeroHeaderProps) {
   const insets = useSafeAreaInsets();
 
   return (
@@ -75,17 +81,17 @@ export function ToolsHeroHeader({ quickActionCount, serviceCount, t }: ToolsHero
           />
           <View className="w-px bg-border" />
           <StatColumn
-            label={t('home.tools.statsServices')}
-            value={String(serviceCount)}
+            label={t('home.tools.statsBookable')}
+            value={String(bookableCount)}
             valueColor={Palette.indiaGreen}
-            bottom={t('home.tools.statsTotal')}
+            bottom={t('home.tools.statsAvailable')}
           />
           <View className="w-px bg-border" />
           <StatColumn
-            label={t('home.tools.statsAi')}
-            value={t('home.tools.statsLive')}
+            label={t('home.tools.statsServices')}
+            value={String(totalServiceCount)}
             valueColor={Palette.saffron}
-            bottom={t('home.tools.statsPowered')}
+            bottom={t('home.tools.statsTotal')}
           />
         </View>
       </View>

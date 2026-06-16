@@ -1,8 +1,11 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 
 import { LandParcelSheet } from '@/features/home/components/land-parcel-sheet';
 import { useFarmerProfile } from '@/features/farmer/hooks/use-farmer-profile';
 import { useLandParcels } from '@/features/farmer/hooks/use-land-parcel';
+import { BOOKING_KEYS } from '@/features/crop-calendar/hooks/use-crop-calendar-booking';
+import { CATALOG_KEYS } from '@/features/home/hooks/use-catalog';
 import { useAuthStore } from '@/stores/auth.store';
 import type { FarmerProfile } from '@/types/farmer';
 import type { LandParcel } from '@/types/farmer';
@@ -20,6 +23,7 @@ type FarmerHomeContextValue = {
 const FarmerHomeContext = createContext<FarmerHomeContextValue | null>(null);
 
 export function FarmerHomeProvider({ children }: { children: ReactNode }) {
+  const queryClient = useQueryClient();
   const [selectedParcelId, setSelectedParcelId] = useState<string | null>(null);
   const isFarmer = useAuthStore((s) => s.user?.role === 'FARMER');
   const profileQuery = useFarmerProfile(isFarmer);
@@ -32,7 +36,9 @@ export function FarmerHomeProvider({ children }: { children: ReactNode }) {
   const onRefresh = useCallback(() => {
     profileQuery.refetch();
     parcelsQuery.refetch();
-  }, [parcelsQuery, profileQuery]);
+    queryClient.invalidateQueries({ queryKey: CATALOG_KEYS.services });
+    queryClient.invalidateQueries({ queryKey: BOOKING_KEYS.all });
+  }, [parcelsQuery, profileQuery, queryClient]);
 
   const value = useMemo(
     () => ({

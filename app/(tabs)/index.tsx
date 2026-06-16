@@ -82,7 +82,7 @@ export default function HomeScreen() {
 }
 
 function FarmerHomeScreen() {
-  const { t } = useAppLocale();
+  const { t, locale } = useAppLocale();
   const { profile, parcels, isLoading, isRefreshing, onRefresh } = useFarmerHome();
 
   const greeting = useMemo(() => {
@@ -100,6 +100,7 @@ function FarmerHomeScreen() {
       isRefreshing={isRefreshing}
       onRefresh={onRefresh}
       greeting={greeting}
+      locale={locale}
       t={t}
     />
   );

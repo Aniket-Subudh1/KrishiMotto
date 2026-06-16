@@ -1,19 +1,30 @@
 import { Ionicons } from '@expo/vector-icons';
+import type { Href } from 'expo-router';
 import { router } from 'expo-router';
 import { Alert, Pressable, View } from 'react-native';
 
 import { Text } from '@/components/ui/text';
-import type { ServiceDefinition } from '@/features/home/constants/services';
 import { Palette } from '@/constants/theme';
 
+export type GridService = {
+  key: string;
+  title: string;
+  badge: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  iconBg: string;
+  iconColor: string;
+  badgeColor?: string;
+  href?: Href;
+};
+
 type ServicesGridProps = {
-  services: ServiceDefinition[];
+  services: GridService[];
   t: (key: string) => string;
   useBodyAsBadge?: boolean;
 };
 
 export function ServicesGrid({ services, t, useBodyAsBadge = false }: ServicesGridProps) {
-  function handlePress(service: ServiceDefinition) {
+  function handlePress(service: GridService) {
     if (service.href) {
       router.push(service.href);
       return;
@@ -47,7 +58,7 @@ export function ServicesGrid({ services, t, useBodyAsBadge = false }: ServicesGr
               className="mt-2 text-center text-[11px] font-semibold leading-4 text-indigo"
               numberOfLines={2}
             >
-              {t(service.titleKey)}
+              {service.title}
             </Text>
             {!useBodyAsBadge ? (
               <Text
@@ -55,7 +66,7 @@ export function ServicesGrid({ services, t, useBodyAsBadge = false }: ServicesGr
                 style={{ color: service.badgeColor ?? Palette.indigo }}
                 numberOfLines={1}
               >
-                {t(service.badgeKey)}
+                {service.badge}
               </Text>
             ) : null}
           </Pressable>

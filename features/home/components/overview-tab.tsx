@@ -6,6 +6,7 @@ import { ActivityIndicator, Pressable, RefreshControl, ScrollView, View } from '
 import { Text } from '@/components/ui/text';
 import { HomeHeroHeader } from '@/features/home/components/home-hero-header';
 import { HomeServicesGrid } from '@/features/home/components/home-services-grid';
+import { RequestedServicesSection } from '@/features/home/components/requested-services-section';
 import { showComingSoonAlert } from '@/lib/coming-soon';
 import { Palette } from '@/constants/theme';
 import type { FarmerProfile } from '@/types/farmer';
@@ -18,6 +19,7 @@ type OverviewTabProps = {
   isRefreshing: boolean;
   onRefresh: () => void;
   greeting: string;
+  locale: string;
   t: (key: string) => string;
 };
 
@@ -28,6 +30,7 @@ export function OverviewTab({
   isRefreshing,
   onRefresh,
   greeting,
+  locale,
   t,
 }: OverviewTabProps) {
   const displayName = profile?.name ?? t('home.profile.farmer');
@@ -68,6 +71,8 @@ export function OverviewTab({
 
               <HomeServicesGrid t={t} />
             </View>
+
+            <RequestedServicesSection t={t} locale={locale} />
 
             <View className="mt-5 px-5">
               <View

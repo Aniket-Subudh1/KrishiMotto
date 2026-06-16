@@ -1,4 +1,8 @@
-import { ALL_SERVICES } from '@/features/home/constants/services';
+import { ActivityIndicator, View } from 'react-native';
+
+import { useCatalog } from '@/features/home/hooks/use-catalog';
+import { toGridService } from '@/features/home/utils/catalog-display';
+import { Palette } from '@/constants/theme';
 
 import { ServicesGrid } from './services-grid';
 
@@ -7,5 +11,21 @@ type HomeServicesGridProps = {
 };
 
 export function HomeServicesGrid({ t }: HomeServicesGridProps) {
-  return <ServicesGrid services={ALL_SERVICES} t={t} />;
+  const { data: catalogServices, isLoading } = useCatalog();
+
+  if (isLoading) {
+    return (
+      <View className="items-center py-8">
+        <ActivityIndicator size="small" color={Palette.indiaGreen} />
+      </View>
+    );
+  }
+
+  if (!catalogServices?.length) {
+    return null;
+  }
+
+  const services = catalogServices.map((service) => toGridService(service, t));
+
+  return <ServicesGrid services={services} t={t} />;
 }

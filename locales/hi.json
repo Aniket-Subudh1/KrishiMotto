@@ -332,19 +332,53 @@
       "setupFarm": "सेटअप करें",
       "advisoryHint": "फसल जानकारी जोड़ें",
       "servicesTitle": "सेवाएँ",
+      "requestedServicesTitle": "अनुरोधित सेवाएँ",
+      "requestedOn": "अनुरोध {{date}}",
       "aiInsightTitle": "AI · आज की जानकारी",
       "aiInsightDefault": "पहला खेत मैप करें और व्यक्तिगत फसल सलाह पाएं।",
       "aiInsightCrop": "आपकी {{crop}} फसल को इस सप्ताह खेत जांच की ज़रूरत हो सकती है।",
       "askAi": "KrishiAI से पूछें",
       "services": {
-        "calendar": { "title": "फसल कैलेंडर", "badge": "जल्द" },
-        "drone": { "title": "ड्रोन स्प्रे", "badge": "जल्द" },
-        "soil": { "title": "मिट्टी परीक्षण", "badge": "जल्द" },
-        "harvest": { "title": "हार्वेस्ट ID", "badge": "जल्द" },
-        "loan": { "title": "ऋण", "badge": "जल्द" },
-        "insurance": { "title": "बीमा", "badge": "जल्द" },
-        "market": { "title": "बाज़ार भाव", "badge": "लाइव" },
-        "lab": { "title": "लैब रिपोर्ट", "badge": "जल्द" }
+        "calendar": {
+          "title": "फसल कैलेंडर",
+          "badge": "₹199/फसल"
+        },
+        "drone": {
+          "title": "ड्रोन स्प्रे",
+          "badge": "₹399/एकड़"
+        },
+        "soil": {
+          "title": "मिट्टी स्वास्थ्य",
+          "badge": "₹4,999/एकड़"
+        },
+        "harvest": {
+          "title": "हार्वेस्ट ID",
+          "badge": "जल्द"
+        },
+        "loan": {
+          "title": "ऋण",
+          "badge": "जल्द"
+        },
+        "insurance": {
+          "title": "बीमा",
+          "badge": "जल्द"
+        },
+        "market": {
+          "title": "बाज़ार भाव",
+          "badge": "लाइव"
+        },
+        "lab": {
+          "title": "लैब रिपोर्ट",
+          "badge": "जल्द"
+        },
+        "cropHealth": {
+          "title": "फसल स्वास्थ्य",
+          "badge": "₹2,499/एकड़"
+        },
+        "expert": {
+          "title": "विशेषज्ञ विज़िट",
+          "badge": "₹499+"
+        }
       }
     },
     "overview": {
@@ -432,21 +466,420 @@
     },
     "tools": {
       "title": "फार्म टूल्स",
-      "subtitle": "आपके खेत और डेटा के लिए त्वरित क्रियाएँ।",
-      "quickActions": "त्वरित क्रियाएँ",
-      "allServices": "सभी सेवाएँ",
-      "statsQuick": "त्वरित क्रियाएँ",
+      "subtitle": "सेवाएँ बुक करें और अपने मैप किए गए खेतों का प्रबंधन करें।",
+      "quickActions": "खेत उपकरण",
+      "quickActionsBody": "भू-भाग मैप करें और अपने ज़मीन रिकॉर्ड देखें।",
+      "featured": "लोकप्रिय सेवाएँ",
+      "bookServices": "अभी बुक करें",
+      "bookServicesBody": "अपने मैप किए गए खेतों पर विशेषज्ञ सहायता शेड्यूल करें।",
+      "bookNow": "अभी बुक करें",
+      "statsQuick": "खेत उपकरण",
       "statsServices": "सेवाएँ",
-      "statsTotal": "कुल",
-      "statsAi": "AI टूल्स",
-      "statsLive": "लाइव",
-      "statsPowered": "KrishiMotto AI",
+      "statsTotal": "कैटलॉग में",
+      "statsBookable": "बुक करें",
+      "statsAvailable": "उपलब्ध",
+      "howItWorks": "बुकिंग कैसे काम करती है",
+      "howItWorksSteps": "सेवा चुनें, खेत चुनें, कीमत देखें, और KrishiMotto के अंदर सुरक्षित भुगतान करें।",
+      "aiInsightReady": "आपके खेत मैप हो चुके हैं — शुरू करने के लिए फसल कैलेंडर या मिट्टी परीक्षण बुक करें।",
       "addField": "खेत की सीमा जोड़ें",
       "addFieldBody": "सैटेलाइट मैप पर नया भू-भाग चिह्नित करें।",
       "myFields": "मेरे खेत देखें",
       "myFieldsBody": "मेरी ज़मीन टैब पर सभी मैप किए गए खेत देखें।",
-      "comingSoon": "और टूल्स जल्द आ रहे हैं",
-      "comingSoonBody": "फसल कैलेंडर, मिट्टी विश्लेषण और विशेषज्ञ विज़िट यहाँ दिखाई देंगे।"
+      "comingSoon": "जल्द आ रहा है",
+      "comingSoonBody": "और फार्म सेवाएँ हमारी रोडमैप पर हैं।"
     }
+  },
+  "common": {
+    "cancel": "रद्द करें",
+    "done": "हो गया",
+    "selectDate": "तारीख चुनें",
+    "parcelPicker": {
+      "mapFieldFirst": "पहले मैप पर अपना खेत बनाएँ",
+      "selected": "चयनित",
+      "addField": "खेत जोड़ें"
+    }
+  },
+  "enums": {
+    "cropTypes": {
+      "Cereal": "अनाज",
+      "Vegetable": "सब्ज़ी",
+      "Fruit": "फल",
+      "Pulses": "दाल",
+      "Oilseeds": "तिलहन"
+    },
+    "soilTypes": {
+      "Clay": "चिकनी",
+      "Sandy": "बलुई",
+      "Loamy": "दोमट",
+      "Silty": "गादिली",
+      "Peaty": "पीट",
+      "Chalky": "चूना"
+    },
+    "seasons": {
+      "Kharif": "खरीफ",
+      "Rabi": "रबी",
+      "Zaid": "ज़ैद"
+    },
+    "visitPurposes": {
+      "pest": "कीट और रोग निदान",
+      "advisory": "सलाह",
+      "inspection": "निरीक्षण",
+      "other": "अन्य"
+    },
+    "creditPurposes": {
+      "inputs": "Farm inputs (seeds, fertiliser)",
+      "equipment": "Equipment & machinery",
+      "labour": "Seasonal labour",
+      "other": "Other farm needs"
+    },
+    "scheduleActivities": {
+      "sowing": "बुवाई",
+      "firstIrrigation": "पहली सिंचाई",
+      "fertilizerDap": "उर्वरक (डीएपी)",
+      "fertilizerUrea": "उर्वरक (यूरिया)",
+      "pestWatch": "कीट निगरानी",
+      "harvest": "कटाई · {{crop}}"
+    },
+    "services": {
+      "CROP_CALENDAR": "फसल कैलेंडर",
+      "DRONE_SPRAY": "ड्रोन स्प्रे",
+      "CROP_HEALTH": "फसल स्वास्थ्य",
+      "SOIL_HEALTH": "मिट्टी स्वास्थ्य",
+      "EXPERT_VISIT": "विशेषज्ञ विज़िट",
+      "PPACS_CREDIT": "पीपैक्स क्रेडिट",
+      "STORAGE": "भंडारण",
+      "CROP_TRACKER": "फसल ट्रैकर",
+      "IRRIGATION": "सिंचाई",
+      "FERTILIZER": "उर्वरक",
+      "PEST_CONTROL": "कीट नियंत्रण",
+      "WEATHER": "मौसम",
+      "SEEDS": "बीज",
+      "HARVEST": "हार्वेस्ट ID",
+      "INSURANCE": "बीमा",
+      "MARKET": "बाज़ार भाव"
+    },
+    "bookingStatuses": {
+      "pendingPayment": "Payment pending",
+      "paid": "Paid",
+      "open": "Open",
+      "accepted": "Accepted",
+      "travelling": "Expert on the way",
+      "inProgress": "In progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "servicePrices": {
+      "CROP_CALENDAR": "₹199/crop",
+      "DRONE_SPRAY": "₹399/acre",
+      "CROP_HEALTH": "₹2,499/ac",
+      "SOIL_HEALTH": "₹4,999/ac",
+      "EXPERT_VISIT": "₹499+",
+      "PPACS_CREDIT": "Loans",
+      "STORAGE": "₹6,499",
+      "CROP_TRACKER": "Live",
+      "IRRIGATION": "Soon",
+      "FERTILIZER": "Soon",
+      "PEST_CONTROL": "Soon",
+      "WEATHER": "Soon",
+      "SEEDS": "Soon",
+      "HARVEST": "Soon",
+      "INSURANCE": "Soon",
+      "MARKET": "Live"
+    }
+  },
+  "cropCalendar": {
+    "title": "फसल कैलेंडर",
+    "subtitle": "₹199 प्रति फसल",
+    "stepOf": "चरण {{current}} / {{total}}",
+    "steps": {
+      "field": "खेत",
+      "crop": "फसल",
+      "schedule": "कार्यक्रम"
+    },
+    "stepHints": {
+      "field": "इस कैलेंडर के लिए खेत की सीमा चुनें",
+      "crop": "बताएँ इस मौसम में आप क्या उगा रहे हैं",
+      "schedule": "गतिविधियाँ देखें और बुकिंग की पुष्टि करें"
+    },
+    "back": "वापस",
+    "continue": "आगे बढ़ें",
+    "fieldHint": "अपने मैप किए खेतों को देखने के लिए स्वाइप करें",
+    "fieldSizeHint": "चुने गए खेत से भरा गया — ज़रूरत हो तो बदलें",
+    "projectTitleHint": "इस कैलेंडर को पहचानने के लिए छोटा नाम",
+    "seasonHints": {
+      "Kharif": "मानसून · जून–अक्टूबर",
+      "Rabi": "सर्दी · अक्टूबर–मार्च",
+      "Zaid": "गर्मी · मार्च–जून"
+    },
+    "durationDays": "{{days}} दिन की बढ़ती अवधि",
+    "duration": "बढ़ती अवधि",
+    "activitiesCount": "नियोजित गतिविधियाँ",
+    "reviewTitle": "बुकिंग सारांश",
+    "scheduleEmptyHint": "आपकी फसल योजना से बुवाई, सिंचाई और कटाई की तारीखें तैयार की जाएँगी।",
+    "formSection": "फसल विवरण",
+    "fieldLabel": "खेत की सीमा",
+    "addField": "आगे बढ़ने के लिए खेत मैप करें",
+    "projectTitle": "परियोजना शीर्षक",
+    "projectTitlePlaceholder": "खरीफ धान 2025",
+    "cropName": "फसल का नाम",
+    "cropNamePlaceholder": "धान (चावल)",
+    "cropType": "फसल का प्रकार",
+    "fieldSize": "खेत का आकार (एकड़)",
+    "season": "मौसम",
+    "startDate": "बुवाई की तारीख",
+    "endDate": "अनुमानित कटाई",
+    "notes": "विशेषज्ञ के लिए नोट (वैकल्पिक)",
+    "notesPlaceholder": "कोई विशेष स्थिति या लक्ष्य",
+    "generate": "कार्यक्रम का प्रारूप बनाएँ",
+    "scheduleTitle": "प्रारूप कार्यक्रम",
+    "scheduleBadge": "प्रारूप",
+    "scheduleActivitiesCount": "{{count}} गतिविधियाँ नियोजित",
+    "scheduleEmpty": "फॉर्म भरें और मुख्य गतिविधियाँ देखने के लिए बनाएँ पर टैप करें।",
+    "totalPayable": "कुल देय राशि",
+    "expertReviewed": "विशेषज्ञ द्वारा जाँचा कैलेंडर",
+    "viaInstantPay": "InstantPay से",
+    "submit": "कैलेंडर का अनुरोध करें · {{price}} भुगतान करें",
+    "checkingPayment": "भुगतान जाँचा जा रहा है…",
+    "done": "हो गया",
+    "orderRef": "बुकिंग संदर्भ {{orderId}}",
+    "submitError": "बुकिंग नहीं बन सकी। कृपया फिर कोशिश करें।",
+    "bookingCreatedTitle": "बुकिंग जमा हो गई",
+    "bookingCreatedBody": "आपका फसल कैलेंडर अनुरोध सहेज लिया गया। चेकआउट उपलब्ध होने पर भुगतान लिया जाएगा।",
+    "paymentSuccessTitle": "भुगतान प्राप्त",
+    "paymentSuccessBody": "आपकी फसल कैलेंडर बुकिंग पुष्टि हो गई। विशेषज्ञ आपका कार्यक्रम तैयार करेंगे।",
+    "paymentFailedTitle": "भुगतान असफल",
+    "paymentFailedBody": "भुगतान नहीं हो सका। आप अपनी बुकिंग से फिर कोशिश कर सकते हैं।",
+    "paymentPendingTitle": "भुगतान लंबित",
+    "paymentPendingBody": "भुगतान अभी पुष्टि नहीं हुआ। थोड़ी देर बाद देखें या ऑर्डर संदर्भ के साथ सहायता से संपर्क करें।",
+    "errors": {
+      "projectTitle": "परियोजना शीर्षक दर्ज करें (कम से कम 2 अक्षर)।",
+      "cropName": "फसल का नाम दर्ज करें।",
+      "cropType": "फसल का प्रकार चुनें।",
+      "fieldSizeAc": "एकड़ में सही खेत का आकार दर्ज करें।",
+      "season": "मौसम चुनें।",
+      "startDate": "सही बुवाई की तारीख चुनें।",
+      "endDate": "सही कटाई की तारीख चुनें।",
+      "endBeforeStart": "कटाई की तारीख बुवाई के बाद होनी चाहिए।",
+      "parcelRequired": "इस कैलेंडर के लिए मैप किया खेत चुनें।"
+    }
+  },
+  "droneSpray": {
+    "title": "ड्रोन स्प्रे",
+    "subtitle": "₹399 प्रति एकड़",
+    "stepOf": "चरण {{current}} / {{total}}",
+    "steps": {
+      "field": "खेत",
+      "spray": "स्प्रे"
+    },
+    "stepHints": {
+      "field": "स्प्रे के लिए खेत चुनें — कीमत मैप किए क्षेत्र पर आधारित है",
+      "spray": "फसल का प्रकार और पसंदीदा स्प्रे तारीख चुनें"
+    },
+    "back": "वापस",
+    "continue": "आगे बढ़ें",
+    "fieldLabel": "खेत की सीमा",
+    "fieldHint": "अपने मैप किए खेतों को देखने के लिए स्वाइप करें",
+    "addField": "आगे बढ़ने के लिए खेत मैप करें",
+    "cropType": "फसल का प्रकार",
+    "sprayDate": "पसंदीदा स्प्रे तारीख",
+    "notes": "स्प्रे निर्देश (वैकल्पिक)",
+    "notesPlaceholder": "कीट का प्रकार, रसायन की पसंद, पहुँच के नोट…",
+    "notesHint": "विज़िट से पहले ड्रोन ऑपरेटर के साथ साझा किया जाएगा",
+    "priceEstimate": "अनुमानित कीमत",
+    "priceBreakdown": "{{rate}}/एकड़ × {{units}} बिलिंग इकाई ({{acres}} मैप किया)",
+    "perAcre": "प्रति एकड़",
+    "reviewTitle": "बुकिंग सारांश",
+    "totalPayable": "कुल देय राशि",
+    "licensedOperator": "लाइसेंस प्राप्त ऑपरेटर",
+    "submit": "ड्रोन स्प्रे बुक करें · {{price}} भुगतान करें",
+    "checkingPayment": "भुगतान जाँचा जा रहा है…",
+    "done": "हो गया",
+    "orderRef": "बुकिंग संदर्भ {{orderId}}",
+    "submitError": "बुकिंग नहीं बन सकी। कृपया फिर कोशिश करें।",
+    "bookingCreatedTitle": "बुकिंग जमा हो गई",
+    "bookingCreatedBody": "आपका ड्रोन स्प्रे अनुरोध सहेज लिया गया। चेकआउट उपलब्ध होने पर भुगतान लिया जाएगा।",
+    "errors": {
+      "cropType": "फसल का प्रकार चुनें।",
+      "sprayDate": "सही स्प्रे तारीख चुनें।",
+      "sprayDatePast": "स्प्रे की तारीख बीती हुई नहीं हो सकती।",
+      "parcelRequired": "इस स्प्रे के लिए मैप किया खेत चुनें।"
+    }
+  },
+  "cropHealth": {
+    "title": "फसल स्वास्थ्य",
+    "subtitle": "₹2,499 प्रति एकड़",
+    "stepOf": "चरण {{current}} / {{total}}",
+    "steps": {
+      "field": "खेत",
+      "analysis": "विश्लेषण"
+    },
+    "stepHints": {
+      "field": "मल्टीस्पेक्ट्रल फसल स्वास्थ्य मैपिंग के लिए खेत चुनें",
+      "analysis": "सही विश्लेषण के लिए अपनी फसल और मिट्टी के बारे में बताएँ"
+    },
+    "back": "वापस",
+    "continue": "आगे बढ़ें",
+    "fieldLabel": "खेत की सीमा",
+    "fieldHint": "अपने मैप किए खेतों को देखने के लिए स्वाइप करें",
+    "addField": "आगे बढ़ने के लिए खेत मैप करें",
+    "cropType": "फसल का प्रकार",
+    "soilType": "मिट्टी का प्रकार",
+    "transportIncluded": "खेत विज़िट और परिवहन शामिल करें",
+    "transportIncludedHint": "मल्टीस्पेक्ट्रल स्कैन और नमूना संग्रह के लिए तकनीशियन विज़िट",
+    "notes": "खेत के नोट (वैकल्पिक)",
+    "notesPlaceholder": "तनाव के लक्षण, कीट के धब्बे, सिंचाई की समस्या…",
+    "notesHint": "विश्लेषक को समस्या वाले क्षेत्रों पर ध्यान देने में मदद करता है",
+    "priceEstimate": "अनुमानित कीमत",
+    "priceBreakdown": "{{rate}}/एकड़ × {{units}} बिलिंग इकाई ({{acres}} मैप किया)",
+    "transportFee": "{{fee}} परिवहन और विज़िट शुल्क शामिल",
+    "includesTransport": "{{fee}} परिवहन सहित",
+    "reviewTitle": "बुकिंग सारांश",
+    "totalPayable": "कुल देय राशि",
+    "multispectral": "मल्टीस्पेक्ट्रल स्कैन",
+    "submit": "फसल स्वास्थ्य बुक करें · {{price}} भुगतान करें",
+    "checkingPayment": "भुगतान जाँचा जा रहा है…",
+    "done": "हो गया",
+    "orderRef": "बुकिंग संदर्भ {{orderId}}",
+    "submitError": "बुकिंग नहीं बन सकी। कृपया फिर कोशिश करें।",
+    "bookingCreatedTitle": "बुकिंग जमा हो गई",
+    "bookingCreatedBody": "आपका फसल स्वास्थ्य अनुरोध सहेज लिया गया। चेकआउट उपलब्ध होने पर भुगतान लिया जाएगा।",
+    "errors": {
+      "cropType": "फसल का प्रकार चुनें।",
+      "soilType": "मिट्टी का प्रकार चुनें।",
+      "parcelRequired": "इस विश्लेषण के लिए मैप किया खेत चुनें।"
+    }
+  },
+  "soilHealth": {
+    "title": "मिट्टी स्वास्थ्य",
+    "subtitle": "₹4,999 प्रति एकड़",
+    "stepOf": "चरण {{current}} / {{total}}",
+    "steps": {
+      "field": "खेत",
+      "analysis": "विश्लेषण"
+    },
+    "stepHints": {
+      "field": "हाइपरस्पेक्ट्रल मिट्टी स्वास्थ्य मैपिंग के लिए खेत चुनें",
+      "analysis": "पोषक तत्व की जानकारी के लिए अपनी फसल और मिट्टी के बारे में बताएँ"
+    },
+    "back": "वापस",
+    "continue": "आगे बढ़ें",
+    "fieldLabel": "खेत की सीमा",
+    "fieldHint": "अपने मैप किए खेतों को देखने के लिए स्वाइप करें",
+    "addField": "आगे बढ़ने के लिए खेत मैप करें",
+    "cropType": "फसल का प्रकार",
+    "soilType": "मिट्टी का प्रकार",
+    "transportIncluded": "खेत विज़िट और परिवहन शामिल करें",
+    "transportIncludedHint": "मिट्टी नमूना और हाइपरस्पेक्ट्रल स्कैन के लिए तकनीशियन विज़िट",
+    "notes": "खेत के नोट (वैकल्पिक)",
+    "notesPlaceholder": "पोषक तत्व की चिंता, पिछले उर्वरक का उपयोग, समस्या वाले क्षेत्र…",
+    "notesHint": "मिट्टी स्वास्थ्य रिपोर्ट को आपके अनुसार बनाने में मदद करता है",
+    "priceEstimate": "अनुमानित कीमत",
+    "priceBreakdown": "{{rate}}/एकड़ × {{units}} बिलिंग इकाई ({{acres}} मैप किया)",
+    "transportFee": "{{fee}} परिवहन और विज़िट शुल्क शामिल",
+    "includesTransport": "{{fee}} परिवहन सहित",
+    "reviewTitle": "बुकिंग सारांश",
+    "totalPayable": "कुल देय राशि",
+    "hyperspectral": "हाइपरस्पेक्ट्रल मिट्टी मैप",
+    "submit": "मिट्टी स्वास्थ्य बुक करें · {{price}} भुगतान करें",
+    "checkingPayment": "भुगतान जाँचा जा रहा है…",
+    "done": "हो गया",
+    "orderRef": "बुकिंग संदर्भ {{orderId}}",
+    "submitError": "बुकिंग नहीं बन सकी। कृपया फिर कोशिश करें।",
+    "bookingCreatedTitle": "बुकिंग जमा हो गई",
+    "bookingCreatedBody": "आपका मिट्टी स्वास्थ्य अनुरोध सहेज लिया गया। चेकआउट उपलब्ध होने पर भुगतान लिया जाएगा।",
+    "errors": {
+      "cropType": "फसल का प्रकार चुनें।",
+      "soilType": "मिट्टी का प्रकार चुनें।",
+      "parcelRequired": "इस विश्लेषण के लिए मैप किया खेत चुनें।"
+    }
+  },
+  "expertVisit": {
+    "title": "विशेषज्ञ विज़िट",
+    "subtitle": "₹499 से प्रति विज़िट",
+    "stepOf": "चरण {{current}} / {{total}}",
+    "steps": {
+      "field": "खेत",
+      "visit": "विज़िट"
+    },
+    "stepHints": {
+      "field": "विशेषज्ञ विज़िट के लिए खेत और क्षेत्र चुनें",
+      "visit": "उद्देश्य, फसल विवरण और पसंदीदा तारीख चुनें"
+    },
+    "back": "वापस",
+    "continue": "आगे बढ़ें",
+    "fieldLabel": "खेत की सीमा",
+    "fieldHint": "अपने मैप किए खेतों को देखने के लिए स्वाइप करें",
+    "addField": "आगे बढ़ने के लिए खेत मैप करें",
+    "areaAc": "खेत का क्षेत्र (एकड़)",
+    "areaAcHint": "मैप किया क्षेत्र {{acres}} है — अगर विज़िट किसी हिस्से तक है तो बदलें",
+    "visitPurpose": "विज़िट का उद्देश्य",
+    "visitPurposes": {
+      "pest": "कीट और रोग निदान",
+      "advisory": "सलाह",
+      "inspection": "निरीक्षण",
+      "other": "अन्य"
+    },
+    "cropType": "फसल का प्रकार",
+    "soilType": "मिट्टी का प्रकार",
+    "preferredDate": "पसंदीदा विज़िट तारीख",
+    "notes": "विशेषज्ञ के लिए नोट (वैकल्पिक)",
+    "notesPlaceholder": "लक्षण, सवाल, पहुँच के रास्ते…",
+    "notesHint": "विशेषज्ञ को आने से पहले तैयारी में मदद करता है",
+    "priceEstimate": "विज़िट शुल्क",
+    "transportFee": "{{fee}} यात्रा शुल्क",
+    "includesTransport": "{{fee}} यात्रा सहित",
+    "reviewTitle": "बुकिंग सारांश",
+    "totalPayable": "कुल देय राशि",
+    "verifiedExpert": "सत्यापित विशेषज्ञ",
+    "submit": "विशेषज्ञ विज़िट बुक करें · {{price}} भुगतान करें",
+    "checkingPayment": "भुगतान जाँचा जा रहा है…",
+    "done": "हो गया",
+    "orderRef": "बुकिंग संदर्भ {{orderId}}",
+    "submitError": "बुकिंग नहीं बन सकी। कृपया फिर कोशिश करें।",
+    "bookingCreatedTitle": "बुकिंग जमा हो गई",
+    "bookingCreatedBody": "आपका विशेषज्ञ विज़िट अनुरोध सहेज लिया गया। चेकआउट उपलब्ध होने पर भुगतान लिया जाएगा।",
+    "errors": {
+      "visitPurpose": "विज़िट का उद्देश्य चुनें।",
+      "cropType": "फसल का प्रकार चुनें।",
+      "soilType": "मिट्टी का प्रकार चुनें।",
+      "areaAc": "एकड़ में सही खेत का क्षेत्र दर्ज करें।",
+      "preferredDate": "सही विज़िट तारीख चुनें।",
+      "preferredDatePast": "विज़िट की तारीख बीती हुई नहीं हो सकती।",
+      "parcelRequired": "इस विज़िट के लिए मैप किया खेत चुनें।"
+    }
+  },
+  "paymentResult": {
+    "header": "भुगतान स्थिति",
+    "loadingTitle": "भुगतान की पुष्टि हो रही है",
+    "loadingBody": "ब्राउज़र में भुगतान पूरा करें। गेटवे अपडेट होते ही हम स्वचालित रूप से पुष्टि करेंगे।",
+    "successTitle": "भुगतान सफल",
+    "successBody": "आपकी बुकिंग पुष्टि हो गई। विशेषज्ञ जल्द ही आपकी सेवा तैयार करेंगे।",
+    "failedTitle": "भुगतान पुष्टि नहीं हुआ",
+    "failedBody": "भुगतान की पुष्टि नहीं हो सकी। अगर पैसे कट गए हैं तो ऑर्डर संदर्भ के साथ सहायता से संपर्क करें।",
+    "abandonedTitle": "भुगतान पूरा नहीं हुआ",
+    "abandonedBody": "भुगतान पुष्टि से पहले आप वापस आ गए। अगर भुगतान हो चुका है तो फिर जाँचें पर टैप करें। नहीं तो भुगतान जारी रख सकते हैं।",
+    "pendingTitle": "भुगतान लंबित",
+    "pendingBody": "हम अभी भी गेटवे से भुगतान की पुष्टि का इंतज़ार कर रहे हैं।",
+    "orderRef": "ऑर्डर {{orderId}}",
+    "goHome": "होम पर जाएँ",
+    "continuePayment": "भुगतान जारी रखें",
+    "retryCheck": "फिर जाँचें"
+  },
+  "paymentCheckout": {
+    "title": "भुगतान पूरा करें",
+    "returningTitle": "भुगतान जाँचा जा रहा है",
+    "subtitle": "KrishiMotto में सुरक्षित चेकआउट",
+    "orderRef": "ऑर्डर {{orderId}}",
+    "loadingPage": "भुगतान पेज लोड हो रहा है...",
+    "fetchingUrl": "आपका भुगतान पेज तैयार हो रहा है...",
+    "externalAppHint": "आपका UPI ऐप खुल रहा है। भुगतान के बाद KrishiMotto पर वापस आएँ, हम स्थिति जाँच लेंगे।",
+    "externalAppError": "भुगतान ऐप नहीं खुल सका। पेज फिर लोड करें या दूसरा भुगतान विकल्प चुनें।",
+    "returningBody": "KrishiMotto में वापस आपका स्वागत है। हम जाँच रहे हैं कि भुगतान पूरा हुआ या नहीं।",
+    "notCompletedBody": "भुगतान अभी पुष्टि नहीं हुआ। नीचे के पेज पर जारी रख सकते हैं या स्थिति फिर जाँच सकते हैं।",
+    "loadError": "भुगतान पेज लोड नहीं हो सका। कृपया फिर लोड करें।",
+    "httpError": "भुगतान पेज से त्रुटि आई। कृपया फिर लोड करें।",
+    "missingBooking": "भुगतान सत्र मौजूद नहीं है। कृपया बुकिंग फिर से शुरू करें।",
+    "checkStatus": "भुगतान स्थिति जाँचें",
+    "reloadPage": "भुगतान पेज फिर लोड करें"
   }
 }
