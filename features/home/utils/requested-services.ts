@@ -1,4 +1,8 @@
+import type { QueryClient } from '@tanstack/react-query';
+
+import { BOOKING_KEYS } from '@/features/crop-calendar/hooks/use-crop-calendar-booking';
 import { isActiveStorageRequest } from '@/features/home/utils/storage-display';
+import { STORAGE_KEYS } from '@/features/storage/hooks/use-storage-request';
 import type { Booking } from '@/types/booking';
 import type { StorageRequest } from '@/types/storage';
 
@@ -28,4 +32,11 @@ export function buildRequestedServiceItems(
       request,
     })),
   ].sort((left, right) => right.createdAt.localeCompare(left.createdAt));
+}
+
+export function invalidateRequestedServicesQueries(queryClient: QueryClient) {
+  return Promise.all([
+    queryClient.invalidateQueries({ queryKey: BOOKING_KEYS.all }),
+    queryClient.invalidateQueries({ queryKey: STORAGE_KEYS.all }),
+  ]);
 }

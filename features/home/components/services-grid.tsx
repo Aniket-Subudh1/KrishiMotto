@@ -57,17 +57,19 @@ export function ServicesGrid({ services, t, useBodyAsBadge = false }: ServicesGr
             >
               <AppIcon name={service.icon} size={22} color={service.iconColor} />
             </View>
-            <Text className="mt-2.5 w-full px-0.5 text-center text-[11px] font-semibold leading-[15px] text-indigo">
-              {service.title}
-            </Text>
-            {!useBodyAsBadge ? (
-              <Text
-                className="mt-1 w-full px-0.5 text-center text-[10px] font-medium leading-[14px]"
-                style={{ color: service.badgeColor ?? Palette.indiaGreen }}
-              >
-                {service.badge}
+            <View className="mt-2.5 w-full flex-row flex-wrap items-baseline justify-center gap-x-1 gap-y-0.5 px-0.5">
+              <Text className="shrink text-center text-[11px] font-semibold leading-[15px] text-indigo">
+                {service.title}
               </Text>
-            ) : null}
+              {!useBodyAsBadge ? (
+                <Text
+                  className="shrink text-center text-[10px] font-medium leading-[14px]"
+                  style={{ color: service.badgeColor ?? Palette.indiaGreen }}
+                >
+                  {service.badge}
+                </Text>
+              ) : null}
+            </View>
           </Pressable>
         </View>
       ))}

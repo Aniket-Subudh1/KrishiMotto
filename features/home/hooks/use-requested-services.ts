@@ -1,4 +1,5 @@
-import { useMemo } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback, useMemo } from 'react';
 
 import { useHomeBookings } from '@/features/home/hooks/use-bookings';
 import { useHomeStorageRequests } from '@/features/home/hooks/use-storage-requests';
@@ -10,6 +11,13 @@ import {
 export function useRequestedServices() {
   const bookingsQuery = useHomeBookings(REQUESTED_SERVICES_FETCH_LIMIT);
   const storageQuery = useHomeStorageRequests(REQUESTED_SERVICES_FETCH_LIMIT);
+
+  useFocusEffect(
+    useCallback(() => {
+      void bookingsQuery.refetch();
+      void storageQuery.refetch();
+    }, [bookingsQuery.refetch, storageQuery.refetch]),
+  );
 
   const items = useMemo(
     () =>

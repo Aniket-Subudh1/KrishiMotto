@@ -2,6 +2,7 @@ import { AppIcon } from '@/components/ui/app-icon';
 import { resolveAppIcon } from '@/lib/icon-names';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
+import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, AppState, type AppStateStatus, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -19,6 +20,7 @@ import {
   type PaymentSessionSnapshot,
 } from '@/lib/payment-session';
 import { formatPaise } from '@/lib/currency';
+import { invalidateRequestedServicesQueries } from '@/features/home/utils/requested-services';
 import { AppBarGradient, Palette } from '@/constants/theme';
 import { useAppLocale } from '@/hooks/use-app-locale';
 import type { PaymentStatus } from '@/types/booking';
@@ -39,6 +41,7 @@ function isTerminal(status: ResultState): status is PaymentStatus {
 
 export default function PaymentResultScreen() {
   const { t } = useAppLocale();
+  const queryClient = useQueryClient();
   const insets = useSafeAreaInsets();
   const {
     bookingId,
@@ -69,6 +72,12 @@ export default function PaymentResultScreen() {
     if (snapshot.orderId) setOrderId(snapshot.orderId);
     setPaymentUrl(snapshot.paymentUrl);
   }, []);
+
+  useEffect(() => {
+    if (status === 'PAID' || status === 'FAILED') {
+      void invalidateRequestedServicesQueries(queryClient);
+    }
+  }, [queryClient, status]);
 
   useEffect(() => {
     if (!session) {

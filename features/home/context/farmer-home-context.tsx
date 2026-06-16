@@ -4,8 +4,8 @@ import { createContext, useCallback, useContext, useMemo, useState, type ReactNo
 import { LandParcelSheet } from '@/features/home/components/land-parcel-sheet';
 import { useFarmerProfile } from '@/features/farmer/hooks/use-farmer-profile';
 import { useLandParcels } from '@/features/farmer/hooks/use-land-parcel';
-import { BOOKING_KEYS } from '@/features/crop-calendar/hooks/use-crop-calendar-booking';
 import { CATALOG_KEYS } from '@/features/home/hooks/use-catalog';
+import { invalidateRequestedServicesQueries } from '@/features/home/utils/requested-services';
 import { useAuthStore } from '@/stores/auth.store';
 import type { FarmerProfile } from '@/types/farmer';
 import type { LandParcel } from '@/types/farmer';
@@ -37,7 +37,7 @@ export function FarmerHomeProvider({ children }: { children: ReactNode }) {
     profileQuery.refetch();
     parcelsQuery.refetch();
     queryClient.invalidateQueries({ queryKey: CATALOG_KEYS.services });
-    queryClient.invalidateQueries({ queryKey: BOOKING_KEYS.all });
+    void invalidateRequestedServicesQueries(queryClient);
   }, [parcelsQuery, profileQuery, queryClient]);
 
   const value = useMemo(

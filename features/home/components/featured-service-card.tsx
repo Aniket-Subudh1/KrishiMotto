@@ -50,22 +50,30 @@ export function FeaturedServiceCard({ service, t }: FeaturedServiceCardProps) {
           >
             <AppIcon name={iconStyle.icon} size={24} color={iconStyle.iconColor} />
           </View>
-          <View
-            className="ml-auto shrink self-start"
-            style={{ backgroundColor: 'rgba(70, 150, 47, 0.1)', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 }}
-          >
-            <Text className="text-right text-[11px] font-bold leading-[15px] text-india-green">
-              {translateServicePrice(t, service.iconType, service.priceLabel)}
+          <View className="min-w-0 flex-1">
+            <View className="flex-row flex-wrap items-start justify-between gap-x-2 gap-y-1">
+              <Text className="min-w-0 shrink text-[16px] font-bold leading-[22px] text-indigo">
+                {translateServiceTitle(t, service.iconType, service.title)}
+              </Text>
+              <View
+                className="shrink-0 self-start"
+                style={{
+                  backgroundColor: 'rgba(70, 150, 47, 0.1)',
+                  borderRadius: 999,
+                  paddingHorizontal: 10,
+                  paddingVertical: 4,
+                }}
+              >
+                <Text className="text-[11px] font-bold leading-[15px] text-india-green">
+                  {translateServicePrice(t, service.iconType, service.priceLabel)}
+                </Text>
+              </View>
+            </View>
+            <Text className="mt-1.5 text-[13px] leading-[19px] text-muted">
+              {translateServiceDescription(t, service.iconType, service.description)}
             </Text>
           </View>
         </View>
-
-        <Text className="mt-4 text-[16px] font-bold leading-[22px] text-indigo">
-          {translateServiceTitle(t, service.iconType, service.title)}
-        </Text>
-        <Text className="mt-1.5 text-[13px] leading-[19px] text-muted">
-          {translateServiceDescription(t, service.iconType, service.description)}
-        </Text>
 
         <View className="mt-4 flex-row items-center gap-1.5">
           <Text className="shrink text-[13px] font-semibold leading-[18px] text-india-green">
