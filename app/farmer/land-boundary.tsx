@@ -11,13 +11,11 @@ import {
   Text as RNText,
   View,
 } from 'react-native';
-import type MapView from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
   LandMap,
   type LatLng,
-  type MapType,
   type Region,
 } from '@/components/land/land-map';
 
@@ -63,7 +61,6 @@ export default function LandBoundaryScreen() {
     profileCompleted || isEditMode
       ? (farmerProfile?.landType ?? 'OWNED')
       : signupLandType;
-  const mapRef = useRef<MapView>(null);
   const pointIdRef = useRef(0);
   const createParcel = useCreateLandParcel();
   const updateParcel = useUpdateLandParcel();
@@ -73,9 +70,6 @@ export default function LandBoundaryScreen() {
   const isBusy = createParcel.isPending || updateParcel.isPending;
 
   const [points, setPoints] = useState<BoundaryPoint[]>([]);
-  const [mapType, setMapType] = useState<MapType>(
-    Platform.OS === 'android' ? 'standard' : 'hybrid',
-  );
   const [initialRegion, setInitialRegion] = useState<Region>(INDIA_CENTER);
   const [locationReady, setLocationReady] = useState(false);
   const [locationDenied, setLocationDenied] = useState(false);
@@ -204,15 +198,14 @@ export default function LandBoundaryScreen() {
         timeout,
       ]);
       if (!loc) return;
-      mapRef.current?.animateToRegion(
-        {
-          latitude: loc.coords.latitude,
-          longitude: loc.coords.longitude,
-          latitudeDelta: 0.003,
-          longitudeDelta: 0.003,
-        },
-        500,
-      );
+      setLocationDenied(false);
+      const region = {
+        latitude: loc.coords.latitude,
+        longitude: loc.coords.longitude,
+        latitudeDelta: 0.003,
+        longitudeDelta: 0.003,
+      };
+      setInitialRegion(region);
     } catch {}
   }
 
@@ -305,8 +298,6 @@ export default function LandBoundaryScreen() {
       {/* Full-screen map */}
       {locationReady ? (
         <LandMap
-          mapRef={mapRef}
-          mapType={mapType}
           initialRegion={initialRegion}
           points={points}
           minPoints={MIN_POINTS}
@@ -343,30 +334,6 @@ export default function LandBoundaryScreen() {
             </Text>
           </View>
 
-          {/* Map type toggle */}
-          <Pressable
-            style={styles.mapTypeButton}
-            onPress={() =>
-              setMapType((current) => {
-                if (Platform.OS === 'android') {
-                  return current === 'standard' ? 'satellite' : 'standard';
-                }
-
-                return current === 'hybrid' ? 'standard' : 'hybrid';
-              })
-            }
-          >
-            <Ionicons
-              name={mapType === 'standard' ? 'globe-outline' : 'map-outline'}
-              size={16}
-              color={Palette.indigo}
-            />
-            <RNText style={styles.mapTypeText}>
-              {mapType === 'standard'
-                ? t('landBoundary.satelliteView')
-                : t('landBoundary.mapView')}
-            </RNText>
-          </Pressable>
         </View>
 
         {/* Location denied banner */}
@@ -566,22 +533,6 @@ const styles = StyleSheet.create({
     color: Palette.indiaGreen,
     textTransform: 'uppercase',
     letterSpacing: 0.4,
-  },
-  mapTypeButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    paddingHorizontal: 10,
-    paddingVertical: 7,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.12)',
-    backgroundColor: '#F8FAFC',
-  },
-  mapTypeText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: Palette.indigo,
   },
   locationBanner: {
     flexDirection: 'row',
