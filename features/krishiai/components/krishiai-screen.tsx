@@ -12,12 +12,15 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import type { LayoutChangeEvent, ScrollViewProps } from 'react-native';
 import { KeyboardStickyView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ErrorBanner } from '@/components/auth/auth-screen-layout';
 import { MarkdownText } from '@/components/ui/markdown-text';
 import { Text } from '@/components/ui/text';
+import { ChatScrollView, type ChatScrollViewRef } from '@/features/krishiai/components/chat-scroll-view';
+import { SuggestedActionCard } from '@/features/krishiai/components/suggested-action-card';
 import { useKrishiAiChat } from '@/features/krishiai/hooks/use-krishiai-chat';
 import { useSpeechInput } from '@/features/krishiai/hooks/use-speech-input';
 import { resolveSuggestedActionRoute } from '@/features/krishiai/utils/action-routes';
@@ -38,14 +41,27 @@ export function KrishiAiScreen() {
   const insets = useSafeAreaInsets();
   const user = useAuthStore((s) => s.user);
   const listRef = useRef<FlatList<AiChatMessage>>(null);
+  const chatScrollRef = useRef<ChatScrollViewRef>(null);
+  const [composerHeight, setComposerHeight] = useState(88);
 
   const [input, setInput] = useState('');
   const { messages, sendMessage, clearConversation, failedPrompt, isSending, isClearing, errorMessage } =
     useKrishiAiChat({ locale, errorFallback: t('krishiai.errorUnreachable') });
 
+  const handleSpeechComplete = useCallback(
+    (transcript: string) => {
+      const trimmed = transcript.trim();
+      if (!trimmed) return;
+      setInput('');
+      sendMessage(trimmed);
+    },
+    [sendMessage],
+  );
+
   const speech = useSpeechInput({
     locale,
     onTranscript: setInput,
+    onRecognitionComplete: handleSpeechComplete,
     disabled: isSending,
     unavailableMessage: t('krishiai.voiceUnavailable'),
     microphonePermissionMessage: t('krishiai.microphonePermission'),
@@ -57,25 +73,58 @@ export function KrishiAiScreen() {
     }
   }, [failedPrompt]);
 
+  const renderScrollComponent = useCallback(
+    (props: ScrollViewProps) => (
+      <ChatScrollView
+        {...props}
+        chatScrollRef={chatScrollRef}
+        bottomOffset={composerHeight}
+      />
+    ),
+    [composerHeight],
+  );
+
+  const handleComposerLayout = useCallback((event: LayoutChangeEvent) => {
+    const nextHeight = Math.ceil(event.nativeEvent.layout.height);
+    if (nextHeight > 0) {
+      setComposerHeight(nextHeight);
+    }
+  }, []);
+
   useEffect(() => {
     if (messages.length === 0) return;
     const timer = setTimeout(() => {
-      listRef.current?.scrollToEnd({ animated: true });
-    }, 80);
+      chatScrollRef.current?.scrollToEnd({ animated: true });
+    }, 100);
     return () => clearTimeout(timer);
-  }, [messages, isSending]);
+  }, [messages, isSending, composerHeight]);
 
   const handleSend = useCallback(() => {
     const trimmed = input.trim();
     if (!trimmed || isSending) return;
 
     if (speech.isListening) {
-      speech.stopListening();
+      speech.stopListening({ suppressComplete: true });
     }
 
     setInput('');
     sendMessage(trimmed);
   }, [input, isSending, sendMessage, speech]);
+
+  const handleSuggestedPrompt = useCallback(
+    (prompt: string) => {
+      const trimmed = prompt.trim();
+      if (!trimmed || isSending) return;
+
+      if (speech.isListening) {
+        speech.stopListening({ suppressComplete: true });
+      }
+
+      setInput('');
+      sendMessage(trimmed);
+    },
+    [isSending, sendMessage, speech],
+  );
 
   const handleClear = useCallback(() => {
     Alert.alert(t('krishiai.clearTitle'), t('krishiai.clearBody'), [
@@ -85,7 +134,7 @@ export function KrishiAiScreen() {
         style: 'destructive',
         onPress: () => {
           if (speech.isListening) {
-            speech.stopListening();
+            speech.stopListening({ suppressComplete: true });
           }
           setInput('');
           clearConversation();
@@ -163,7 +212,11 @@ export function KrishiAiScreen() {
           keyExtractor={(item) => item.id}
           contentContainerClassName="grow px-5 pb-4 pt-4"
           keyboardShouldPersistTaps="handled"
-          ListEmptyComponent={<EmptyState t={t} onPromptPress={setInput} />}
+          keyboardDismissMode="interactive"
+          renderScrollComponent={renderScrollComponent}
+          ListEmptyComponent={
+            <EmptyState t={t} onPromptPress={handleSuggestedPrompt} disabled={isSending} />
+          }
           renderItem={({ item }) => (
             <MessageBubble
               message={item}
@@ -183,8 +236,8 @@ export function KrishiAiScreen() {
           }
         />
 
-        <KeyboardStickyView>
-          <View>
+        <KeyboardStickyView offset={{ opened: Math.max(insets.bottom - 8, 0) }}>
+          <View onLayout={handleComposerLayout}>
             {(errorMessage || speech.error) && (
               <View className="px-5 pb-2">
                 <ErrorBanner message={errorMessage ?? speech.error ?? ''} />
@@ -266,9 +319,11 @@ export function KrishiAiScreen() {
 function EmptyState({
   t,
   onPromptPress,
+  disabled = false,
 }: {
   t: (key: string) => string;
   onPromptPress: (text: string) => void;
+  disabled?: boolean;
 }) {
   return (
     <View className="flex-1 items-center justify-center py-10">
@@ -292,7 +347,9 @@ function EmptyState({
           <Pressable
             key={key}
             onPress={() => onPromptPress(t(key))}
+            disabled={disabled}
             className="rounded-2xl border border-border bg-white px-4 py-3"
+            style={({ pressed }) => ({ opacity: disabled ? 0.5 : pressed ? 0.85 : 1 })}
           >
             <Text className="text-[14px] leading-5 text-indigo">{t(key)}</Text>
           </Pressable>
@@ -329,31 +386,20 @@ function MessageBubble({
             content={message.content}
             className="text-[15px] leading-[22px] text-indigo"
             boldClassName="text-[15px] leading-[22px] font-bold text-indigo"
+            italicClassName="text-[15px] leading-[22px] italic text-indigo"
           />
         )}
       </View>
 
       {!isUser && message.suggestedActions && message.suggestedActions.length > 0 ? (
-        <View className="mt-2 max-w-[85%] flex-row flex-wrap gap-2">
+        <View className="mt-2.5 w-full max-w-[85%] gap-2">
           {message.suggestedActions.map((action, index) => (
-            <Pressable
+            <SuggestedActionCard
               key={`${action.action}-${index}`}
+              action={action}
               onPress={() => onActionPress(action)}
-              className="rounded-full border border-india-green/30 bg-india-green/10 px-3 py-2"
-            >
-              <MarkdownText
-                content={action.label}
-                className="text-[13px] font-semibold text-india-green"
-                boldClassName="text-[13px] font-bold text-india-green"
-              />
-              {action.reason ? (
-                <MarkdownText
-                  content={action.reason}
-                  className="mt-0.5 text-[11px] text-muted"
-                  boldClassName="mt-0.5 text-[11px] font-semibold text-muted"
-                />
-              ) : null}
-            </Pressable>
+              ctaLabel={t('home.tools.bookNow')}
+            />
           ))}
         </View>
       ) : null}

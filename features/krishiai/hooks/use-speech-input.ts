@@ -14,6 +14,7 @@ import type { AppLocale } from '@/constants/languages';
 type UseSpeechInputOptions = {
   locale: AppLocale;
   onTranscript: (text: string) => void;
+  onRecognitionComplete?: (text: string) => void;
   disabled?: boolean;
   unavailableMessage?: string;
   microphonePermissionMessage?: string;
@@ -22,6 +23,7 @@ type UseSpeechInputOptions = {
 export function useSpeechInput({
   locale,
   onTranscript,
+  onRecognitionComplete,
   disabled = false,
   unavailableMessage = 'Voice input is not available in this build. Use a development build to enable the microphone.',
   microphonePermissionMessage = 'Microphone permission is required for voice input.',
@@ -31,10 +33,16 @@ export function useSpeechInput({
   const [error, setError] = useState<string | null>(null);
   const transcriptRef = useRef('');
   const onTranscriptRef = useRef(onTranscript);
+  const onRecognitionCompleteRef = useRef(onRecognitionComplete);
+  const suppressCompleteRef = useRef(false);
 
   useEffect(() => {
     onTranscriptRef.current = onTranscript;
   }, [onTranscript]);
+
+  useEffect(() => {
+    onRecognitionCompleteRef.current = onRecognitionComplete;
+  }, [onRecognitionComplete]);
 
   useEffect(() => {
     setIsAvailable(isSpeechRecognitionSupported());
@@ -49,10 +57,17 @@ export function useSpeechInput({
         setIsListening(true);
         setError(null);
         transcriptRef.current = '';
+        suppressCompleteRef.current = false;
       }),
       module.addListener('end', () => {
         setIsListening(false);
+        const transcript = transcriptRef.current.trim();
         transcriptRef.current = '';
+
+        if (transcript && !suppressCompleteRef.current) {
+          onRecognitionCompleteRef.current?.(transcript);
+        }
+        suppressCompleteRef.current = false;
       }),
       module.addListener('result', (event) => {
         const resultEvent = event as SpeechRecognitionResultEvent;
@@ -73,6 +88,7 @@ export function useSpeechInput({
     ];
 
     return () => {
+      suppressCompleteRef.current = true;
       subscriptions.forEach((subscription) => subscription.remove());
       try {
         module.abort();
@@ -82,7 +98,11 @@ export function useSpeechInput({
     };
   }, []);
 
-  const stopListening = useCallback(() => {
+  const stopListening = useCallback((options?: { suppressComplete?: boolean }) => {
+    if (options?.suppressComplete) {
+      suppressCompleteRef.current = true;
+    }
+
     const module = getSpeechRecognitionModule();
     if (!module) {
       setIsListening(false);
