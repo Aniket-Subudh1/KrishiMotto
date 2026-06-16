@@ -491,7 +491,29 @@
       "comingSoonBody": "More farm services are on our roadmap."
     }
   },
+  "krishiai": {
+    "title": "KrishiAI",
+    "subtitle": "Your farming co-pilot",
+    "welcome": "Ask anything about your farm",
+    "welcomeBody": "Get crop advice, service recommendations, and seasonal tips in your language.",
+    "inputPlaceholder": "Ask about crops, soil, pests…",
+    "send": "Send message",
+    "thinking": "KrishiAI is thinking…",
+    "listening": "Listening… speak now",
+    "startListening": "Start voice input",
+    "stopListening": "Stop voice input",
+    "clearTitle": "Clear chat",
+    "clearBody": "This removes your KrishiAI conversation on this device.",
+    "clearConfirm": "Clear",
+    "voiceUnavailable": "Voice input needs a development build. You can still type your question.",
+    "prompts": {
+      "yellowLeaves": "My paddy leaves are turning yellow — what should I do?",
+      "calendar": "Help me plan a crop calendar for this season",
+      "soilTest": "When should I book a soil health test?"
+    }
+  },
   "common": {
+    "back": "Back",
     "cancel": "Cancel",
     "done": "Done",
     "selectDate": "Select date",
@@ -569,6 +591,14 @@
       "inProgress": "In progress",
       "completed": "Completed",
       "cancelled": "Cancelled"
+    },
+    "storageStatuses": {
+      "SUBMITTED": "Request submitted",
+      "ACCEPTED": "Accepted by warehouse",
+      "PAYOUT_PAID": "Valuation paid",
+      "PICKED_UP": "Crop picked up",
+      "IN_STORAGE": "In storage",
+      "RELEASED": "Released"
     },
     "servicePrices": {
       "CROP_CALENDAR": "₹199/crop",
@@ -963,5 +993,93 @@
     "missingBooking": "Payment session is missing. Please start the booking again.",
     "checkStatus": "Check payment status",
     "reloadPage": "Reload payment page"
+  },
+  "storage": {
+    "title": "Crop Storage",
+    "subtitle": "₹6,499 per 100 kg block",
+    "stepOf": "Step {{current}} of {{total}}",
+    "steps": {
+      "warehouse": "Warehouse",
+      "storage": "Crop & payout",
+      "review": "Review"
+    },
+    "stepHints": {
+      "warehouse": "Choose a licensed warehouse near your farm",
+      "storage": "Enter crop quantity and bank details for warehouse payout",
+      "review": "Confirm details before submitting your storage request"
+    },
+    "payoutNotice": "The warehouse pays you upfront based on crop valuation. KrishiMotto does not collect payment for storage — you receive funds in your bank account after verification.",
+    "back": "Back",
+    "continue": "Continue",
+    "done": "Done",
+    "submit": "Submit storage request",
+    "submitting": "Submitting…",
+    "submitError": "Could not submit your storage request. Please try again.",
+    "successTitle": "Storage request submitted",
+    "successBody": "Your crop storage request is recorded. The warehouse will verify quantity and arrange pickup.",
+    "requestRef": "Reference {{requestNumber}}",
+    "openTracker": "Open crop tracker",
+    "nextStepsTitle": "What happens next",
+    "nextSteps": {
+      "submitted": "Warehouse reviews your request and crop details",
+      "pickup": "Pickup is scheduled once accepted",
+      "payout": "Valuation is transferred to your bank account",
+      "tracker": "Live crop tracker unlocks when produce is in storage"
+    },
+    "warehouseLabel": "Warehouse",
+    "warehouseHint": "Swipe to compare nearby warehouses",
+    "cropType": "Crop type",
+    "quantityKg": "Quantity (kg)",
+    "quantityKgHint": "Minimum 1 kg. Billing is per 100 kg block.",
+    "valuationEstimate": "Estimated valuation",
+    "valuationBlocks": "{{blocks}} × 100 kg blocks",
+    "bankSection": "Payout bank account",
+    "accountHolder": "Account holder name",
+    "accountHolderPlaceholder": "As per bank records",
+    "accountNumber": "Account number",
+    "ifsc": "IFSC code",
+    "bankName": "Bank name",
+    "bankNamePlaceholder": "State Bank of India",
+    "notes": "Notes (optional)",
+    "notesPlaceholder": "Pickup window, moisture level, grade…",
+    "notesHint": "Helps the warehouse prepare for intake",
+    "reviewTitle": "Request summary",
+    "reviewDisclaimer": "Final valuation may change after warehouse grading at intake. Payout is released only after physical verification.",
+    "errors": {
+      "warehouseRequired": "Select a warehouse.",
+      "cropType": "Select a crop type.",
+      "quantityKg": "Enter a valid quantity in kg.",
+      "accountHolder": "Enter the account holder name.",
+      "accountNumber": "Enter a valid account number.",
+      "ifsc": "Enter a valid IFSC code.",
+      "bankName": "Enter your bank name."
+    }
+  },
+  "cropTracker": {
+    "title": "Crop Tracker",
+    "subtitle": "Live storage conditions for opted-in harvest",
+    "lockedTitle": "Storage required",
+    "lockedBody": "Crop tracker works only after you opt into warehouse storage. Submit a storage request to unlock live temperature, humidity, and quality monitoring.",
+    "optStorage": "Opt into storage",
+    "tracking": "Now tracking",
+    "pendingTitle": "Waiting for storage intake",
+    "pendingBody": "Your storage request is in progress. Live IoT tracking begins once your crop is marked in storage at the warehouse.",
+    "statusTimeline": "Request progress",
+    "otherRequests": "{{count}} more storage request(s) on your account",
+    "addStorage": "Submit another storage request",
+    "loadingDashboard": "Loading live readings…",
+    "dashboardError": "Could not load live tracker data. Pull to refresh.",
+    "liveStatus": "Storage status",
+    "lastUpdated": "Updated {{time}}",
+    "sensors": {
+      "temperature": "Temperature",
+      "humidity": "Humidity",
+      "co2": "CO₂"
+    },
+    "aiForecast": "AI quality forecast",
+    "spoilageRisk": "Spoilage risk",
+    "qualityGrade": "Quality grade",
+    "forecastWindow": "Forecast window",
+    "valuation": "Reference valuation"
   }
 }

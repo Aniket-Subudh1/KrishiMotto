@@ -80,6 +80,15 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       },
     ],
     [
+      "expo-speech-recognition",
+      {
+        microphonePermission:
+          "KrishiMotto needs microphone access so you can ask KrishiAI by voice.",
+        speechRecognitionPermission:
+          "KrishiMotto uses speech recognition to turn your voice into text for KrishiAI.",
+      },
+    ],
+    [
       "expo-splash-screen",
       {
         backgroundColor: Palette.white,

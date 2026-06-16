@@ -13,6 +13,8 @@ export const SERVICE_ROUTES: Partial<Record<ServiceIconType, Href>> = {
   SOIL_HEALTH: '/services/soil-health',
   EXPERT_VISIT: '/services/expert-visit',
   PPACS_CREDIT: '/services/ppacs-credit',
+  STORAGE: '/services/storage',
+  CROP_TRACKER: '/services/crop-tracker',
 };
 
 const FEATURED_SERVICE_ORDER: ServiceIconType[] = [

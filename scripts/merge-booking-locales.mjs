@@ -20,6 +20,8 @@ const KEYS_TO_MERGE = [
   'soilHealth',
   'expertVisit',
   'ppacsCredit',
+  'storage',
+  'cropTracker',
   'paymentResult',
   'paymentCheckout',
 ];
@@ -86,6 +88,14 @@ const overrides = {
         MARKET: 'बाज़ार भाव',
       },
       servicePrices: en.enums.servicePrices,
+      storageStatuses: {
+        SUBMITTED: 'अनुरोध जमा',
+        ACCEPTED: 'गोदाम ने स्वीकार किया',
+        PAYOUT_PAID: 'मूल्यांकन भुगतान',
+        PICKED_UP: 'फसल उठाई गई',
+        IN_STORAGE: 'भंडारण में',
+        RELEASED: 'रिलीज़',
+      },
     },
     home: {
       dashboard: {
@@ -160,6 +170,14 @@ const overrides = {
         MARKET: 'சந்தை விலை',
       },
       servicePrices: en.enums.servicePrices,
+      storageStatuses: {
+        SUBMITTED: 'கோரிக்கை சமர்ப்பிக்கப்பட்டது',
+        ACCEPTED: 'கிடங்கு ஏற்றுக்கொண்டது',
+        PAYOUT_PAID: 'மதிப்பீடு செலுத்தப்பட்டது',
+        PICKED_UP: 'பயிர் எடுக்கப்பட்டது',
+        IN_STORAGE: 'சேமிப்பில்',
+        RELEASED: 'விடுவிக்கப்பட்டது',
+      },
     },
     home: {
       dashboard: {
@@ -234,6 +252,14 @@ const overrides = {
         MARKET: 'మార్కెట్ ధర',
       },
       servicePrices: en.enums.servicePrices,
+      storageStatuses: {
+        SUBMITTED: 'అభ్యర్థన సమర్పించబడింది',
+        ACCEPTED: 'గోదాము అంగీకరించింది',
+        PAYOUT_PAID: 'మూల్యాంకనం చెల్లించబడింది',
+        PICKED_UP: 'పంట తీసుకెళ్లబడింది',
+        IN_STORAGE: 'నిల్వలో',
+        RELEASED: 'విడుదల',
+      },
     },
     home: {
       dashboard: {
@@ -308,6 +334,14 @@ const overrides = {
         MARKET: 'ବଜାର ମୂଲ୍ୟ',
       },
       servicePrices: en.enums.servicePrices,
+      storageStatuses: {
+        SUBMITTED: 'ଅନୁରୋଧ ଦାଖଲ',
+        ACCEPTED: 'ଗୋଦାମ ଗ୍ରହଣ କଲା',
+        PAYOUT_PAID: 'ମୂଲ୍ୟାୟନ ଦେୟ',
+        PICKED_UP: 'ଫସଲ ଉଠାଗଲା',
+        IN_STORAGE: 'ଭଣ୍ଡାରରେ',
+        RELEASED: 'ମୁକ୍ତ',
+      },
     },
     home: {
       dashboard: {

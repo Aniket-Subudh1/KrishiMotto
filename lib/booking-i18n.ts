@@ -1,6 +1,7 @@
 import type { TFunction } from 'i18next';
 
 import type { ServiceIconType } from '@/types/catalog';
+import type { StorageRequestStatus } from '@/types/storage';
 import type { CreditPurpose, CropType, Season, SoilType, VisitPurpose } from '@/types/booking';
 
 export const CREDIT_PURPOSE_I18N_KEYS: Record<CreditPurpose, string> = {
@@ -76,6 +77,10 @@ export function translateServiceDescription(
     `enums.serviceDescriptions.${iconType}`,
     fallback ?? translateServiceTitle(t, iconType, iconType),
   );
+}
+
+export function translateStorageStatus(t: TFunction, status: StorageRequestStatus): string {
+  return translateOrFallback(t, `enums.storageStatuses.${status}`, status);
 }
 
 export function translateScheduleActivity(t: TFunction, name: string): string {

@@ -7,7 +7,6 @@ import { Text } from '@/components/ui/text';
 import { HomeHeroHeader } from '@/features/home/components/home-hero-header';
 import { HomeServicesGrid } from '@/features/home/components/home-services-grid';
 import { RequestedServicesSection } from '@/features/home/components/requested-services-section';
-import { showComingSoonAlert } from '@/lib/coming-soon';
 import { Palette } from '@/constants/theme';
 import type { FarmerProfile } from '@/types/farmer';
 import type { LandParcel } from '@/types/farmer';
@@ -105,7 +104,7 @@ export function OverviewTab({
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={t('home.dashboard.askAi')}
-        onPress={() => showComingSoonAlert(t)}
+        onPress={() => router.push('/krishiai')}
         className="absolute bottom-5 right-5 flex-row items-center gap-2 rounded-full bg-india-green px-5 py-3.5"
         style={{
           shadowColor: Palette.indiaGreen,

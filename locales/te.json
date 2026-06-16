@@ -487,6 +487,7 @@
     "resubmit": "పత్రాలను మళ్లీ సమర్పించండి"
   },
   "common": {
+    "back": "Back",
     "cancel": "రద్దు",
     "done": "పూర్తి",
     "selectDate": "తేదీ ఎంచుకోండి",
@@ -565,6 +566,14 @@
       "completed": "Completed",
       "cancelled": "Cancelled"
     },
+    "storageStatuses": {
+      "SUBMITTED": "అభ్యర్థన సమర్పించబడింది",
+      "ACCEPTED": "గోదాము అంగీకరించింది",
+      "PAYOUT_PAID": "మూల్యాంకనం చెల్లించబడింది",
+      "PICKED_UP": "పంట తీసుకెళ్లబడింది",
+      "IN_STORAGE": "నిల్వలో",
+      "RELEASED": "విడుదల"
+    },
     "servicePrices": {
       "CROP_CALENDAR": "₹199/crop",
       "DRONE_SPRAY": "₹399/acre",
@@ -582,6 +591,24 @@
       "HARVEST": "Soon",
       "INSURANCE": "Soon",
       "MARKET": "Live"
+    },
+    "serviceDescriptions": {
+      "CROP_CALENDAR": "Season-long sowing, irrigation, and fertilizer plan.",
+      "DRONE_SPRAY": "Fast, even crop spraying across your field.",
+      "CROP_HEALTH": "Satellite and field checks for crop stress.",
+      "SOIL_HEALTH": "Lab soil test with nutrient recommendations.",
+      "EXPERT_VISIT": "On-farm visit from a certified agronomist.",
+      "PPACS_CREDIT": "Input and equipment credit through PPACS.",
+      "STORAGE": "Warehouse storage for your harvest.",
+      "CROP_TRACKER": "Track crop growth and field activity.",
+      "IRRIGATION": "Smart irrigation scheduling for your fields.",
+      "FERTILIZER": "Fertilizer planning based on soil needs.",
+      "PEST_CONTROL": "Pest scouting and treatment plans.",
+      "WEATHER": "Hyperlocal weather alerts for your farm.",
+      "SEEDS": "Quality seed sourcing and delivery.",
+      "HARVEST": "Digital harvest identification and records.",
+      "INSURANCE": "Crop insurance quotes and claims.",
+      "MARKET": "Live mandi prices for your crops."
     }
   },
   "cropCalendar": {
@@ -878,5 +905,92 @@
     "missingBooking": "చెల్లింపు సెషన్ లేదు. బుకింగ్ మళ్లీ ప్రారంభించండి.",
     "checkStatus": "చెల్లింపు స్థితి తనిఖీ చేయండి",
     "reloadPage": "చెల్లింపు పేజీ మళ్లీ లోడ్ చేయండి"
+  },
+  "storage": {
+    "title": "పంట నిల్వ",
+    "subtitle": "₹6,499 ప్రతి 100 కిలో బ్లాక్",
+    "stepOf": "దశ {{current}} / {{total}}",
+    "steps": {
+      "warehouse": "గోదాము",
+      "storage": "పంట & చెల్లింపు",
+      "review": "సమీక్ష"
+    },
+    "stepHints": {
+      "warehouse": "మీ పొలానికి దగ్గరలో లైసెన్స్ పొందిన గోదామును ఎంచుకోండి",
+      "storage": "పంట పరిమాణం మరియు బ్యాంక్ వివరాలు నమోదు చేయండి",
+      "review": "సమర్పించే ముందు వివరాలను నిర్ధారించండి"
+    },
+    "payoutNotice": "గోదాము పంట మూల్యాంకనం ఆధారంగా ముందస్తు చెల్లిస్తుంది. KrishiMotto నిల్వకు చెల్లింపు సేకరించదు.",
+    "continue": "కొనసాగించండి",
+    "done": "పూర్తి",
+    "submit": "నిల్వ అభ్యర్థన సమర్పించండి",
+    "submitting": "సమర్పిస్తోంది…",
+    "submitError": "నిల్వ అభ్యర్థన సమర్పించలేకపోయింది.",
+    "successTitle": "నిల్వ అభ్యర్థన సమర్పించబడింది",
+    "successBody": "మీ పంట నిల్వ అభ్యర్థన నమోదు చేయబడింది.",
+    "requestRef": "సూచన {{requestNumber}}",
+    "openTracker": "పంట ట్రాకర్ తెరవండి",
+    "nextStepsTitle": "తర్వాత ఏమి జరుగుతుంది",
+    "nextSteps": {
+      "submitted": "గోదాము మీ అభ్యర్థనను సమీక్షిస్తుంది",
+      "pickup": "అంగీకరించిన తర్వాత తీసుకెళ్లే సమయం నిర్ణయించబడుతుంది",
+      "payout": "మూల్యాంకనం మీ బ్యాంక్ ఖాతాకు పంపబడుతుంది",
+      "tracker": "నిల్వలో ఉన్నప్పుడు లైవ్ ట్రాకర్ తెరుచుకుంటుంది"
+    },
+    "warehouseLabel": "గోదాము",
+    "warehouseHint": "సమీప గోదాములను పోల్చడానికి స్వైప్ చేయండి",
+    "cropType": "పంట రకం",
+    "quantityKg": "పరిమాణం (కిలో)",
+    "quantityKgHint": "కనీసం 1 కిలో. 100 కిలో బ్లాక్‌కు బిల్లింగ్.",
+    "valuationEstimate": "అంచనా మూల్యాంకనం",
+    "valuationBlocks": "{{blocks}} × 100 కిలో బ్లాక్‌లు",
+    "bankSection": "చెల్లింపు బ్యాంక్ ఖాతా",
+    "accountHolder": "ఖాతాదారు పేరు",
+    "accountHolderPlaceholder": "బ్యాంక్ రికార్డుల ప్రకారం",
+    "accountNumber": "ఖాతా సంఖ్య",
+    "ifsc": "IFSC కోడ్",
+    "bankName": "బ్యాంక్ పేరు",
+    "bankNamePlaceholder": "స్టేట్ బ్యాంక్ ఆఫ్ ఇండియా",
+    "notes": "గమనికలు (ఐచ్ఛికం)",
+    "notesPlaceholder": "తీసుకెళ్లే సమయం, తేమ…",
+    "notesHint": "గోదాముకు సిద్ధం కావడానికి సహాయపడుతుంది",
+    "reviewTitle": "అభ్యర్థన సారాంశం",
+    "reviewDisclaimer": "చివరి మూల్యాంకనం గోదాములో గ్రేడింగ్ తర్వాత మారవచ్చు.",
+    "errors": {
+      "warehouseRequired": "గోదామును ఎంచుకోండి.",
+      "cropType": "పంట రకాన్ని ఎంచుకోండి.",
+      "quantityKg": "సరైన పరిమాణం (కిలో) నమోదు చేయండి.",
+      "accountHolder": "ఖాతాదారు పేరు నమోదు చేయండి.",
+      "accountNumber": "సరైన ఖాతా సంఖ్య నమోదు చేయండి.",
+      "ifsc": "సరైన IFSC కోడ్ నమోదు చేయండి.",
+      "bankName": "బ్యాంక్ పేరు నమోదు చేయండి."
+    }
+  },
+  "cropTracker": {
+    "title": "పంట ట్రాకర్",
+    "subtitle": "నిల్వ ఎంచుకున్న పంటకు లైవ్ స్థితి",
+    "lockedTitle": "నిల్వ అవసరం",
+    "lockedBody": "గోదాము నిల్వ ఎంచుకున్న తర్వాత మాత్రమే పంట ట్రాకర్ పని చేస్తుంది.",
+    "optStorage": "నిల్వ ఎంచుకోండి",
+    "tracking": "ఇప్పుడు ట్రాక్ అవుతోంది",
+    "pendingTitle": "నిల్వ ఇన్‌టేక్ కోసం వేచి ఉంది",
+    "pendingBody": "మీ నిల్వ అభ్యర్థన ప్రగతిలో ఉంది. నిల్వలో ఉన్నప్పుడు లైవ్ IoT ట్రాకింగ్ ప్రారంభమవుతుంది.",
+    "statusTimeline": "అభ్యర్థన పురోగతి",
+    "otherRequests": "మీ ఖాతాలో {{count}} మరిన్ని నిల్వ అభ్యర్థనలు",
+    "addStorage": "మరో నిల్వ అభ్యర్థన సమర్పించండి",
+    "loadingDashboard": "లైవ్ రీడింగ్‌లు లోడ్ అవుతున్నాయి…",
+    "dashboardError": "లైవ్ ట్రాకర్ డేటా లోడ్ చేయలేకపోయింది.",
+    "liveStatus": "నిల్వ స్థితి",
+    "lastUpdated": "అప్‌డేట్ {{time}}",
+    "sensors": {
+      "temperature": "ఉష్ణోగ్రత",
+      "humidity": "తేమ",
+      "co2": "CO₂"
+    },
+    "aiForecast": "AI నాణ్యత అంచనా",
+    "spoilageRisk": "పాడవడం ప్రమాదం",
+    "qualityGrade": "నాణ్యత గ్రేడ్",
+    "forecastWindow": "అంచనా కాలం",
+    "valuation": "సూచన మూల్యాంకనం"
   }
 }

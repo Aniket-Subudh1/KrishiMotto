@@ -23,3 +23,10 @@ export function computeFlatPricing(basePricePaise: number, transportApplies = fa
     totalPaise: basePricePaise + transportPaise,
   };
 }
+
+/** Mirrors backend Per100kgStrategy — billing units are ceil(kg / 100), min 1. */
+export function computePer100kgPricing(quantityKg: number, basePricePaise: number) {
+  const areaUnits = Math.max(1, Math.ceil(quantityKg / 100));
+  const basePaise = basePricePaise * areaUnits;
+  return { areaUnits, basePaise, transportPaise: 0, totalPaise: basePaise };
+}

@@ -8,7 +8,6 @@ import { Text } from '@/components/ui/text';
 import { QUICK_ACTIONS } from '@/features/home/constants/services';
 import { ToolsCatalogSection } from '@/features/home/components/tools-catalog-section';
 import { ToolsHeroHeader } from '@/features/home/components/tools-hero-header';
-import { showComingSoonAlert } from '@/lib/coming-soon';
 import { Palette } from '@/constants/theme';
 import type { FarmerProfile } from '@/types/farmer';
 
@@ -91,7 +90,7 @@ export function ToolsTab({
         </View>
 
         <View className="mt-5 px-5">
-          <Pressable onPress={() => showComingSoonAlert(t)}>
+          <Pressable onPress={() => router.push('/krishiai')}>
             <View
               className="flex-row items-center gap-3 rounded-2xl border border-border px-4 py-3.5"
               style={{ backgroundColor: 'rgba(70, 150, 47, 0.08)' }}
@@ -118,7 +117,7 @@ export function ToolsTab({
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={t('home.dashboard.askAi')}
-        onPress={() => showComingSoonAlert(t)}
+        onPress={() => router.push('/krishiai')}
         className="absolute bottom-5 right-5 flex-row items-center gap-2 rounded-full bg-india-green px-5 py-3.5"
         style={{
           shadowColor: Palette.indiaGreen,
