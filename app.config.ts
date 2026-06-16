@@ -22,7 +22,7 @@ const ANDROID_ADAPTIVE_ICON = {
 
 const IOS_BUILD_NUMBER = "1";
 
-const API_URL = "http://10.1.6.163:3000";
+const API_URL = "https://krishiaadhar.gramtarang.org";
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
