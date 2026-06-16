@@ -1,38 +1,48 @@
-import { Ionicons } from '@expo/vector-icons';
-import * as ExpoLinking from 'expo-linking';
-import { LinearGradient } from 'expo-linear-gradient';
-import { router, useLocalSearchParams } from 'expo-router';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, AppState, type AppStateStatus, Linking, Pressable, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { WebView } from 'react-native-webview';
-import type { ShouldStartLoadRequest, WebViewNavigation } from 'react-native-webview/lib/WebViewTypes';
-
-import { Button } from '@/components/ui/button';
-import { Text } from '@/components/ui/text';
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import * as ExpoLinking from "expo-linking";
+import { router, useLocalSearchParams } from "expo-router";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  checkBookingPaymentOnce,
-  startPaymentPoller,
-} from '@/lib/booking-payment';
-import { AppBarGradient, Palette } from '@/constants/theme';
-import { useAppLocale } from '@/hooks/use-app-locale';
-import type { Booking, PaymentStatus } from '@/types/booking';
+    ActivityIndicator,
+    AppState,
+    Linking,
+    Pressable,
+    View,
+    type AppStateStatus,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { WebView } from "react-native-webview";
+import type {
+    ShouldStartLoadRequest,
+    WebViewNavigation,
+} from "react-native-webview/lib/WebViewTypes";
 
-type CheckoutState = 'loading' | 'ready' | 'returning' | 'error';
+import { Button } from "@/components/ui/button";
+import { Text } from "@/components/ui/text";
+import { AppBarGradient, Palette } from "@/constants/theme";
+import { useAppLocale } from "@/hooks/use-app-locale";
+import {
+    checkBookingPaymentOnce,
+    startPaymentPoller,
+} from "@/lib/booking-payment";
+import type { Booking, PaymentStatus } from "@/types/booking";
+
+type CheckoutState = "loading" | "ready" | "returning" | "error";
 
 function isTerminalStatus(status: PaymentStatus) {
-  return status === 'PAID' || status === 'FAILED';
+  return status === "PAID" || status === "FAILED";
 }
 
 function isExternalScheme(url: string): boolean {
   if (!url) return false;
   const lower = url.toLowerCase();
   return !(
-    lower.startsWith('http://') ||
-    lower.startsWith('https://') ||
-    lower.startsWith('about:blank') ||
-    lower.startsWith('javascript:') ||
-    lower.startsWith('data:')
+    lower.startsWith("http://") ||
+    lower.startsWith("https://") ||
+    lower.startsWith("about:blank") ||
+    lower.startsWith("javascript:") ||
+    lower.startsWith("data:")
   );
 }
 
@@ -48,25 +58,25 @@ export default function PaymentCheckoutScreen() {
     orderId?: string;
   }>();
 
-  const [checkoutState, setCheckoutState] = useState<CheckoutState>('loading');
+  const [checkoutState, setCheckoutState] = useState<CheckoutState>("loading");
   const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
-  const [orderId, setOrderId] = useState(orderIdParam ?? '');
+  const [orderId, setOrderId] = useState(orderIdParam ?? "");
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
 
   const headerTitle = useMemo(
     () =>
-      checkoutState === 'returning'
-        ? t('paymentCheckout.returningTitle')
-        : t('paymentCheckout.title'),
+      checkoutState === "returning"
+        ? t("paymentCheckout.returningTitle")
+        : t("paymentCheckout.title"),
     [checkoutState, t],
   );
 
   const navigateToResult = useCallback(
-    (status: PaymentStatus, booking: Pick<Booking, 'id' | 'orderId'>) => {
+    (status: PaymentStatus, booking: Pick<Booking, "id" | "orderId">) => {
       if (hasNavigatedRef.current) return;
       hasNavigatedRef.current = true;
       router.replace({
-        pathname: '/payment/result',
+        pathname: "/payment/result",
         params: {
           bookingId: booking.id,
           orderId: booking.orderId,
@@ -96,14 +106,16 @@ export default function PaymentCheckoutScreen() {
         }
 
         if (showAbandonedOnPending) {
-          setCheckoutState('ready');
-          setInfoMessage(t('paymentCheckout.notCompletedBody'));
+          setCheckoutState("ready");
+          setInfoMessage(t("paymentCheckout.notCompletedBody"));
         } else {
-          setCheckoutState((current) => (current === 'loading' ? 'ready' : current));
+          setCheckoutState((current) =>
+            current === "loading" ? "ready" : current,
+          );
         }
       } catch {
-        setCheckoutState('error');
-        setInfoMessage(t('paymentCheckout.loadError'));
+        setCheckoutState("error");
+        setInfoMessage(t("paymentCheckout.loadError"));
       }
     },
     [bookingId, navigateToResult, t],
@@ -111,8 +123,8 @@ export default function PaymentCheckoutScreen() {
 
   useEffect(() => {
     if (!bookingId) {
-      setCheckoutState('error');
-      setInfoMessage(t('paymentCheckout.missingBooking'));
+      setCheckoutState("error");
+      setInfoMessage(t("paymentCheckout.missingBooking"));
       return;
     }
 
@@ -130,8 +142,8 @@ export default function PaymentCheckoutScreen() {
         if (booking.paymentUrl) {
           setPaymentUrl(booking.paymentUrl);
         }
-        if (!isTerminalStatus(status) && checkoutState === 'loading') {
-          setCheckoutState('ready');
+        if (!isTerminalStatus(status) && checkoutState === "loading") {
+          setCheckoutState("ready");
         }
       },
       onTerminal: ({ status, booking }) => {
@@ -147,22 +159,22 @@ export default function PaymentCheckoutScreen() {
       const previous = appStateRef.current;
       appStateRef.current = nextState;
 
-      if (previous === 'active' && nextState !== 'active') {
+      if (previous === "active" && nextState !== "active") {
         leftForExternalPaymentRef.current = true;
         return;
       }
 
-      if (nextState !== 'active' || !leftForExternalPaymentRef.current) {
+      if (nextState !== "active" || !leftForExternalPaymentRef.current) {
         return;
       }
 
       leftForExternalPaymentRef.current = false;
-      setCheckoutState('returning');
-      setInfoMessage(t('paymentCheckout.returningBody'));
+      setCheckoutState("returning");
+      setInfoMessage(t("paymentCheckout.returningBody"));
       void syncBookingState(true);
     };
 
-    const subscription = AppState.addEventListener('change', handleAppState);
+    const subscription = AppState.addEventListener("change", handleAppState);
     return () => subscription.remove();
   }, [syncBookingState, t]);
 
@@ -170,20 +182,21 @@ export default function PaymentCheckoutScreen() {
     (request: ShouldStartLoadRequest) => {
       const url = request.url;
 
-      if (url.startsWith('krishimotto://')) {
+      if (url.startsWith("krishimotto://")) {
         const parsed = ExpoLinking.parse(url);
         const status = parsed.queryParams?.status;
         const deepLinkBookingId = parsed.queryParams?.bookingId;
         const deepLinkOrderId = parsed.queryParams?.orderId;
 
         if (
-          typeof status === 'string' &&
-          (status === 'PAID' || status === 'FAILED') &&
-          typeof deepLinkBookingId === 'string'
+          typeof status === "string" &&
+          (status === "PAID" || status === "FAILED") &&
+          typeof deepLinkBookingId === "string"
         ) {
           navigateToResult(status, {
             id: deepLinkBookingId,
-            orderId: typeof deepLinkOrderId === 'string' ? deepLinkOrderId : orderId,
+            orderId:
+              typeof deepLinkOrderId === "string" ? deepLinkOrderId : orderId,
           });
         }
         return false;
@@ -191,11 +204,11 @@ export default function PaymentCheckoutScreen() {
 
       if (isExternalScheme(url)) {
         leftForExternalPaymentRef.current = true;
-        setInfoMessage(t('paymentCheckout.externalAppHint'));
-        setCheckoutState('returning');
+        setInfoMessage(t("paymentCheckout.externalAppHint"));
+        setCheckoutState("returning");
         void Linking.openURL(url).catch(() => {
-          setCheckoutState('ready');
-          setInfoMessage(t('paymentCheckout.externalAppError'));
+          setCheckoutState("ready");
+          setInfoMessage(t("paymentCheckout.externalAppError"));
         });
         return false;
       }
@@ -208,16 +221,16 @@ export default function PaymentCheckoutScreen() {
   const handleNavigationChange = useCallback(
     (navigation: WebViewNavigation) => {
       if (isExternalScheme(navigation.url)) {
-        setCheckoutState('returning');
+        setCheckoutState("returning");
       } else if (!navigation.loading) {
-        setCheckoutState('ready');
+        setCheckoutState("ready");
       }
     },
     [],
   );
 
   function handleRetryLoad() {
-    setCheckoutState('loading');
+    setCheckoutState("loading");
     setInfoMessage(null);
     webViewRef.current?.reload();
     void syncBookingState();
@@ -226,7 +239,7 @@ export default function PaymentCheckoutScreen() {
   function handleGoResult() {
     if (!bookingId) return;
     router.replace({
-      pathname: '/payment/result',
+      pathname: "/payment/result",
       params: { bookingId, orderId },
     });
   }
@@ -237,7 +250,11 @@ export default function PaymentCheckoutScreen() {
         colors={[...AppBarGradient]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
-        style={{ paddingTop: insets.top + 8, paddingHorizontal: 20, paddingBottom: 24 }}
+        style={{
+          paddingTop: insets.top + 8,
+          paddingHorizontal: 20,
+          paddingBottom: 24,
+        }}
       >
         <View className="flex-row items-center justify-between">
           <Pressable
@@ -252,11 +269,13 @@ export default function PaymentCheckoutScreen() {
           </View>
         </View>
 
-        <Text className="mt-4 text-[24px] font-bold text-white">{headerTitle}</Text>
+        <Text className="mt-4 text-[24px] font-bold text-white">
+          {headerTitle}
+        </Text>
         <Text className="mt-1 text-[14px] text-white/85">
           {orderId
-            ? t('paymentCheckout.orderRef').replace('{{orderId}}', orderId)
-            : t('paymentCheckout.subtitle')}
+            ? t("paymentCheckout.orderRef").replace("{{orderId}}", orderId)
+            : t("paymentCheckout.subtitle")}
         </Text>
       </LinearGradient>
 
@@ -275,17 +294,19 @@ export default function PaymentCheckoutScreen() {
             onShouldStartLoadWithRequest={handleShouldStartLoad}
             onNavigationStateChange={handleNavigationChange}
             onError={() => {
-              setCheckoutState('error');
-              setInfoMessage(t('paymentCheckout.loadError'));
+              setCheckoutState("error");
+              setInfoMessage(t("paymentCheckout.loadError"));
             }}
             onHttpError={() => {
-              setCheckoutState('error');
-              setInfoMessage(t('paymentCheckout.httpError'));
+              setCheckoutState("error");
+              setInfoMessage(t("paymentCheckout.httpError"));
             }}
             renderLoading={() => (
               <View className="flex-1 items-center justify-center bg-background">
                 <ActivityIndicator size="large" color={Palette.indiaGreen} />
-                <Text className="mt-3 text-[14px] text-muted">{t('paymentCheckout.loadingPage')}</Text>
+                <Text className="mt-3 text-[14px] text-muted">
+                  {t("paymentCheckout.loadingPage")}
+                </Text>
               </View>
             )}
           />
@@ -293,7 +314,7 @@ export default function PaymentCheckoutScreen() {
           <View className="flex-1 items-center justify-center px-6">
             <ActivityIndicator size="large" color={Palette.indiaGreen} />
             <Text className="mt-3 text-center text-[14px] text-muted">
-              {t('paymentCheckout.fetchingUrl')}
+              {t("paymentCheckout.fetchingUrl")}
             </Text>
           </View>
         )}
@@ -301,16 +322,23 @@ export default function PaymentCheckoutScreen() {
         <View className="border-t border-border bg-white px-5 py-4">
           {infoMessage ? (
             <View className="mb-3 rounded-2xl border border-border bg-surface px-4 py-3">
-              <Text className="text-[13px] leading-5 text-muted">{infoMessage}</Text>
+              <Text className="text-[13px] leading-5 text-muted">
+                {infoMessage}
+              </Text>
             </View>
           ) : null}
 
           <View className="gap-3">
             <Button size="lg" className="w-full" onPress={handleGoResult}>
-              {t('paymentCheckout.checkStatus')}
+              {t("paymentCheckout.checkStatus")}
             </Button>
-            <Button variant="secondary" size="lg" className="w-full" onPress={handleRetryLoad}>
-              {t('paymentCheckout.reloadPage')}
+            <Button
+              variant="secondary"
+              size="lg"
+              className="w-full"
+              onPress={handleRetryLoad}
+            >
+              {t("paymentCheckout.reloadPage")}
             </Button>
           </View>
         </View>

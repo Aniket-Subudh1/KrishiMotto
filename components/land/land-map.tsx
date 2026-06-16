@@ -384,6 +384,270 @@ export function LandMap(props: LandMapProps) {
   );
 }
 
+type LocationPickerMapProps = {
+  initialRegion: Region;
+  onCenterChange: (center: LatLng) => void;
+  unavailableMessage: string;
+  loadingMessage: string;
+};
+
+type PickerMapPayload = {
+  region: Region;
+};
+
+type PickerMapMessage =
+  | { type: "ready" }
+  | { type: "error" }
+  | { type: "center"; payload?: unknown };
+
+function getLocationPickerMapHtml(payload: PickerMapPayload) {
+  const initialPayload = serializeForInlineScript(payload);
+
+  return `<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+      html, body, #map {
+        height: 100%;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        background: #eef2f7;
+      }
+      body {
+        overflow: hidden;
+        touch-action: none;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+      .leaflet-container {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+      .leaflet-control-attribution {
+        font-size: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+      (function () {
+        var payload = ${initialPayload};
+        var map = null;
+
+        function post(type, messagePayload) {
+          if (window.ReactNativeWebView) {
+            window.ReactNativeWebView.postMessage(JSON.stringify({
+              type: type,
+              payload: messagePayload
+            }));
+          }
+        }
+
+        function isFiniteNumber(value) {
+          return typeof value === "number" && isFinite(value);
+        }
+
+        function validPoint(point) {
+          return point &&
+            isFiniteNumber(point.latitude) &&
+            isFiniteNumber(point.longitude);
+        }
+
+        function validRegion(region) {
+          return validPoint(region);
+        }
+
+        function mapZoom(region) {
+          var delta = Math.max(
+            region && region.latitudeDelta ? region.latitudeDelta : 8,
+            region && region.longitudeDelta ? region.longitudeDelta : 8,
+            0.0005
+          );
+          return Math.max(3, Math.min(19, Math.round(Math.log2(360 / delta))));
+        }
+
+        function postCenter() {
+          if (!map) {
+            return;
+          }
+          var center = map.getCenter();
+          post("center", {
+            latitude: center.lat,
+            longitude: center.lng
+          });
+        }
+
+        window.updateLocationPickerMap = function (nextPayload) {
+          payload = Object.assign({}, payload, nextPayload || {});
+          if (map && validRegion(payload.region)) {
+            map.setView(
+              [payload.region.latitude, payload.region.longitude],
+              mapZoom(payload.region),
+              { animate: true }
+            );
+          }
+        };
+
+        function init() {
+          if (!window.L || !validRegion(payload.region)) {
+            post("error", null);
+            return;
+          }
+
+          map = L.map("map", {
+            attributionControl: true,
+            zoomControl: false,
+            preferCanvas: true
+          }).setView(
+            [payload.region.latitude, payload.region.longitude],
+            mapZoom(payload.region)
+          );
+
+          L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          }).addTo(map);
+
+          map.on("moveend", postCenter);
+
+          setTimeout(function () {
+            map.invalidateSize();
+            postCenter();
+          }, 100);
+          post("ready", null);
+        }
+
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", init);
+        } else {
+          init();
+        }
+      })();
+    </script>
+  </body>
+</html>`;
+}
+
+function LocationPickerMapInner({
+  initialRegion,
+  onCenterChange,
+  unavailableMessage,
+  loadingMessage,
+}: LocationPickerMapProps) {
+  "use no memo";
+  const webViewRef = useRef<WebView>(null);
+  const initialHtmlRef = useRef<string | null>(null);
+  const onCenterChangeRef = useRef(onCenterChange);
+  const [webReady, setWebReady] = useState(false);
+  const [webFailed, setWebFailed] = useState(false);
+
+  onCenterChangeRef.current = onCenterChange;
+
+  const mapPayload = useMemo(
+    () => ({ region: initialRegion }),
+    [initialRegion],
+  );
+
+  if (initialHtmlRef.current == null) {
+    initialHtmlRef.current = getLocationPickerMapHtml(mapPayload);
+  }
+
+  useEffect(() => {
+    if (!webReady || webFailed) {
+      return;
+    }
+
+    webViewRef.current?.injectJavaScript(
+      `window.updateLocationPickerMap && window.updateLocationPickerMap(${serializeForInlineScript(
+        mapPayload,
+      )}); true;`,
+    );
+  }, [mapPayload, webFailed, webReady]);
+
+  function handleMessage(event: WebViewMessageEvent) {
+    let message: PickerMapMessage;
+    try {
+      message = JSON.parse(event.nativeEvent.data) as PickerMapMessage;
+    } catch {
+      return;
+    }
+
+    if (message.type === "ready") {
+      setWebReady(true);
+      return;
+    }
+
+    if (message.type === "error") {
+      setWebFailed(true);
+      return;
+    }
+
+    if (message.type === "center") {
+      const coordinate = coordinateFromPayload(message.payload);
+      if (coordinate) {
+        onCenterChangeRef.current(coordinate);
+      }
+    }
+  }
+
+  if (webFailed) {
+    return (
+      <View style={[styles.map, styles.fallback]}>
+        <Text className="px-6 text-center text-[14px] leading-[21px] text-muted">
+          {unavailableMessage}
+        </Text>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.mapContainer}>
+      <WebView
+        ref={webViewRef}
+        source={{ html: initialHtmlRef.current }}
+        style={styles.map}
+        containerStyle={styles.map}
+        originWhitelist={["*"]}
+        javaScriptEnabled
+        domStorageEnabled={false}
+        scrollEnabled={false}
+        bounces={false}
+        setSupportMultipleWindows={false}
+        onMessage={handleMessage}
+        onError={() => setWebFailed(true)}
+      />
+      {!webReady ? (
+        <View pointerEvents="none" style={[styles.map, styles.fallback]}>
+          <ActivityIndicator size="large" color={Palette.indiaGreen} />
+          <Text className="mt-3 text-[14px] text-muted">{loadingMessage}</Text>
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
+export function LocationPickerMap(props: LocationPickerMapProps) {
+  "use no memo";
+  return (
+    <ErrorBoundary
+      fallback={
+        <View style={[styles.map, styles.fallback]}>
+          <Text className="px-6 text-center text-[14px] leading-[21px] text-muted">
+            {props.unavailableMessage}
+          </Text>
+        </View>
+      }
+    >
+      <LocationPickerMapInner {...props} />
+    </ErrorBoundary>
+  );
+}
+
 const styles = StyleSheet.create({
   mapContainer: { ...StyleSheet.absoluteFillObject, backgroundColor: "#EEF2F7" },
   map: { ...StyleSheet.absoluteFillObject },

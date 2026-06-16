@@ -1,8 +1,3 @@
-#!/usr/bin/env node
-/**
- * Merges booking-related locale keys from en.json into hi, ta, te, or
- * with language-specific translations.
- */
 import fs from 'node:fs';
 import path from 'node:path';
 

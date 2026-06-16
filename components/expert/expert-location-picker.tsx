@@ -1,18 +1,21 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useEffect, useRef, useState } from "react";
+import * as Location from "expo-location";
+import { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    Platform,
-    Pressable,
-    Text as RNText,
-    StyleSheet,
-    View,
+  ActivityIndicator,
+  Platform,
+  Pressable,
+  Text as RNText,
+  StyleSheet,
+  View,
 } from "react-native";
-import type MapView from "react-native-maps";
-import type { LatLng, MapType, Region } from "react-native-maps";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { ErrorBoundary } from "@/components/error-boundary";
+import {
+  LocationPickerMap,
+  type LatLng,
+  type Region,
+} from "@/components/land/land-map";
 import { Text } from "@/components/ui/text";
 import { Palette } from "@/constants/theme";
 
@@ -23,8 +26,9 @@ const INDIA_CENTER: Region = {
   longitudeDelta: 8,
 };
 
-type MapsModule = {
-  default: typeof MapView;
+type MapBootState = {
+  region: Region;
+  denied: boolean;
 };
 
 type ExpertLocationPickerProps = {
@@ -44,37 +48,13 @@ type ExpertLocationPickerProps = {
   error?: string | null;
 };
 
-function LocationMap({
-  mapsModule,
-  mapRef,
-  mapType,
-  initialRegion,
-  showsUserLocation,
-  onRegionChangeComplete,
-}: {
-  mapsModule: MapsModule;
-  mapRef: React.RefObject<MapView | null>;
-  mapType: MapType;
-  initialRegion: Region;
-  showsUserLocation: boolean;
-  onRegionChangeComplete: (region: Region) => void;
-}) {
-  "use no memo";
-  const MapView = mapsModule.default;
-
-  return (
-    <MapView
-      ref={mapRef}
-      style={styles.map}
-      mapType={mapType}
-      initialRegion={initialRegion}
-      onRegionChangeComplete={onRegionChangeComplete}
-      showsUserLocation={showsUserLocation}
-      showsMyLocationButton={false}
-      showsCompass={false}
-      toolbarEnabled={false}
-    />
-  );
+function regionFromCoords(latitude: number, longitude: number): Region {
+  return {
+    latitude,
+    longitude,
+    latitudeDelta: 0.003,
+    longitudeDelta: 0.003,
+  };
 }
 
 export function ExpertLocationPicker({
@@ -95,102 +75,65 @@ export function ExpertLocationPicker({
 }: ExpertLocationPickerProps) {
   "use no memo";
   const insets = useSafeAreaInsets();
-  const mapRef = useRef<MapView>(null);
-  const [mapsModule, setMapsModule] = useState<MapsModule | null>(null);
-  const [mapsFailed, setMapsFailed] = useState(false);
-  const [mapType, setMapType] = useState<MapType>(
-    Platform.OS === "android" ? "standard" : "hybrid",
-  );
-  const [initialRegion, setInitialRegion] = useState<Region>(INDIA_CENTER);
+  const [mapBoot, setMapBoot] = useState<MapBootState | null>(null);
+  const [mapRegion, setMapRegion] = useState<Region>(INDIA_CENTER);
   const [selectedLocation, setSelectedLocation] = useState<LatLng | null>(null);
-  const [locationReady, setLocationReady] = useState(false);
-  const [locationDenied, setLocationDenied] = useState(false);
   const [headerHeight, setHeaderHeight] = useState(90);
 
   useEffect(() => {
     let cancelled = false;
 
-    import("react-native-maps")
-      .then((mod) => {
-        if (!cancelled) {
-          setMapsModule({ default: mod.default });
+    async function initLocation() {
+      let region = INDIA_CENTER;
+      let denied = false;
+
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== "granted") {
+          denied = true;
+        } else {
+          const timeout = new Promise<null>((resolve) =>
+            setTimeout(() => resolve(null), 8000),
+          );
+          const loc = await Promise.race([
+            Location.getCurrentPositionAsync({
+              accuracy: Location.Accuracy.Balanced,
+            }),
+            timeout,
+          ]);
+          if (loc) {
+            region = regionFromCoords(loc.coords.latitude, loc.coords.longitude);
+          }
         }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setMapsFailed(true);
-        }
-      });
+      } catch {
+        // keep India fallback
+      }
+
+      if (cancelled) {
+        return;
+      }
+
+      setMapRegion(region);
+      setMapBoot({ region, denied });
+    }
+
+    void initLocation();
 
     return () => {
       cancelled = true;
     };
   }, []);
 
-  useEffect(() => {
-    async function initLocation() {
-      try {
-        const Location = await import("expo-location");
-        const { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== "granted") {
-          setLocationDenied(true);
-          setSelectedLocation({
-            latitude: INDIA_CENTER.latitude,
-            longitude: INDIA_CENTER.longitude,
-          });
-          return;
-        }
-
-        const timeout = new Promise<null>((resolve) =>
-          setTimeout(() => resolve(null), 8000),
-        );
-        const loc = await Promise.race([
-          Location.getCurrentPositionAsync({
-            accuracy: Location.Accuracy.Balanced,
-          }),
-          timeout,
-        ]);
-        if (loc) {
-          const region = {
-            latitude: loc.coords.latitude,
-            longitude: loc.coords.longitude,
-            latitudeDelta: 0.003,
-            longitudeDelta: 0.003,
-          };
-          setInitialRegion(region);
-          setSelectedLocation({
-            latitude: loc.coords.latitude,
-            longitude: loc.coords.longitude,
-          });
-        } else {
-          setSelectedLocation({
-            latitude: INDIA_CENTER.latitude,
-            longitude: INDIA_CENTER.longitude,
-          });
-        }
-      } catch {
-        setSelectedLocation({
-          latitude: INDIA_CENTER.latitude,
-          longitude: INDIA_CENTER.longitude,
-        });
-      } finally {
-        setLocationReady(true);
-      }
-    }
-
-    void initLocation();
-  }, []);
-
   async function locateMe() {
     try {
-      const Location = await import("expo-location");
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
-        setLocationDenied(true);
+        setMapBoot((current) =>
+          current ? { ...current, denied: true } : current,
+        );
         return;
       }
 
-      setLocationDenied(false);
       const timeout = new Promise<null>((resolve) =>
         setTimeout(() => resolve(null), 8000),
       );
@@ -201,27 +144,19 @@ export function ExpertLocationPicker({
         timeout,
       ]);
       if (!loc) return;
-      const region = {
-        latitude: loc.coords.latitude,
-        longitude: loc.coords.longitude,
-        latitudeDelta: 0.003,
-        longitudeDelta: 0.003,
-      };
-      mapRef.current?.animateToRegion(region, 400);
-      setSelectedLocation({
-        latitude: loc.coords.latitude,
-        longitude: loc.coords.longitude,
-      });
+
+      const region = regionFromCoords(loc.coords.latitude, loc.coords.longitude);
+      setMapBoot((current) =>
+        current ? { ...current, denied: false } : current,
+      );
+      setMapRegion(region);
     } catch {
       // keep current map position
     }
   }
 
-  function handleRegionChange(region: Region) {
-    setSelectedLocation({
-      latitude: region.latitude,
-      longitude: region.longitude,
-    });
+  function handleCenterChange(center: LatLng) {
+    setSelectedLocation(center);
   }
 
   function handleConfirm() {
@@ -232,33 +167,18 @@ export function ExpertLocationPicker({
   }
 
   const canConfirm = selectedLocation != null;
+  const locationDenied = mapBoot?.denied ?? false;
 
   return (
-    <View style={styles.container}>
-      {locationReady && mapsModule && !mapsFailed ? (
-        <ErrorBoundary
-          fallback={
-            <View style={[styles.map, styles.mapLoading]}>
-              <Text className="px-6 text-center text-[14px] leading-[21px] text-muted">
-                {mapsUnavailableLabel}
-              </Text>
-            </View>
-          }
-        >
-          <LocationMap
-            mapsModule={mapsModule}
-            mapRef={mapRef}
-            mapType={mapType}
-            initialRegion={initialRegion}
-            showsUserLocation={!locationDenied}
-            onRegionChangeComplete={handleRegionChange}
+    <View style={styles.container} pointerEvents="box-none">
+      {mapBoot ? (
+        <View style={styles.mapLayer} pointerEvents="box-none">
+          <LocationPickerMap
+            initialRegion={mapRegion}
+            onCenterChange={handleCenterChange}
+            unavailableMessage={mapsUnavailableLabel}
+            loadingMessage={loadingMapLabel}
           />
-        </ErrorBoundary>
-      ) : mapsFailed ? (
-        <View style={[styles.map, styles.mapLoading]}>
-          <Text className="px-6 text-center text-[14px] leading-[21px] text-muted">
-            {mapsUnavailableLabel}
-          </Text>
         </View>
       ) : (
         <View style={[styles.map, styles.mapLoading]}>
@@ -267,17 +187,18 @@ export function ExpertLocationPicker({
         </View>
       )}
 
-      {locationReady ? (
+      {mapBoot ? (
         <View pointerEvents="none" style={styles.centerPin}>
           <Ionicons name="location" size={42} color={Palette.saffron} />
         </View>
       ) : null}
 
       <View
+        pointerEvents="box-none"
         style={[styles.headerOverlay, { paddingTop: insets.top }]}
         onLayout={(e) => setHeaderHeight(e.nativeEvent.layout.height)}
       >
-        <View style={styles.headerRow}>
+        <View pointerEvents="auto" style={styles.headerRow}>
           <Pressable style={styles.backButton} onPress={onBack}>
             <Ionicons name="chevron-back" size={20} color={Palette.indigo} />
           </Pressable>
@@ -290,42 +211,28 @@ export function ExpertLocationPicker({
             <Text style={styles.headerSubtitle}>{subtitle}</Text>
           </View>
 
-          <Pressable
-            style={styles.mapTypeButton}
-            onPress={() =>
-              setMapType((current) => {
-                if (Platform.OS === "android") {
-                  return current === "standard" ? "satellite" : "standard";
-                }
-
-                return current === "hybrid" ? "standard" : "hybrid";
-              })
-            }
-          >
-            <Ionicons
-              name={mapType === "standard" ? "globe-outline" : "map-outline"}
-              size={16}
-              color={Palette.indigo}
-            />
-          </Pressable>
+          <View style={styles.headerSpacer} />
         </View>
 
         {locationDenied ? (
-          <View style={styles.locationBanner}>
+          <View pointerEvents="auto" style={styles.locationBanner}>
             <Ionicons name="location-outline" size={14} color="#92400E" />
             <Text style={styles.locationBannerText}>{locationDeniedLabel}</Text>
           </View>
         ) : null}
 
         {error ? (
-          <View style={styles.errorBanner}>
+          <View pointerEvents="auto" style={styles.errorBanner}>
             <Text style={styles.errorBannerText}>{error}</Text>
           </View>
         ) : null}
       </View>
 
-      {locationReady ? (
-        <View style={[styles.floatingRight, { top: headerHeight + 12 }]}>
+      {mapBoot ? (
+        <View
+          pointerEvents="box-none"
+          style={[styles.floatingRight, { top: headerHeight + 12 }]}
+        >
           <Pressable
             style={styles.floatingButton}
             onPress={() => void locateMe()}
@@ -335,72 +242,81 @@ export function ExpertLocationPicker({
         </View>
       ) : null}
 
-      {locationReady ? (
+      {mapBoot ? (
         <View
+          pointerEvents="box-none"
           style={[
             styles.instructionCard,
             { bottom: 120 + Math.max(insets.bottom, 16) },
           ]}
         >
-          <View style={styles.instructionIcon}>
-            <Ionicons name="move-outline" size={24} color={Palette.indigo} />
-          </View>
-          <View style={{ flex: 1, gap: 3 }}>
-            <Text style={styles.instructionTitle}>{instructionTitle}</Text>
-            <Text style={styles.instructionBody}>{instructionBody}</Text>
+          <View pointerEvents="auto" style={styles.instructionCardInner}>
+            <View style={styles.instructionIcon}>
+              <Ionicons name="move-outline" size={24} color={Palette.indigo} />
+            </View>
+            <View style={{ flex: 1, gap: 3 }}>
+              <Text style={styles.instructionTitle}>{instructionTitle}</Text>
+              <Text style={styles.instructionBody}>{instructionBody}</Text>
+            </View>
           </View>
         </View>
       ) : null}
 
-      <View
-        style={[
-          styles.bottomPanel,
-          { paddingBottom: Math.max(insets.bottom, 16) },
-        ]}
-      >
-        {selectedLocation ? (
-          <Text style={styles.coordsText}>
-            {coordsLabel
-              .replace("{{lat}}", selectedLocation.latitude.toFixed(6))
-              .replace("{{lon}}", selectedLocation.longitude.toFixed(6))}
-          </Text>
-        ) : null}
-
-        <Pressable
+      {mapBoot ? (
+        <View
+          pointerEvents="box-none"
           style={[
-            styles.confirmButton,
-            (!canConfirm || isSubmitting) && styles.confirmButtonDisabled,
+            styles.bottomPanel,
+            { paddingBottom: Math.max(insets.bottom, 16) },
           ]}
-          onPress={handleConfirm}
-          disabled={!canConfirm || isSubmitting}
         >
-          {isSubmitting ? (
-            <ActivityIndicator size="small" color="#fff" />
+          {selectedLocation ? (
+            <Text style={styles.coordsText}>
+              {coordsLabel
+                .replace("{{lat}}", selectedLocation.latitude.toFixed(6))
+                .replace("{{lon}}", selectedLocation.longitude.toFixed(6))}
+            </Text>
           ) : (
-            <>
-              <Ionicons
-                name="checkmark-circle"
-                size={18}
-                color={canConfirm ? "#fff" : "#94A3B8"}
-              />
-              <RNText
-                style={[
-                  styles.confirmText,
-                  !canConfirm && styles.confirmTextDisabled,
-                ]}
-              >
-                {confirmLabel}
-              </RNText>
-            </>
+            <RNText style={styles.coordsPlaceholder}>{loadingMapLabel}</RNText>
           )}
-        </Pressable>
-      </View>
+
+          <Pressable
+            style={[
+              styles.confirmButton,
+              (!canConfirm || isSubmitting) && styles.confirmButtonDisabled,
+            ]}
+            onPress={handleConfirm}
+            disabled={!canConfirm || isSubmitting}
+          >
+            {isSubmitting ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <>
+                <Ionicons
+                  name="checkmark-circle"
+                  size={18}
+                  color={canConfirm ? "#fff" : "#94A3B8"}
+                />
+                <RNText
+                  style={[
+                    styles.confirmText,
+                    !canConfirm && styles.confirmTextDisabled,
+                  ]}
+                >
+                  {confirmLabel}
+                </RNText>
+              </>
+            )}
+          </Pressable>
+        </View>
+      ) : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#000" },
+  mapLayer: { ...StyleSheet.absoluteFillObject, zIndex: 0 },
   map: { ...StyleSheet.absoluteFillObject },
   mapLoading: {
     alignItems: "center",
@@ -426,6 +342,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
+    zIndex: 3,
     backgroundColor: "rgba(255,255,255,0.96)",
     borderBottomWidth: 1,
     borderBottomColor: "rgba(0,0,0,0.07)",
@@ -455,6 +372,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   headerCenter: { flex: 1, gap: 2 },
+  headerSpacer: { width: 38 },
   headerTitle: {
     fontSize: 15,
     fontWeight: "700",
@@ -479,16 +397,6 @@ const styles = StyleSheet.create({
     color: Palette.saffron,
     textTransform: "uppercase",
     letterSpacing: 0.4,
-  },
-  mapTypeButton: {
-    width: 38,
-    height: 38,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.12)",
-    backgroundColor: "#F8FAFC",
-    alignItems: "center",
-    justifyContent: "center",
   },
   locationBanner: {
     flexDirection: "row",
@@ -521,6 +429,7 @@ const styles = StyleSheet.create({
   floatingRight: {
     position: "absolute",
     right: 12,
+    zIndex: 3,
     gap: 8,
   },
   floatingButton: {
@@ -546,6 +455,9 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: 16,
     right: 68,
+    zIndex: 3,
+  },
+  instructionCardInner: {
     backgroundColor: "rgba(255,255,255,0.97)",
     borderRadius: 16,
     padding: 14,
@@ -586,6 +498,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
+    zIndex: 3,
     backgroundColor: "rgba(255,255,255,0.97)",
     borderTopWidth: 1,
     borderTopColor: "rgba(0,0,0,0.07)",
@@ -606,6 +519,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "600",
     color: Palette.indigo,
+    textAlign: "center",
+  },
+  coordsPlaceholder: {
+    fontSize: 12,
+    fontWeight: "500",
+    color: "#94A3B8",
     textAlign: "center",
   },
   confirmButton: {

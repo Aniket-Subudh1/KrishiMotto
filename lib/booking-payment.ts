@@ -1,21 +1,21 @@
-import { isAxiosError } from 'axios';
-import { AppState, type AppStateStatus } from 'react-native';
-import * as WebBrowser from 'expo-web-browser';
+import { isAxiosError } from "axios";
+import * as WebBrowser from "expo-web-browser";
+import { AppState, type AppStateStatus } from "react-native";
 
-import { bookingService } from '@/services/booking.service';
-import type { Booking, BookingStatus, PaymentStatus } from '@/types/booking';
+import { bookingService } from "@/services/booking.service";
+import type { Booking, BookingStatus, PaymentStatus } from "@/types/booking";
 
 const POLL_INTERVAL_MS = 4000;
 const RATE_LIMIT_BACKOFF_MS = 30_000;
 const MAX_POLL_MS = 10 * 60 * 1000;
 
 const PAID_BOOKING_STATUSES: readonly BookingStatus[] = [
-  'PAID',
-  'OPEN',
-  'ACCEPTED',
-  'TRAVELLING',
-  'IN_PROGRESS',
-  'COMPLETED',
+  "PAID",
+  "OPEN",
+  "ACCEPTED",
+  "TRAVELLING",
+  "IN_PROGRESS",
+  "COMPLETED",
 ] as const;
 
 async function dismissCheckoutBrowser() {
@@ -35,11 +35,11 @@ function createFallbackBooking(bookingId: string): Booking {
   const now = new Date().toISOString();
   return {
     id: bookingId,
-    orderId: '',
-    serviceIconType: 'CROP_CALENDAR',
-    serviceTitle: 'Crop Calendar',
-    paymentStatus: 'PENDING',
-    bookingStatus: 'PENDING_PAYMENT',
+    orderId: "",
+    serviceIconType: "CROP_CALENDAR",
+    serviceTitle: "Crop Calendar",
+    paymentStatus: "PENDING",
+    bookingStatus: "PENDING_PAYMENT",
     details: {},
     pricing: {
       basePaise: 0,
@@ -56,23 +56,23 @@ function createFallbackBooking(bookingId: string): Booking {
 
 /** Infer payment outcome from booking fields because gateway callbacks can lag. */
 export function resolvePaymentStatus(booking: Booking): PaymentStatus {
-  if (booking.paymentStatus === 'PAID' || booking.paymentStatus === 'FAILED') {
+  if (booking.paymentStatus === "PAID" || booking.paymentStatus === "FAILED") {
     return booking.paymentStatus;
   }
 
   if (PAID_BOOKING_STATUSES.includes(booking.bookingStatus)) {
-    return 'PAID';
+    return "PAID";
   }
 
-  if (booking.bookingStatus === 'CANCELLED') {
-    return 'FAILED';
+  if (booking.bookingStatus === "CANCELLED") {
+    return "FAILED";
   }
 
   return booking.paymentStatus;
 }
 
 function isTerminalStatus(status: PaymentStatus): boolean {
-  return status === 'PAID' || status === 'FAILED';
+  return status === "PAID" || status === "FAILED";
 }
 
 export type PaymentCheckoutResult = {
@@ -80,7 +80,9 @@ export type PaymentCheckoutResult = {
   booking: Booking;
 };
 
-export async function checkBookingPaymentOnce(bookingId: string): Promise<PaymentCheckoutResult> {
+export async function checkBookingPaymentOnce(
+  bookingId: string,
+): Promise<PaymentCheckoutResult> {
   const booking = await fetchBooking(bookingId);
   const status = resolvePaymentStatus(booking);
   if (isTerminalStatus(status)) {
@@ -98,12 +100,15 @@ type PollerCallbacks = {
  * Poll booking status until terminal. Also re-checks immediately when the app
  * returns from PhonePe / another UPI app.
  */
-export function startPaymentPoller(bookingId: string, callbacks: PollerCallbacks): () => void {
+export function startPaymentPoller(
+  bookingId: string,
+  callbacks: PollerCallbacks,
+): () => void {
   const startedAt = Date.now();
   let stopped = false;
   let timer: ReturnType<typeof setTimeout> | null = null;
   let lastBooking: Booking | null = null;
-  let lastStatus: PaymentStatus = 'PENDING';
+  let lastStatus: PaymentStatus = "PENDING";
   let inFlight = false;
   let nextDelayMs = POLL_INTERVAL_MS;
 
@@ -161,14 +166,14 @@ export function startPaymentPoller(bookingId: string, callbacks: PollerCallbacks
   };
 
   const handleAppState = (nextState: AppStateStatus) => {
-    if (nextState === 'active' && !stopped) {
+    if (nextState === "active" && !stopped) {
       if (timer) clearTimeout(timer);
       timer = null;
       void tick();
     }
   };
 
-  const appStateSub = AppState.addEventListener('change', handleAppState);
+  const appStateSub = AppState.addEventListener("change", handleAppState);
   void tick();
 
   return () => {
