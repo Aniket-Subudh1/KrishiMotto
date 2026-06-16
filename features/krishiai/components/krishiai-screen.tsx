@@ -16,6 +16,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ErrorBanner } from '@/components/auth/auth-screen-layout';
+import { MarkdownText } from '@/components/ui/markdown-text';
 import { Text } from '@/components/ui/text';
 import { useKrishiAiChat } from '@/features/krishiai/hooks/use-krishiai-chat';
 import { useSpeechInput } from '@/features/krishiai/hooks/use-speech-input';
@@ -320,9 +321,15 @@ function MessageBubble({
             : 'rounded-bl-md border border-border bg-white'
         }`}
       >
-        <Text className={`text-[15px] leading-[22px] ${isUser ? 'text-white' : 'text-indigo'}`}>
-          {message.content}
-        </Text>
+        {isUser ? (
+          <Text className="text-[15px] leading-[22px] text-white">{message.content}</Text>
+        ) : (
+          <MarkdownText
+            content={message.content}
+            className="text-[15px] leading-[22px] text-indigo"
+            boldClassName="text-[15px] leading-[22px] font-bold text-indigo"
+          />
+        )}
       </View>
 
       {!isUser && message.suggestedActions && message.suggestedActions.length > 0 ? (
@@ -333,9 +340,17 @@ function MessageBubble({
               onPress={() => onActionPress(action)}
               className="rounded-full border border-india-green/30 bg-india-green/10 px-3 py-2"
             >
-              <Text className="text-[13px] font-semibold text-india-green">{action.label}</Text>
+              <MarkdownText
+                content={action.label}
+                className="text-[13px] font-semibold text-india-green"
+                boldClassName="text-[13px] font-bold text-india-green"
+              />
               {action.reason ? (
-                <Text className="mt-0.5 text-[11px] text-muted">{action.reason}</Text>
+                <MarkdownText
+                  content={action.reason}
+                  className="mt-0.5 text-[11px] text-muted"
+                  boldClassName="mt-0.5 text-[11px] font-semibold text-muted"
+                />
               ) : null}
             </Pressable>
           ))}
