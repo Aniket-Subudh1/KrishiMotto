@@ -1,6 +1,6 @@
-import { Ionicons } from '@expo/vector-icons';
 import { View } from 'react-native';
 
+import { AppIcon } from '@/components/ui/app-icon';
 import { Text } from '@/components/ui/text';
 import { DateField } from '@/features/crop-calendar/components/date-field';
 import { parseLocalIsoDate } from '@/lib/date';
@@ -61,7 +61,7 @@ export function DateRangeFields({
 
       {hasDuration && durationLabel ? (
         <View className="flex-row items-center gap-2 rounded-xl bg-india-green/5 px-3 py-2.5">
-          <Ionicons name="time-outline" size={16} color={Palette.indiaGreen} />
+          <AppIcon name="clock-outline" size={16} color={Palette.indiaGreen} />
           <Text className="text-[13px] font-medium text-indigo">
             {durationLabel.replace('{{days}}', String(days))}
           </Text>

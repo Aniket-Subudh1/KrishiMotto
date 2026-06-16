@@ -1,6 +1,6 @@
-import { Ionicons } from '@expo/vector-icons';
 import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
 
+import { AppIcon } from '@/components/ui/app-icon';
 import { Text } from '@/components/ui/text';
 import { Palette } from '@/constants/theme';
 import type { Warehouse } from '@/types/storage';
@@ -8,6 +8,7 @@ import type { Warehouse } from '@/types/storage';
 type WarehousePickerProps = {
   label: string;
   hint?: string;
+  emptyMessage: string;
   warehouses: Warehouse[];
   selectedId: string | null;
   onSelect: (warehouseId: string) => void;
@@ -18,6 +19,7 @@ type WarehousePickerProps = {
 export function WarehousePicker({
   label,
   hint,
+  emptyMessage,
   warehouses,
   selectedId,
   onSelect,
@@ -41,9 +43,7 @@ export function WarehousePicker({
 
       {warehouses.length === 0 ? (
         <View className="rounded-2xl border border-dashed border-border bg-surface px-4 py-5">
-          <Text className="text-center text-[14px] text-muted">
-            No warehouses available in your region right now.
-          </Text>
+          <Text className="text-center text-[14px] text-muted">{emptyMessage}</Text>
         </View>
       ) : (
         <ScrollView
@@ -68,11 +68,11 @@ export function WarehousePicker({
                       className="h-10 w-10 items-center justify-center rounded-xl"
                       style={{ backgroundColor: 'rgba(233, 175, 67, 0.15)' }}
                     >
-                      <Ionicons name="cube-outline" size={18} color={Palette.marigold} />
+                      <AppIcon name="warehouse" size={18} color={Palette.marigold} />
                     </View>
                     {selected ? (
-                      <View className="rounded-full bg-india-green px-2 py-0.5">
-                        <Ionicons name="checkmark" size={12} color="#FFFFFF" />
+                      <View className="h-5 w-5 items-center justify-center rounded-full bg-india-green">
+                        <AppIcon name="check" size={12} color="#FFFFFF" />
                       </View>
                     ) : null}
                   </View>
@@ -99,7 +99,7 @@ export function WarehousePicker({
 
       {error ? (
         <View className="flex-row items-center gap-1.5 px-1">
-          <Ionicons name="alert-circle" size={13} color="#EF4444" />
+          <AppIcon name="alert-circle-outline" size={13} color="#EF4444" />
           <Text className="flex-1 text-[12px] leading-4 text-red-500">{error}</Text>
         </View>
       ) : null}

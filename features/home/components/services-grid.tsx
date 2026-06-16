@@ -33,12 +33,12 @@ export function ServicesGrid({ services, t, useBodyAsBadge = false }: ServicesGr
   }
 
   return (
-    <View className="flex-row flex-wrap" style={{ marginHorizontal: -4 }}>
+    <View className="flex-row flex-wrap items-start" style={{ marginHorizontal: -4 }}>
       {services.map((service) => (
         <View key={service.key} className="p-1" style={{ width: '25%' }}>
           <Pressable
             onPress={() => handlePress(service)}
-            className="items-center rounded-2xl bg-white px-1.5 py-3.5"
+            className="w-full items-center rounded-2xl bg-white px-1 py-3.5"
             style={({ pressed }) => ({
               shadowColor: Palette.indigo,
               shadowOffset: { width: 0, height: 2 },
@@ -52,22 +52,18 @@ export function ServicesGrid({ services, t, useBodyAsBadge = false }: ServicesGr
             })}
           >
             <View
-              className="h-11 w-11 items-center justify-center rounded-2xl"
+              className="h-11 w-11 shrink-0 items-center justify-center rounded-2xl"
               style={{ backgroundColor: service.iconBg }}
             >
               <AppIcon name={service.icon} size={22} color={service.iconColor} />
             </View>
-            <Text
-              className="mt-2.5 text-center text-[11px] font-semibold leading-4 text-indigo"
-              numberOfLines={2}
-            >
+            <Text className="mt-2.5 w-full px-0.5 text-center text-[11px] font-semibold leading-[15px] text-indigo">
               {service.title}
             </Text>
             {!useBodyAsBadge ? (
               <Text
-                className="mt-1 text-center text-[10px] font-medium"
+                className="mt-1 w-full px-0.5 text-center text-[10px] font-medium leading-[14px]"
                 style={{ color: service.badgeColor ?? Palette.indiaGreen }}
-                numberOfLines={1}
               >
                 {service.badge}
               </Text>

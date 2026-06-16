@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import {
   Platform,
@@ -8,10 +7,10 @@ import {
 } from 'react-native';
 
 import { useRegisterScrollField } from '@/components/auth/auth-scroll-context';
+import { AppIcon } from '@/components/ui/app-icon';
 import { Text } from '@/components/ui/text';
 import { Palette } from '@/constants/theme';
-
-type IconName = keyof typeof Ionicons.glyphMap;
+import { resolveAppIcon, type IconName } from '@/lib/icon-names';
 
 type InputProps = Omit<TextInputProps, 'style'> & {
   label: string;
@@ -36,8 +35,8 @@ function InputIcon({ icon, focused }: { icon: IconName; focused: boolean }) {
         focused ? 'bg-india-green/10' : 'bg-surface'
       }`}
     >
-      <Ionicons
-        name={icon}
+      <AppIcon
+        name={resolveAppIcon(icon)}
         size={18}
         color={focused ? Palette.indiaGreen : Palette.indigo}
       />
@@ -49,7 +48,7 @@ function HelperText({ error, hint }: { error?: string; hint?: string }) {
   if (error) {
     return (
       <View className="flex-row items-center gap-1.5 px-1">
-        <Ionicons name="alert-circle" size={13} color="#EF4444" />
+        <AppIcon name="alert-circle-outline" size={13} color="#EF4444" />
         <Text className="flex-1 text-[12px] leading-4 text-red-500">{error}</Text>
       </View>
     );
@@ -195,8 +194,8 @@ export function PhoneInput({
             isActive ? 'border-india-green/20 bg-india-green/5' : 'border-border bg-surface'
           }`}
         >
-          <Ionicons
-            name="call-outline"
+          <AppIcon
+            name="phone-outline"
             size={16}
             color={isActive ? Palette.indiaGreen : Palette.indigo}
           />

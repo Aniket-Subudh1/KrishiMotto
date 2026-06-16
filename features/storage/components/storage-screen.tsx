@@ -1,19 +1,17 @@
-import { Ionicons } from '@expo/vector-icons';
+import { AppIcon } from '@/components/ui/app-icon';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Redirect, router } from 'expo-router';
 import { useMemo, useState } from 'react';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  View,
-} from 'react-native';
+import { Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ErrorBanner } from '@/components/auth/auth-screen-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  DEFAULT_FORM_FOOTER_OFFSET,
+  KeyboardAwareFormShell,
+} from '@/components/ui/keyboard-aware-form-shell';
 import { Text } from '@/components/ui/text';
 import { CropTypeChips } from '@/features/crop-calendar/components/crop-type-chips';
 import { StepIndicator } from '@/features/crop-calendar/components/step-indicator';
@@ -194,6 +192,7 @@ export function StorageScreen() {
   const currentStepIndex = stepIndex(step);
   const isLastStep = step === 'review';
   const showSuccess = submitState === 'done' && completedRequestNumber;
+  const keyboardBottomOffset = DEFAULT_FORM_FOOTER_OFFSET + insets.bottom + 12;
 
   return (
     <View className="flex-1 bg-background">
@@ -209,7 +208,7 @@ export function StorageScreen() {
             className="h-10 w-10 items-center justify-center rounded-full bg-white/20"
             accessibilityRole="button"
           >
-            <Ionicons name="chevron-back" size={22} color="#FFFFFF" />
+            <AppIcon name="chevron-left" size={22} color="#FFFFFF" />
           </Pressable>
           {!showSuccess ? (
             <View className="rounded-full bg-white/20 px-3 py-1">
@@ -224,7 +223,7 @@ export function StorageScreen() {
 
         <View className="mt-4 flex-row items-center gap-3">
           <View className="h-12 w-12 items-center justify-center rounded-2xl bg-white/20">
-            <Ionicons name="cube-outline" size={24} color="#FFFFFF" />
+            <AppIcon name="warehouse" size={24} color="#FFFFFF" />
           </View>
           <View className="min-w-0 flex-1">
             <Text className="text-[26px] font-bold text-white">{t('storage.title')}</Text>
@@ -252,16 +251,30 @@ export function StorageScreen() {
         ) : null}
       </LinearGradient>
 
-      <KeyboardAvoidingView
-        className="flex-1"
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      <KeyboardAwareFormShell
+        contentClassName="px-5 pb-6 pt-5"
+        bottomOffset={keyboardBottomOffset}
+        footer={
+          !showSuccess ? (
+            <View
+              className="border-t border-border bg-white px-5 pt-4"
+              style={{ paddingBottom: insets.bottom + 12 }}
+            >
+              {isLastStep ? (
+                <Button onPress={handleSubmit} disabled={isBusy}>
+                  {isBusy
+                    ? submitState === 'paying'
+                      ? t('storage.paying')
+                      : t('storage.submitting')
+                    : t('storage.submit')}
+                </Button>
+              ) : (
+                <Button onPress={goNext}>{t('storage.continue')}</Button>
+              )}
+            </View>
+          ) : null
+        }
       >
-        <ScrollView
-          className="flex-1"
-          contentContainerClassName="px-5 pb-6 pt-5"
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-        >
           {submitError ? (
             <View className="mb-4">
               <ErrorBanner message={submitError} />
@@ -272,7 +285,7 @@ export function StorageScreen() {
             <View className="gap-5">
               <View className="items-center rounded-2xl border border-border bg-white px-5 py-8">
                 <View className="mb-4 h-16 w-16 items-center justify-center rounded-full bg-india-green/10">
-                  <Ionicons name="checkmark-circle" size={40} color={Palette.indiaGreen} />
+                  <AppIcon name="check-circle" size={40} color={Palette.indiaGreen} />
                 </View>
                 <Text className="text-center text-[20px] font-bold text-indigo">
                   {t('storage.successTitle')}
@@ -290,7 +303,7 @@ export function StorageScreen() {
                 <View className="mt-3 gap-2">
                   {(['submitted', 'pickup', 'payout', 'tracker'] as const).map((key) => (
                     <View key={key} className="flex-row items-start gap-2">
-                      <Ionicons name="ellipse" size={8} color={Palette.indiaGreen} style={{ marginTop: 5 }} />
+                      <View className="mt-1.5 h-2 w-2 rounded-full bg-india-green" />
                       <Text className="flex-1 text-[13px] leading-5 text-muted">
                         {t(`storage.nextSteps.${key}`)}
                       </Text>
@@ -314,6 +327,7 @@ export function StorageScreen() {
               <WarehousePicker
                 label={t('storage.warehouseLabel')}
                 hint={t('storage.warehouseHint')}
+                emptyMessage={t('storage.noWarehousesEmpty')}
                 warehouses={warehouses}
                 selectedId={selectedWarehouseId}
                 onSelect={(warehouseId) => {
@@ -397,27 +411,7 @@ export function StorageScreen() {
               </View>
             </View>
           )}
-        </ScrollView>
-
-        {!showSuccess ? (
-          <View
-            className="border-t border-border bg-white px-5 pt-4"
-            style={{ paddingBottom: insets.bottom + 12 }}
-          >
-            {isLastStep ? (
-              <Button onPress={handleSubmit} disabled={isBusy}>
-                {isBusy
-                  ? submitState === 'paying'
-                    ? t('storage.paying')
-                    : t('storage.submitting')
-                  : t('storage.submit')}
-              </Button>
-            ) : (
-              <Button onPress={goNext}>{t('storage.continue')}</Button>
-            )}
-          </View>
-        ) : null}
-      </KeyboardAvoidingView>
+      </KeyboardAwareFormShell>
     </View>
   );
 }

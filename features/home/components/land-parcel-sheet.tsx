@@ -1,16 +1,14 @@
-import { Ionicons } from '@expo/vector-icons';
 import { router, type Href } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  Modal,
   Pressable,
-  ScrollView,
   View,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { BottomSheetModal, BottomSheetScroll } from '@/components/ui/bottom-sheet-modal';
+import { AppIcon } from '@/components/ui/app-icon';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Text } from '@/components/ui/text';
@@ -22,6 +20,8 @@ import {
 } from '@/features/farmer/hooks/use-land-parcel';
 import { useAppLocale } from '@/hooks/use-app-locale';
 import { formatAcres, formatDate } from '@/lib/format';
+import { resolveAppIcon, type IconName } from '@/lib/icon-names';
+import { Palette } from '@/constants/theme';
 import type { LandType } from '@/types/farmer';
 
 type LandParcelSheetProps = {
@@ -32,7 +32,6 @@ type LandParcelSheetProps = {
 
 export function LandParcelSheet({ parcelId, visible, onClose }: LandParcelSheetProps) {
   const { t } = useAppLocale();
-  const insets = useSafeAreaInsets();
   const { data: parcel, isLoading, isError } = useLandParcel(parcelId);
   const updateParcel = useUpdateLandParcel();
   const deleteParcel = useDeleteLandParcel();
@@ -60,6 +59,13 @@ export function LandParcelSheet({ parcelId, visible, onClose }: LandParcelSheetP
       setLandType(parcel.landType);
     }
     setIsEditing((value) => !value);
+  }
+
+  function handleEditBoundary(parcelBoundaryId: string) {
+    handleClose();
+    setTimeout(() => {
+      router.push(`/farmer/land-boundary?parcelId=${parcelBoundaryId}` as Href);
+    }, 180);
   }
 
   async function handleSave() {
@@ -103,36 +109,29 @@ export function LandParcelSheet({ parcelId, visible, onClose }: LandParcelSheetP
   const isBusy = updateParcel.isPending || deleteParcel.isPending;
 
   return (
-    <Modal visible={visible} animationType="slide" transparent onRequestClose={handleClose}>
-      <View className="flex-1 justify-end bg-black/40">
-        <Pressable className="flex-1" onPress={handleClose} />
+    <BottomSheetModal
+      visible={visible}
+      onClose={handleClose}
+      sheetClassName="max-h-[88%] rounded-t-[28px] bg-background"
+    >
+      <View className="items-center py-3">
+        <View className="h-1 w-10 rounded-full bg-border" />
+      </View>
 
-        <View
-          className="max-h-[88%] rounded-t-[28px] bg-background"
-          style={{ paddingBottom: Math.max(insets.bottom, 16) }}
-        >
-          <View className="items-center py-3">
-            <View className="h-1 w-10 rounded-full bg-border" />
-          </View>
-
-          {isLoading ? (
-            <View className="items-center py-16">
-              <ActivityIndicator size="large" color="#46962F" />
-            </View>
-          ) : isError || !parcel ? (
-            <View className="items-center px-6 py-16">
-              <Text className="text-center text-muted">{t('home.land.loadError')}</Text>
-              <Button className="mt-4" variant="secondary" onPress={handleClose}>
-                {t('home.land.close')}
-              </Button>
-            </View>
-          ) : (
-            <ScrollView
-              className="px-6"
-              keyboardShouldPersistTaps="handled"
-              showsVerticalScrollIndicator={false}
-            >
-              <View className="mb-4 flex-row items-start justify-between">
+      {isLoading ? (
+        <View className="items-center py-16">
+          <ActivityIndicator size="large" color="#46962F" />
+        </View>
+      ) : isError || !parcel ? (
+        <View className="items-center px-6 py-16">
+          <Text className="text-center text-muted">{t('home.land.loadError')}</Text>
+          <Button className="mt-4" variant="secondary" onPress={handleClose}>
+            {t('home.land.close')}
+          </Button>
+        </View>
+      ) : (
+        <BottomSheetScroll className="px-6">
+          <View className="mb-4 flex-row items-start justify-between">
                 <View className="flex-1 pr-3">
                   <Text className="text-[13px] font-medium uppercase tracking-wide text-muted">
                     {t('home.land.fieldDetails')}
@@ -141,12 +140,12 @@ export function LandParcelSheet({ parcelId, visible, onClose }: LandParcelSheetP
                 </View>
                 <Pressable
                   onPress={toggleEditing}
-                  className="h-10 w-10 items-center justify-center rounded-xl bg-surface"
+                  className="h-11 w-11 items-center justify-center rounded-2xl bg-surface"
                 >
-                  <Ionicons
-                    name={isEditing ? 'close' : 'create-outline'}
+                  <AppIcon
+                    name={isEditing ? 'close' : 'pencil-outline'}
                     size={20}
-                    color="#1A365D"
+                    color={Palette.indigo}
                   />
                 </Pressable>
               </View>
@@ -171,12 +170,17 @@ export function LandParcelSheet({ parcelId, visible, onClose }: LandParcelSheetP
                           <Pressable
                             key={type}
                             onPress={() => setLandType(type)}
-                            className={`flex-1 items-center rounded-2xl border px-3 py-3 ${
+                            className={`flex-1 flex-row items-center justify-center gap-2 rounded-2xl border px-3 py-3 ${
                               selected
                                 ? 'border-india-green bg-india-green/10'
                                 : 'border-border bg-white'
                             }`}
                           >
+                            <AppIcon
+                              name={type === 'OWNED' ? 'home-variant-outline' : 'file-sign'}
+                              size={16}
+                              color={selected ? Palette.indiaGreen : '#94A3B8'}
+                            />
                             <Text
                               className={`text-[14px] font-semibold ${
                                 selected ? 'text-india-green' : 'text-muted'
@@ -226,8 +230,7 @@ export function LandParcelSheet({ parcelId, visible, onClose }: LandParcelSheetP
                   <Button
                     variant="secondary"
                     onPress={() => {
-                      handleClose();
-                      router.push(`/farmer/land-boundary?parcelId=${parcel.id}` as Href);
+                      handleEditBoundary(parcel.id);
                     }}
                   >
                     {t('home.land.editBoundary')}
@@ -241,12 +244,10 @@ export function LandParcelSheet({ parcelId, visible, onClose }: LandParcelSheetP
                 </Button>
               ) : null}
 
-              <View className="h-6" />
-            </ScrollView>
-          )}
-        </View>
-      </View>
-    </Modal>
+          <View className="h-6" />
+        </BottomSheetScroll>
+      )}
+    </BottomSheetModal>
   );
 }
 
@@ -255,13 +256,18 @@ function DetailRow({
   label,
   value,
 }: {
-  icon: keyof typeof Ionicons.glyphMap;
+  icon: IconName;
   label: string;
   value: string;
 }) {
   return (
     <View className="flex-row items-center gap-3 rounded-2xl border border-border bg-surface px-4 py-3">
-      <Ionicons name={icon} size={18} color="#46962F" />
+      <View
+        className="h-9 w-9 items-center justify-center rounded-xl"
+        style={{ backgroundColor: 'rgba(70, 150, 47, 0.1)' }}
+      >
+        <AppIcon name={resolveAppIcon(icon)} size={18} color={Palette.indiaGreen} />
+      </View>
       <View className="flex-1">
         <Text className="text-[12px] text-muted">{label}</Text>
         <Text className="text-[15px] font-semibold text-indigo">{value}</Text>

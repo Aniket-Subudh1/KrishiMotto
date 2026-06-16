@@ -1,10 +1,10 @@
 import { Palette } from '@/constants/theme';
 import type { Href } from 'expo-router';
-import type { Ionicons } from '@expo/vector-icons';
+import type { IconName } from '@/lib/icon-names';
 
 export type ServiceDefinition = {
   key: string;
-  icon: keyof typeof Ionicons.glyphMap;
+  icon: IconName;
   titleKey: string;
   badgeKey: string;
   href?: Href;
@@ -17,7 +17,7 @@ export type ServiceDefinition = {
 export const QUICK_ACTIONS: ServiceDefinition[] = [
   {
     key: 'add-field',
-    icon: 'map-outline',
+    icon: 'map-marker-outline',
     titleKey: 'home.tools.addField',
     badgeKey: 'home.tools.addFieldBody',
     href: '/farmer/land-boundary',
@@ -42,7 +42,7 @@ export const QUICK_ACTIONS: ServiceDefinition[] = [
 export const ALL_SERVICES: ServiceDefinition[] = [
   {
     key: 'calendar',
-    icon: 'calendar-outline',
+    icon: 'calendar-month-outline',
     titleKey: 'home.dashboard.services.calendar.title',
     badgeKey: 'home.dashboard.services.calendar.badge',
     href: '/services/crop-calendar',
@@ -51,7 +51,7 @@ export const ALL_SERVICES: ServiceDefinition[] = [
   },
   {
     key: 'drone',
-    icon: 'airplane-outline',
+    icon: 'quadcopter',
     titleKey: 'home.dashboard.services.drone.title',
     badgeKey: 'home.dashboard.services.drone.badge',
     href: '/services/drone-spray',
@@ -60,7 +60,7 @@ export const ALL_SERVICES: ServiceDefinition[] = [
   },
   {
     key: 'crop-health',
-    icon: 'leaf-outline',
+    icon: 'sprout-outline',
     titleKey: 'home.dashboard.services.cropHealth.title',
     badgeKey: 'home.dashboard.services.cropHealth.badge',
     href: '/services/crop-health',
@@ -78,7 +78,7 @@ export const ALL_SERVICES: ServiceDefinition[] = [
   },
   {
     key: 'expert',
-    icon: 'person-outline',
+    icon: 'account-tie-outline',
     titleKey: 'home.dashboard.services.expert.title',
     badgeKey: 'home.dashboard.services.expert.badge',
     href: '/services/expert-visit',
@@ -87,7 +87,7 @@ export const ALL_SERVICES: ServiceDefinition[] = [
   },
   {
     key: 'harvest',
-    icon: 'scan-outline',
+    icon: 'barcode-scan',
     titleKey: 'home.dashboard.services.harvest.title',
     badgeKey: 'home.dashboard.services.harvest.badge',
     iconBg: 'rgba(233, 175, 67, 0.15)',
@@ -95,7 +95,7 @@ export const ALL_SERVICES: ServiceDefinition[] = [
   },
   {
     key: 'loan',
-    icon: 'cash-outline',
+    icon: 'bank-outline',
     titleKey: 'home.dashboard.services.loan.title',
     badgeKey: 'home.dashboard.services.loan.badge',
     iconBg: 'rgba(70, 150, 47, 0.12)',
@@ -103,7 +103,7 @@ export const ALL_SERVICES: ServiceDefinition[] = [
   },
   {
     key: 'insurance',
-    icon: 'shield-checkmark-outline',
+    icon: 'shield-check-outline',
     titleKey: 'home.dashboard.services.insurance.title',
     badgeKey: 'home.dashboard.services.insurance.badge',
     iconBg: 'rgba(26, 54, 93, 0.08)',
@@ -111,7 +111,7 @@ export const ALL_SERVICES: ServiceDefinition[] = [
   },
   {
     key: 'market',
-    icon: 'trending-up-outline',
+    icon: 'trending-up',
     titleKey: 'home.dashboard.services.market.title',
     badgeKey: 'home.dashboard.services.market.badge',
     iconBg: 'rgba(244, 164, 96, 0.15)',
@@ -120,7 +120,7 @@ export const ALL_SERVICES: ServiceDefinition[] = [
   },
   {
     key: 'lab',
-    icon: 'document-text-outline',
+    icon: 'file-document-outline',
     titleKey: 'home.dashboard.services.lab.title',
     badgeKey: 'home.dashboard.services.lab.badge',
     iconBg: 'rgba(233, 175, 67, 0.15)',

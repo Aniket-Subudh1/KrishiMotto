@@ -1,20 +1,18 @@
-import { Ionicons } from '@expo/vector-icons';
+import { AppIcon } from '@/components/ui/app-icon';
+import { resolveAppIcon, type IconName } from '@/lib/icon-names';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Redirect, router } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
-import {
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  View,
-} from 'react-native';
+import { Alert, Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ErrorBanner } from '@/components/auth/auth-screen-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  DEFAULT_FORM_FOOTER_OFFSET,
+  KeyboardAwareFormShell,
+} from '@/components/ui/keyboard-aware-form-shell';
 import { Text } from '@/components/ui/text';
 import { CropTypeChips } from '@/features/crop-calendar/components/crop-type-chips';
 import { DateField } from '@/features/crop-calendar/components/date-field';
@@ -248,6 +246,7 @@ export function ExpertVisitScreen() {
   const isBusy = createBooking.isPending || paymentState === 'paying' || paymentState === 'polling';
   const currentStepIndex = stepIndex(step);
   const isLastStep = step === 'visit';
+  const keyboardBottomOffset = DEFAULT_FORM_FOOTER_OFFSET + Math.max(insets.bottom, 12);
 
   return (
     <View className="flex-1 bg-background">
@@ -263,7 +262,7 @@ export function ExpertVisitScreen() {
             className="h-10 w-10 items-center justify-center rounded-full bg-white/20"
             accessibilityRole="button"
           >
-            <Ionicons name="chevron-back" size={22} color="#FFFFFF" />
+            <AppIcon name="chevron-left" size={22} color="#FFFFFF" />
           </Pressable>
           <View className="rounded-full bg-white/20 px-3 py-1">
             <Text className="text-[12px] font-semibold text-white">
@@ -276,7 +275,7 @@ export function ExpertVisitScreen() {
 
         <View className="mt-4 flex-row items-center gap-3">
           <View className="h-12 w-12 items-center justify-center rounded-2xl bg-white/20">
-            <Ionicons name="person-outline" size={24} color="#FFFFFF" />
+            <AppIcon name="account-tie-outline" size={24} color="#FFFFFF" />
           </View>
           <View className="min-w-0 flex-1">
             <Text className="text-[26px] font-bold text-white">{t('expertVisit.title')}</Text>
@@ -297,16 +296,40 @@ export function ExpertVisitScreen() {
         </View>
       </LinearGradient>
 
-      <KeyboardAvoidingView
-        className="flex-1"
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      <KeyboardAwareFormShell
+        contentClassName="px-5 pb-6 pt-5"
+        bottomOffset={keyboardBottomOffset}
+        footer={
+          <View
+            className="border-t border-border bg-background px-5 pt-3"
+            style={{ paddingBottom: Math.max(insets.bottom, 12) }}
+          >
+            {isLastStep ? (
+              <Button size="lg" className="w-full" loading={isBusy} onPress={handleSubmit}>
+                {paymentState === 'polling'
+                  ? t('expertVisit.checkingPayment')
+                  : t('expertVisit.submit').replace('{{price}}', totalLabel)}
+              </Button>
+            ) : (
+              <View className="flex-row gap-3">
+                {currentStepIndex > 1 ? (
+                  <Button
+                    size="lg"
+                    variant="secondary"
+                    className="min-w-[100px]"
+                    onPress={() => setStep(STEPS[currentStepIndex - 2])}
+                  >
+                    {t('expertVisit.back')}
+                  </Button>
+                ) : null}
+                <Button size="lg" className="flex-1" onPress={goNext}>
+                  {t('expertVisit.continue')}
+                </Button>
+              </View>
+            )}
+          </View>
+        }
       >
-        <ScrollView
-          className="flex-1"
-          contentContainerClassName="px-5 pb-6 pt-5"
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-        >
           {submitError ? (
             <View className="mb-4">
               <ErrorBanner message={submitError} />
@@ -448,7 +471,7 @@ export function ExpertVisitScreen() {
                         ) : null}
                       </View>
                       <View className="flex-row items-center gap-1.5 rounded-full bg-white px-2.5 py-1">
-                        <Ionicons name="shield-checkmark-outline" size={14} color={Palette.indiaGreen} />
+                        <AppIcon name="shield-check-outline" size={14} color={Palette.indiaGreen} />
                         <Text className="text-[11px] font-semibold text-india-green">
                           {t('expertVisit.verifiedExpert')}
                         </Text>
@@ -459,37 +482,7 @@ export function ExpertVisitScreen() {
               ) : null}
             </View>
           ) : null}
-        </ScrollView>
-
-        <View
-          className="border-t border-border bg-background px-5 pt-3"
-          style={{ paddingBottom: Math.max(insets.bottom, 12) }}
-        >
-          {isLastStep ? (
-            <Button size="lg" className="w-full" loading={isBusy} onPress={handleSubmit}>
-              {paymentState === 'polling'
-                ? t('expertVisit.checkingPayment')
-                : t('expertVisit.submit').replace('{{price}}', totalLabel)}
-            </Button>
-          ) : (
-            <View className="flex-row gap-3">
-              {currentStepIndex > 1 ? (
-                <Button
-                  size="lg"
-                  variant="secondary"
-                  className="min-w-[100px]"
-                  onPress={() => setStep(STEPS[currentStepIndex - 2])}
-                >
-                  {t('expertVisit.back')}
-                </Button>
-              ) : null}
-              <Button size="lg" className="flex-1" onPress={goNext}>
-                {t('expertVisit.continue')}
-              </Button>
-            </View>
-          )}
-        </View>
-      </KeyboardAvoidingView>
+      </KeyboardAwareFormShell>
     </View>
   );
 }
@@ -531,14 +524,14 @@ function ReviewLine({
   label,
   value,
 }: {
-  icon: keyof typeof Ionicons.glyphMap;
+  icon: IconName;
   label: string;
   value: string;
 }) {
   return (
     <View className="flex-row items-center gap-3">
       <View className="h-8 w-8 items-center justify-center rounded-lg bg-white">
-        <Ionicons name={icon} size={15} color={Palette.indigo} />
+        <AppIcon name={resolveAppIcon(icon)} size={15} color={Palette.indigo} />
       </View>
       <View className="min-w-0 flex-1">
         <Text className="text-[11px] text-muted">{label}</Text>

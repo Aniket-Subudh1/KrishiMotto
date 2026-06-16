@@ -1,12 +1,13 @@
-import { Ionicons } from '@expo/vector-icons';
 import { ActivityIndicator, View } from 'react-native';
 
+import { AppIcon } from '@/components/ui/app-icon';
 import { Text } from '@/components/ui/text';
 import { Palette } from '@/constants/theme';
 import { useStorageDashboard } from '@/features/storage/hooks/use-storage-request';
 import { useAppLocale } from '@/hooks/use-app-locale';
 import { formatPaise } from '@/lib/currency';
 import { formatDate } from '@/lib/format';
+import { resolveAppIcon, type IconName } from '@/lib/icon-names';
 import type { StorageRequest } from '@/types/storage';
 
 type StorageDashboardProps = {
@@ -22,12 +23,12 @@ function SensorCard({
   label: string;
   value: number;
   unit: string;
-  icon: keyof typeof Ionicons.glyphMap;
+  icon: IconName;
 }) {
   return (
     <View className="flex-1 rounded-2xl border border-border bg-white p-3.5">
       <View className="mb-2 flex-row items-center gap-2">
-        <Ionicons name={icon} size={16} color={Palette.indiaGreen} />
+        <AppIcon name={resolveAppIcon(icon)} size={16} color={Palette.indiaGreen} />
         <Text className="text-[12px] font-medium text-muted">{label}</Text>
       </View>
       <Text className="text-[22px] font-bold text-indigo">

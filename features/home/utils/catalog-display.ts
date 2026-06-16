@@ -1,5 +1,5 @@
 import type { Href } from 'expo-router';
-import type { TFunction } from 'i18next';
+import type { TranslateFn } from '@/lib/booking-i18n';
 
 import { getServiceIconStyle } from '@/features/home/constants/service-icons';
 import type { GridService } from '@/features/home/components/services-grid';
@@ -59,7 +59,7 @@ export function sortFeaturedServices(services: CatalogService[]): CatalogService
   });
 }
 
-export function toGridService(service: CatalogService, t: TFunction): GridService {
+export function toGridService(service: CatalogService, t: TranslateFn): GridService {
   const iconStyle = getServiceIconStyle(service.iconType);
 
   return {

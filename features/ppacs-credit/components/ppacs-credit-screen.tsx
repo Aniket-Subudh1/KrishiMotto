@@ -1,19 +1,18 @@
-import { Ionicons } from '@expo/vector-icons';
+import { AppIcon } from '@/components/ui/app-icon';
+import { resolveAppIcon, type IconName } from '@/lib/icon-names';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Redirect, router } from 'expo-router';
 import { useMemo, useState } from 'react';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  View,
-} from 'react-native';
+import { Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ErrorBanner } from '@/components/auth/auth-screen-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  DEFAULT_FORM_FOOTER_OFFSET,
+  KeyboardAwareFormShell,
+} from '@/components/ui/keyboard-aware-form-shell';
 import { Text } from '@/components/ui/text';
 import { OptionPicker } from '@/features/crop-calendar/components/option-picker';
 import { StepIndicator } from '@/features/crop-calendar/components/step-indicator';
@@ -176,6 +175,7 @@ export function PpacsCreditScreen() {
   const currentStepIndex = stepIndex(step);
   const isLastStep = step === 'review';
   const showSuccess = submitState === 'done' && completedOrderId;
+  const keyboardBottomOffset = DEFAULT_FORM_FOOTER_OFFSET + Math.max(insets.bottom, 12);
 
   return (
     <View className="flex-1 bg-background">
@@ -191,7 +191,7 @@ export function PpacsCreditScreen() {
             className="h-10 w-10 items-center justify-center rounded-full bg-white/20"
             accessibilityRole="button"
           >
-            <Ionicons name="chevron-back" size={22} color="#FFFFFF" />
+            <AppIcon name="chevron-left" size={22} color="#FFFFFF" />
           </Pressable>
           {!showSuccess ? (
             <View className="rounded-full bg-white/20 px-3 py-1">
@@ -206,7 +206,7 @@ export function PpacsCreditScreen() {
 
         <View className="mt-4 flex-row items-center gap-3">
           <View className="h-12 w-12 items-center justify-center rounded-2xl bg-white/20">
-            <Ionicons name="cash-outline" size={24} color="#FFFFFF" />
+            <AppIcon name="bank-outline" size={24} color="#FFFFFF" />
           </View>
           <View className="min-w-0 flex-1">
             <Text className="text-[26px] font-bold text-white">{t('ppacsCredit.title')}</Text>
@@ -230,16 +230,42 @@ export function PpacsCreditScreen() {
         ) : null}
       </LinearGradient>
 
-      <KeyboardAvoidingView
-        className="flex-1"
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      <KeyboardAwareFormShell
+        contentClassName="px-5 pb-6 pt-5"
+        bottomOffset={keyboardBottomOffset}
+        footer={
+          <View
+            className="border-t border-border bg-background px-5 pt-3"
+            style={{ paddingBottom: Math.max(insets.bottom, 12) }}
+          >
+            {showSuccess ? (
+              <Button size="lg" className="w-full" onPress={() => router.back()}>
+                {t('ppacsCredit.done')}
+              </Button>
+            ) : isLastStep ? (
+              <Button size="lg" className="w-full" loading={isBusy} onPress={handleSubmit}>
+                {t('ppacsCredit.submit')}
+              </Button>
+            ) : (
+              <View className="flex-row gap-3">
+                {currentStepIndex > 1 ? (
+                  <Button
+                    size="lg"
+                    variant="secondary"
+                    className="min-w-[100px]"
+                    onPress={() => setStep(STEPS[currentStepIndex - 2])}
+                  >
+                    {t('ppacsCredit.back')}
+                  </Button>
+                ) : null}
+                <Button size="lg" className="flex-1" onPress={goNext}>
+                  {t('ppacsCredit.continue')}
+                </Button>
+              </View>
+            )}
+          </View>
+        }
       >
-        <ScrollView
-          className="flex-1"
-          contentContainerClassName="px-5 pb-6 pt-5"
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-        >
           {submitError ? (
             <View className="mb-4">
               <ErrorBanner message={submitError} />
@@ -368,39 +394,7 @@ export function PpacsCreditScreen() {
               ) : null}
             </>
           )}
-        </ScrollView>
-
-        <View
-          className="border-t border-border bg-background px-5 pt-3"
-          style={{ paddingBottom: Math.max(insets.bottom, 12) }}
-        >
-          {showSuccess ? (
-            <Button size="lg" className="w-full" onPress={() => router.back()}>
-              {t('ppacsCredit.done')}
-            </Button>
-          ) : isLastStep ? (
-            <Button size="lg" className="w-full" loading={isBusy} onPress={handleSubmit}>
-              {t('ppacsCredit.submit')}
-            </Button>
-          ) : (
-            <View className="flex-row gap-3">
-              {currentStepIndex > 1 ? (
-                <Button
-                  size="lg"
-                  variant="secondary"
-                  className="min-w-[100px]"
-                  onPress={() => setStep(STEPS[currentStepIndex - 2])}
-                >
-                  {t('ppacsCredit.back')}
-                </Button>
-              ) : null}
-              <Button size="lg" className="flex-1" onPress={goNext}>
-                {t('ppacsCredit.continue')}
-              </Button>
-            </View>
-          )}
-        </View>
-      </KeyboardAvoidingView>
+      </KeyboardAwareFormShell>
     </View>
   );
 }
@@ -408,7 +402,7 @@ export function PpacsCreditScreen() {
 function InfoBanner({ message }: { message: string }) {
   return (
     <View className="flex-row gap-3 rounded-2xl border border-saffron/30 bg-saffron/10 px-4 py-3">
-      <Ionicons name="information-circle-outline" size={20} color={Palette.saffron} />
+      <AppIcon name="information-outline" size={20} color={Palette.saffron} />
       <Text className="flex-1 text-[13px] leading-5 text-indigo">{message}</Text>
     </View>
   );
@@ -534,7 +528,7 @@ function SuccessView({ orderId, t }: { orderId: string; t: (key: string) => stri
   return (
     <View className="items-center gap-5 pt-4">
       <View className="h-20 w-20 items-center justify-center rounded-full bg-india-green/10">
-        <Ionicons name="checkmark-circle" size={52} color={Palette.indiaGreen} />
+        <AppIcon name="check-circle" size={52} color={Palette.indiaGreen} />
       </View>
 
       <View className="items-center gap-2">
@@ -566,14 +560,14 @@ function ReviewLine({
   label,
   value,
 }: {
-  icon: keyof typeof Ionicons.glyphMap;
+  icon: IconName;
   label: string;
   value: string;
 }) {
   return (
     <View className="flex-row items-center gap-3">
       <View className="h-8 w-8 items-center justify-center rounded-lg bg-white">
-        <Ionicons name={icon} size={15} color={Palette.indiaGreen} />
+        <AppIcon name={resolveAppIcon(icon)} size={15} color={Palette.indiaGreen} />
       </View>
       <View className="min-w-0 flex-1">
         <Text className="text-[11px] text-muted">{label}</Text>

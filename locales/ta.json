@@ -55,12 +55,32 @@
   "signIn": {
     "welcomeBack": "மீண்டும் வரவேற்கிறோம்",
     "createAccount": "உங்கள் கணக்கை உருவாக்குங்கள்",
-    "subtitle": "KrishiMotto-வை தொடர்ந்து பயன்படுத்த உங்கள் மொபைல் எண்ணுடன் உள்நுழையுங்கள்.",
+    "subtitle": "உங்கள் பதிவு செய்யப்பட்ட மொபைல் எண்ணை உள்ளிடவும். சரியான கணக்கில் தானாக உள்நுழைவு செய்வோம்.",
     "registerSubtitle": "KrishiMotto-வைப் பயன்படுத்தத் தொடங்க உங்கள் மொபைல் எண்ணுடன் பதிவு செய்யுங்கள்.",
     "changeRole": "மாற்று",
     "comingSoon": "உள்நுழைவு வசதி விரைவில் வருகிறது.",
     "continueHome": "முகப்பிற்கு செல்லவும்",
-    "backToStart": "தொடக்கத்திற்குத் திரும்பவும்"
+    "backToStart": "தொடக்கத்திற்குத் திரும்பவும்",
+    "phoneLabel": "மொபைல் எண்",
+    "phonePlaceholder": "9876543210",
+    "phoneHint": "10 இலக்க இந்திய மொபைல் எண்",
+    "sendOtp": "OTP அனுப்பு",
+    "otpTitle": "OTP உள்ளிடவும்",
+    "otpSubtitle": "உங்கள் தொலைபேசிக்கு 6 இலக்கக் குறியீட்டை அனுப்பியுள்ளோம்.",
+    "verifyOtp": "உள்நுழையவும்",
+    "resendOtp": "OTP மீண்டும் அனுப்பு",
+    "backWarningTitle": "பின்செல்லவா?",
+    "backWarningCancel": "இருங்கள்",
+    "backWarningConfirm": "பின்செல்",
+    "backFromOtpMessage": "பின்செல்வது OTP-ஐ ரத்து செய்யும். தொடர புதிய குறியீடு தேவை.",
+    "otpResent": "உங்கள் தொலைபேசிக்கு புதிய OTP அனுப்பப்பட்டது.",
+    "errors": {
+      "phone": "செல்லுபடியான 10 இலக்க மொபைல் எண்ணை உள்ளிடவும்.",
+      "otp": "6 இலக்க OTP-ஐ உள்ளிடவும்.",
+      "otpInvalid": "தவறான OTP. குறியீட்டை சரிபார்த்து மீண்டும் முயற்சிக்கவும்.",
+      "notRegistered": "இந்த எண்ணுக்கு கணக்கு கிடைக்கவில்லை. முதலில் பதிவு செய்யவும்.",
+      "generic": "ஏதோ தவறு ஏற்பட்டது. மீண்டும் முயற்சிக்கவும்."
+    }
   },
   "farmerSignUp": {
     "stepAccount": "படி 1 / 4",
@@ -259,7 +279,12 @@
           "title": "நிபுணர் வருகை",
           "badge": "₹499+"
         }
-      }
+      },
+      "requestedServicesTitle": "கோரப்பட்ட சேவைகள்",
+      "requestedServicesSubtitle": "உங்கள் அனைத்து சமீபத்திய புக்கிங் மற்றும் சேமிப்பு கோரிக்கைகள்",
+      "noRequestedServices": "இன்னும் கோரிக்கைகள் இல்லை",
+      "noRequestedServicesHint": "கருவிகளில் இருந்து சேவையை புக் செய்தால், கோரிக்கைகள் இங்கே தெரியும்.",
+      "requestedOn": "கோரப்பட்டது {{date}}"
     },
     "overview": {
       "totalAcres": "மொத்த ஏக்கர்",
@@ -412,7 +437,7 @@
     "servicePincodesPlaceholder": "250001, 201001",
     "servicePincodesHint": "6 இலக்க அஞ்சல் குறியீடுகள் (மாவட்டம் இருந்தால் விருப்பம்)",
     "continueToKyc": "சரிபார்ப்புக்கு தொடரவும்",
-    "submitKyc": "சமர்ப்பித்து முகப்பிற்கு செல்லவும்",
+    "submitKyc": "இருப்பிடத்துக்கு தொடரவும்",
     "kycFooterHint": "அடையாளச் சான்றிதழ் அவசியம். மற்ற ஆவணங்கள் விருப்பம் ஆனால் அனுமதி வேகமாக.",
     "addPhoto": "புகைப்படம் சேர்க்கவும்",
     "photoHint": "விருப்பம் — விவசாயிகள் உங்களை அடையாளம் காண உதவும்",
@@ -448,8 +473,27 @@
       "servicePincodes": "ஒவ்வொரு அஞ்சல் குறியீடும் 6 இலக்க சரியான குறியீடாக இருக்க வேண்டும்.",
       "idRequired": "சரிபார்ப்புக்கு அடையாளச் சான்றிதழ் அவசியம்.",
       "documentsRequired": "குறைந்தது ஒரு சரிபார்ப்பு ஆவணத்தை பதிவேற்றவும்.",
-      "generic": "ஏதோ தவறு நடந்தது. மீண்டும் முயற்சிக்கவும்."
-    }
+      "generic": "ஏதோ தவறு நடந்தது. மீண்டும் முயற்சிக்கவும்.",
+      "locationRequired": "சமர்ப்பிப்பதற்கு முன் உங்கள் சேவை இருப்பிடத்தைத் தேர்வு செய்யவும்."
+    },
+    "stepLocation": "படி 5 / 5",
+    "continueToLocation": "இருப்பிடத்துக்கு தொடரவும்",
+    "submitLocation": "மதிப்பாய்வுக்கு சமர்ப்பிக்கவும்",
+    "locationTitle": "உங்கள் இருப்பிடத்தைப் பகிரவும்",
+    "locationSubtitle": "வரைபடத்தில் உங்கள் தற்போதைய சேவை இருப்பிடத்தைக் குறிக்கவும்.",
+    "locationSection": "தற்போதைய இருப்பிடம்",
+    "locationInstructionTitle": "சரிசெய்ய வரைபடத்தை நகர்த்தவும்",
+    "locationInstructionBody": "பின் உங்கள் தற்போதைய இருப்பிடத்தில் இருக்குமாறு வரைபடத்தை இழுத்து, சரி என்பதைத் தட்டவும்.",
+    "locationConfirm": "சரி",
+    "locationFetching": "உங்கள் இருப்பிடம் பெறப்படுகிறது…",
+    "locationReady": "இருப்பிடம் பதிவு செய்யப்பட்டது",
+    "locationDenied": "இருப்பிட அணுகல் மறுக்கப்பட்டது. தொடர அமைப்புகளில் இருப்பிடத்தை இயக்கவும்.",
+    "locationRetry": "இருப்பிடத்தைப் புதுப்பிக்கவும்",
+    "locationCoords": "அட்சரேகை: {{lat}}, தீர்க்கரேகை: {{lon}}",
+    "locationFooterHint": "உங்கள் ஆயத்தொலைவுகள் பாதுகாப்பாக சேமிக்கப்படுகின்றன; சேவை பொருத்தத்துக்கு மட்டுமே பயன்படுத்தப்படும்.",
+    "mapsUnavailable": "இந்த சாதனத்தில் வரைபடம் கிடைக்கவில்லை. இருப்பிடம் தேர்வு செய்ய மேம்பாட்டு பில்டைப் பயன்படுத்தவும்.",
+    "loadingMap": "வரைபடம் ஏற்றப்படுகிறது…",
+    "backFromLocationMessage": "பின்செல்வது இருப்பிடத் தேர்வை ரத்து செய்யும். மீண்டும் இருப்பிடம் தேர்வு செய்ய வேண்டும்."
   },
   "expertSignIn": {
     "title": "நிபுணர் உள்நுழைவு",
@@ -487,7 +531,7 @@
     "resubmit": "ஆவணங்களை மீண்டும் சமர்ப்பி"
   },
   "common": {
-    "back": "Back",
+    "back": "பின்செல்",
     "cancel": "ரத்து",
     "done": "முடிந்தது",
     "selectDate": "தேதியைத் தேர்ந்தெடுக்கவும்",
@@ -525,10 +569,10 @@
       "other": "மற்றவை"
     },
     "creditPurposes": {
-      "inputs": "Farm inputs (seeds, fertiliser)",
-      "equipment": "Equipment & machinery",
-      "labour": "Seasonal labour",
-      "other": "Other farm needs"
+      "inputs": "விவசாய உள்ளீடுகள் (விதை, உரம்)",
+      "equipment": "உபகரணங்கள் மற்றும் இயந்திரங்கள்",
+      "labour": "பருவகால தொழிலாளர்",
+      "other": "பிற விவசாயத் தேவைகள்"
     },
     "scheduleActivities": {
       "sowing": "விதைப்பு",
@@ -557,14 +601,14 @@
       "MARKET": "சந்தை விலை"
     },
     "bookingStatuses": {
-      "pendingPayment": "Payment pending",
-      "paid": "Paid",
-      "open": "Open",
-      "accepted": "Accepted",
-      "travelling": "Expert on the way",
-      "inProgress": "In progress",
-      "completed": "Completed",
-      "cancelled": "Cancelled"
+      "pendingPayment": "பணம் செலுத்துதல் நிலுவையில்",
+      "paid": "பணம் செலுத்தப்பட்டது",
+      "open": "திறந்துள்ளது",
+      "accepted": "ஏற்கப்பட்டது",
+      "travelling": "நிபுணர் வழியில்",
+      "inProgress": "நடந்து கொண்டிருக்கிறது",
+      "completed": "முடிந்தது",
+      "cancelled": "ரத்து செய்யப்பட்டது"
     },
     "storageStatuses": {
       "PENDING_PAYMENT": "பணம் நிலுவையில்",
@@ -582,35 +626,35 @@
       "CROP_HEALTH": "₹2,499/ac",
       "SOIL_HEALTH": "₹4,999/ac",
       "EXPERT_VISIT": "₹499+",
-      "PPACS_CREDIT": "Loans",
+      "PPACS_CREDIT": "கடன்",
       "STORAGE": "₹65/kg",
-      "CROP_TRACKER": "Live",
-      "IRRIGATION": "Soon",
-      "FERTILIZER": "Soon",
-      "PEST_CONTROL": "Soon",
-      "WEATHER": "Soon",
-      "SEEDS": "Soon",
-      "HARVEST": "Soon",
-      "INSURANCE": "Soon",
-      "MARKET": "Live"
+      "CROP_TRACKER": "நேரலை",
+      "IRRIGATION": "விரைவில்",
+      "FERTILIZER": "விரைவில்",
+      "PEST_CONTROL": "விரைவில்",
+      "WEATHER": "விரைவில்",
+      "SEEDS": "விரைவில்",
+      "HARVEST": "விரைவில்",
+      "INSURANCE": "விரைவில்",
+      "MARKET": "நேரலை"
     },
     "serviceDescriptions": {
-      "CROP_CALENDAR": "Season-long sowing, irrigation, and fertilizer plan.",
-      "DRONE_SPRAY": "Fast, even crop spraying across your field.",
-      "CROP_HEALTH": "Satellite and field checks for crop stress.",
-      "SOIL_HEALTH": "Lab soil test with nutrient recommendations.",
-      "EXPERT_VISIT": "On-farm visit from a certified agronomist.",
-      "PPACS_CREDIT": "Input and equipment credit through PPACS.",
-      "STORAGE": "Warehouse storage for your harvest.",
-      "CROP_TRACKER": "Track crop growth and field activity.",
-      "IRRIGATION": "Smart irrigation scheduling for your fields.",
-      "FERTILIZER": "Fertilizer planning based on soil needs.",
-      "PEST_CONTROL": "Pest scouting and treatment plans.",
-      "WEATHER": "Hyperlocal weather alerts for your farm.",
-      "SEEDS": "Quality seed sourcing and delivery.",
-      "HARVEST": "Digital harvest identification and records.",
-      "INSURANCE": "Crop insurance quotes and claims.",
-      "MARKET": "Live mandi prices for your crops."
+      "CROP_CALENDAR": "முழு பருவ விதைப்பு, பாசனம் மற்றும் உரத் திட்டம்.",
+      "DRONE_SPRAY": "உங்கள் வயலில் விரைவான, சீரான பயிர் தெளிப்பு.",
+      "CROP_HEALTH": "பயிர் அழுத்தத்துக்கான செயற்கைக்கோள் மற்றும் வயல் பரிசோதனை.",
+      "SOIL_HEALTH": "ஊட்டச்சத்து பரிந்துரைகளுடன் ஆய்வக மண் பரிசோதனை.",
+      "EXPERT_VISIT": "சான்றளிக்கப்பட்ட விவசாய நிபுணரின் வயல் வருகை.",
+      "PPACS_CREDIT": "பிபாக்ஸ் மூலம் உள்ளீடு மற்றும் உபகரண கடன்.",
+      "STORAGE": "உங்கள் அறுவடைக்கான கிடங்கு சேமிப்பு.",
+      "CROP_TRACKER": "பயிர் வளர்ச்சி மற்றும் வயல் செயல்பாட்டைக் கண்காணிக்கவும்.",
+      "IRRIGATION": "உங்கள் வயல்களுக்கான ஸ்மார்ட் பாசன அட்டவணை.",
+      "FERTILIZER": "மண் தேவைகளின் அடிப்படையில் உரத் திட்டமிடல்.",
+      "PEST_CONTROL": "பூச்சி ஆய்வு மற்றும் சிகிச்சை திட்டங்கள்.",
+      "WEATHER": "உங்கள் பண்ணைக்கான உள்ளூர் வானிலை எச்சரிக்கைகள்.",
+      "SEEDS": "தரமான விதை மூலம் மற்றும் விநியோகம்.",
+      "HARVEST": "டிஜிட்டல் அறுவடை அடையாளம் மற்றும் பதிவுகள்.",
+      "INSURANCE": "பயிர் காப்பீட்டு மதிப்பீடு மற்றும் உரிமைகோரல்கள்.",
+      "MARKET": "உங்கள் பயிர்களுக்கான நேரடி மண்டி விலைகள்."
     }
   },
   "cropCalendar": {
@@ -959,8 +1003,22 @@
     "errors": {
       "warehouseRequired": "கிடங்கைத் தேர்ந்தெடுக்கவும்.",
       "cropType": "பயிர் வகையைத் தேர்ந்தெடுக்கவும்.",
-      "quantityKg": "சரியான அளவை (கிலோ) உள்ளிடவும்."
-    }
+      "quantityKg": "சரியான அளவை (கிலோ) உள்ளிடவும்.",
+      "accountHolder": "கணக்கு உரிமையாளர் பெயரை உள்ளிடவும்.",
+      "accountNumber": "செல்லுபடியான கணக்கு எண்ணை உள்ளிடவும்.",
+      "ifsc": "செல்லுபடியான IFSC குறியீட்டை உள்ளிடவும்.",
+      "bankName": "உங்கள் வங்கி பெயரை உள்ளிடவும்."
+    },
+    "valuationEstimate": "மதிப்பிடப்பட்ட மதிப்பீடு",
+    "valuationBlocks": "{{blocks}} × 100 கிலோ தொகுதிகள்",
+    "bankSection": "பணம் பெறும் வங்கிக் கணக்கு",
+    "accountHolder": "கணக்கு உரிமையாளர் பெயர்",
+    "accountHolderPlaceholder": "வங்கி பதிவுகளின்படி",
+    "accountNumber": "கணக்கு எண்",
+    "ifsc": "IFSC குறியீடு",
+    "bankName": "வங்கி பெயர்",
+    "bankNamePlaceholder": "ஸ்டேட் பேங்க் ஆஃப் இந்தியா",
+    "noWarehousesEmpty": "இப்போது உங்கள் பகுதியில் கிடங்குகள் கிடைக்கவில்லை."
   },
   "cropTracker": {
     "title": "பயிர் டிராக்கர்",
@@ -991,5 +1049,90 @@
     "qualityGrade": "தர தரம்",
     "forecastWindow": "முன்னறிவிப்பு காலம்",
     "valuation": "குறிப்பு மதிப்பீடு"
+  },
+  "krishiai": {
+    "title": "KrishiAI",
+    "subtitle": "உங்கள் விவசாய உதவியாளர்",
+    "welcome": "உங்கள் பண்ணை பற்றி எதையும் கேளுங்கள்",
+    "welcomeBody": "பயிர் ஆலோசனை, சேவை பரிந்துரைகள் மற்றும் பருவகால குறிப்புகளை உங்கள் மொழியில் பெறுங்கள்.",
+    "inputPlaceholder": "பயிர், மண், பூச்சிகள் பற்றி கேளுங்கள்…",
+    "send": "செய்தி அனுப்பு",
+    "thinking": "KrishiAI சிந்திக்கிறது…",
+    "listening": "கேட்கிறது… இப்போது பேசுங்கள்",
+    "startListening": "குரல் உள்ளீட்டைத் தொடங்கு",
+    "stopListening": "குரல் உள்ளீட்டை நிறுத்து",
+    "clearTitle": "அரட்டையை அழி",
+    "clearBody": "இது இந்த சாதனத்தில் உங்கள் KrishiAI உரையாடலை நீக்கும்.",
+    "clearConfirm": "அழி",
+    "voiceUnavailable": "குரல் உள்ளீட்டுக்கு மேம்பாட்டு பில்ட் தேவை. நீங்கள் தட்டச்சு செய்தும் கேட்கலாம்.",
+    "errorUnreachable": "இப்போது KrishiAI-யை அணுக முடியவில்லை.",
+    "microphonePermission": "குரல் உள்ளீட்டுக்கு மைக்ரோஃபோன் அனுமதி தேவை.",
+    "prompts": {
+      "yellowLeaves": "என் நெல் இலைகள் மஞ்சளாகிறது — என்ன செய்ய வேண்டும்?",
+      "calendar": "இந்த பருவத்துக்கு பயிர் காலண்டர் திட்டமிட உதவுங்கள்",
+      "soilTest": "மண் ஆரோக்கிய பரிசோதனையை எப்போது புக் செய்ய வேண்டும்?"
+    }
+  },
+  "ppacsCredit": {
+    "title": "பிபாக்ஸ் கடன்",
+    "subtitle": "உங்கள் உள்ளூர் பிபாக்ஸ் மூலம் கூட்டுறவு கடன் விசாரணை",
+    "stepOf": "படி {{current}} / {{total}}",
+    "steps": {
+      "loan": "கடன் தேவை",
+      "review": "மதிப்பாய்வு"
+    },
+    "stepHints": {
+      "loan": "எவ்வளவு கடன் வேண்டும், எதற்காக என்பதைச் சொல்லுங்கள்",
+      "review": "உண்டானால் உத்தரவாத விவரங்களைச் சேர்த்து விசாரணையை சமர்ப்பிக்கவும்"
+    },
+    "inquiryNotice": "இது கடன் விசாரணை — உடனடி வழங்கல் அல்ல. பிபாக்ஸ் அதிகாரி உங்கள் கோரிக்கையை மதிப்பாய்வு செய்து விதிமுறைகள் பற்றி அழைப்பார்.",
+    "back": "பின்செல்",
+    "continue": "தொடரவும்",
+    "done": "முடிந்தது",
+    "submit": "கடன் விசாரணையை சமர்ப்பிக்கவும்",
+    "orderRef": "விண்ணப்ப குறிப்பு {{orderId}}",
+    "submitError": "உங்கள் விசாரணையை சமர்ப்பிக்க முடியவில்லை. மீண்டும் முயற்சிக்கவும்.",
+    "successTitle": "விசாரணை சமர்ப்பிக்கப்பட்டது",
+    "successBody": "உங்கள் பிபாக்ஸ் கடன் கோரிக்கை பதிவு செய்யப்பட்டது. கூட்டுறவு அதிகாரி 2–3 வேலை நாட்களில் உங்கள் பதிவு மொபைலில் தொடர்பு கொள்வார்.",
+    "successFootnote": "அதிகார் அழைக்கும்போது நில பதிவுகள் மற்றும் ஆதார் தயாராக வைத்திருங்கள். கடன் அனுமதி மற்றும் வழங்கல் சரிபார்ப்புக்குப் பிறகே.",
+    "loanAmount": "தேவையான கடன் தொகை",
+    "loanAmountHint": "குறைந்தபட்சம் ₹10,000. நீங்கள் கடன் வாங்க விரும்பும் தொகையை உள்ளிடவும்.",
+    "loanAmountPreview": "கோரப்பட்டது: {{amount}}",
+    "tenureMonths": "திருப்பிச் செலுத்தும் காலம் (மாதங்கள்)",
+    "tenureHint": "எவ்வளவு காலத்தில் திருப்பிச் செலுத்துவீர்கள் — கூட்டுறவு காலம் பொதுவாக 3–24 மாதங்கள்.",
+    "monthsShort": " மாதம்",
+    "tenureSummary": "{{months}} மாதங்கள்",
+    "maxInterest": "நீங்கள் ஏற்கக்கூடிய அதிகபட்ச வட்டி",
+    "maxInterestHint": "வருடாந்திர விகிதம் % இல். பிபாக்ஸ் விகிதங்கள் பெரும்பாலும் குறைவாக இருக்கும்.",
+    "perAnnum": "வருடத்துக்கு",
+    "purpose": "கடனின் நோக்கம்",
+    "commodity": "உத்தரவாத பயிர் (விருப்பம்)",
+    "commodityPlaceholder": "நெல், கோதுமை, நிலக்கடலை…",
+    "commodityHint": "சேமித்த பொருளை அடமானம் வைக்க விரும்பினால், இங்கே பயிரைக் குறிப்பிடவும்.",
+    "quantityKg": "அடமானம் வைக்கப்பட்ட அளவு (கிலோ, விருப்பம்)",
+    "grade": "தரம் / தரம் (விருப்பம்)",
+    "gradePlaceholder": "FAQ, தரம் A…",
+    "notes": "கூடுதல் குறிப்புகள் (விருப்பம்)",
+    "notesPlaceholder": "பருவம், தற்போதைய கடன்கள், விரும்பிய அழைப்பு நேரம்…",
+    "notesHint": "பிபாக்ஸ் அதிகாரி அழைப்பதற்கு முன் தயாராக உதவும்",
+    "reviewTitle": "விசாரணை சுருக்கம்",
+    "reviewDisclaimer": "சமர்ப்பிப்பது அனுமதி அல்லது வழங்கலை உறுதி செய்யாது. இறுதி விதிமுறைகள் வயல் சரிபார்ப்புக்குப் பிறகு பிபாக்ஸால் தீர்மானிக்கப்படும்.",
+    "nextStepsTitle": "அடுத்து என்ன நடக்கும்",
+    "nextSteps": {
+      "received": "உங்கள் விசாரணை பெறப்பட்டு மதிப்பாய்வு வரிசையில் உள்ளது",
+      "review": "பிபாக்ஸ் உங்கள் சுயவிவரம் மற்றும் கடன் நோக்கத்தை சரிபார்க்கிறது (2–3 வேலை நாட்கள்)",
+      "callback": "அதிகாரி தொகை, விகிதம் மற்றும் ஆவணங்கள் பற்றி அழைக்கிறார்",
+      "disbursement": "விதிமுறைகளை ஏற்று KYC முடித்த பிறகே தொகை வழங்கப்படும்"
+    },
+    "errors": {
+      "loanAmountMin": "குறைந்தபட்சம் ₹10,000 உள்ளிடவும்.",
+      "loanAmountMax": "ஆன்லைன் விசாரணைக்கு தொகை ₹50,00,000 ஐ விட அதிகமாக இருக்க முடியாது.",
+      "tenure": "1 முதல் 120 மாதங்கள் இடையே திருப்பிச் செலுத்தும் காலத்தை உள்ளிடவும்.",
+      "maxInterest": "0% முதல் 100% இடையே செல்லுபடியான வட்டி விகிதத்தை உள்ளிடவும்.",
+      "purpose": "கடனின் நோக்கத்தைத் தேர்ந்தெடுக்கவும்.",
+      "quantityKg": "செல்லுபடியான அளவை (கிலோ) உள்ளிடவும்.",
+      "commodity": "பயிர் பெயர் மிக நீளமாக உள்ளது.",
+      "grade": "தரம் மிக நீளமாக உள்ளது."
+    }
   }
 }

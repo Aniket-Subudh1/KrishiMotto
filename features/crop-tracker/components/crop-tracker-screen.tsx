@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import { AppIcon } from '@/components/ui/app-icon';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Redirect, router } from 'expo-router';
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, View } from 'react-native';
@@ -57,13 +57,13 @@ export function CropTrackerScreen() {
             className="h-10 w-10 items-center justify-center rounded-full bg-white/20"
             accessibilityRole="button"
           >
-            <Ionicons name="chevron-back" size={22} color="#FFFFFF" />
+            <AppIcon name="chevron-left" size={22} color="#FFFFFF" />
           </Pressable>
         </View>
 
         <View className="mt-4 flex-row items-center gap-3">
           <View className="h-12 w-12 items-center justify-center rounded-2xl bg-white/20">
-            <Ionicons name="pulse-outline" size={24} color="#FFFFFF" />
+            <AppIcon name="chart-timeline-variant" size={24} color="#FFFFFF" />
           </View>
           <View className="min-w-0 flex-1">
             <Text className="text-[26px] font-bold text-white">{t('cropTracker.title')}</Text>
@@ -87,7 +87,7 @@ export function CropTrackerScreen() {
           <View className="gap-5">
             <View className="items-center rounded-2xl border border-dashed border-border bg-surface px-5 py-10">
               <View className="mb-4 h-14 w-14 items-center justify-center rounded-full bg-marigold/15">
-                <Ionicons name="lock-closed-outline" size={28} color={Palette.marigold} />
+                <AppIcon name="lock-outline" size={28} color={Palette.marigold} />
               </View>
               <Text className="text-center text-[18px] font-bold text-indigo">
                 {t('cropTracker.lockedTitle')}
@@ -104,7 +104,7 @@ export function CropTrackerScreen() {
           <View className="gap-5">
             <View className="items-center rounded-2xl border border-dashed border-border bg-surface px-5 py-10">
               <View className="mb-4 h-14 w-14 items-center justify-center rounded-full bg-marigold/15">
-                <Ionicons name="card-outline" size={28} color={Palette.marigold} />
+                <AppIcon name="credit-card-outline" size={28} color={Palette.marigold} />
               </View>
               <Text className="text-center text-[18px] font-bold text-indigo">
                 {t('cropTracker.paymentPendingTitle')}

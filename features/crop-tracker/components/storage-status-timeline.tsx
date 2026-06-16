@@ -1,6 +1,6 @@
-import { Ionicons } from '@expo/vector-icons';
 import { View } from 'react-native';
 
+import { AppIcon } from '@/components/ui/app-icon';
 import { Text } from '@/components/ui/text';
 import { Palette } from '@/constants/theme';
 import { translateStorageStatus } from '@/lib/booking-i18n';
@@ -44,9 +44,9 @@ export function StorageStatusTimeline({ request }: StorageStatusTimelineProps) {
               ) : null}
             </View>
             {isLatest ? (
-              <Ionicons name="time-outline" size={16} color={Palette.indiaGreen} />
+              <AppIcon name="clock-outline" size={16} color={Palette.indiaGreen} />
             ) : (
-              <Ionicons name="checkmark-circle" size={16} color={Palette.indigo} />
+              <AppIcon name="check-circle" size={16} color={Palette.indigo} />
             )}
           </View>
         );

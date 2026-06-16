@@ -1,12 +1,13 @@
-import { Ionicons } from '@expo/vector-icons';
 import { View } from 'react-native';
 
+import { AppIcon } from '@/components/ui/app-icon';
 import { Text } from '@/components/ui/text';
 import { useAppLocale } from '@/hooks/use-app-locale';
 import { translateCropType, translateSeason } from '@/lib/booking-i18n';
 import { Palette } from '@/constants/theme';
 import { formatAcres } from '@/lib/format';
 import { parseLocalIsoDate } from '@/lib/date';
+import { resolveAppIcon, type IconName } from '@/lib/icon-names';
 import type { LandParcel } from '@/types/farmer';
 import type { CropCalendarFormValues } from '@/features/crop-calendar/utils/validate-form';
 
@@ -37,14 +38,14 @@ function SummaryRow({
   label,
   value,
 }: {
-  icon: keyof typeof Ionicons.glyphMap;
+  icon: IconName;
   label: string;
   value: string;
 }) {
   return (
     <View className="flex-row items-start gap-3 py-2.5">
       <View className="mt-0.5 h-8 w-8 items-center justify-center rounded-xl bg-india-green/10">
-        <Ionicons name={icon} size={16} color={Palette.indiaGreen} />
+        <AppIcon name={resolveAppIcon(icon)} size={16} color={Palette.indiaGreen} />
       </View>
       <View className="min-w-0 flex-1">
         <Text className="text-[11px] font-medium uppercase tracking-wide text-muted">{label}</Text>

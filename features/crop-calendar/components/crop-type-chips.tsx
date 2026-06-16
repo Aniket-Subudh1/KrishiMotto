@@ -1,18 +1,18 @@
-import { Ionicons } from '@expo/vector-icons';
 import { Pressable, View } from 'react-native';
 
+import { AppIcon, type AppIconName } from '@/components/ui/app-icon';
 import { Text } from '@/components/ui/text';
 import { useAppLocale } from '@/hooks/use-app-locale';
 import { translateCropType } from '@/lib/booking-i18n';
 import { Palette } from '@/constants/theme';
 import { CROP_TYPES, type CropType } from '@/types/booking';
 
-const CROP_TYPE_ICONS: Record<CropType, keyof typeof Ionicons.glyphMap> = {
-  Cereal: 'nutrition-outline',
-  Vegetable: 'leaf-outline',
-  Fruit: 'rose-outline',
-  Pulses: 'ellipse-outline',
-  Oilseeds: 'water-outline',
+const CROP_TYPE_ICONS: Record<CropType, AppIconName> = {
+  Cereal: 'barley',
+  Vegetable: 'sprout-outline',
+  Fruit: 'fruit-cherries',
+  Pulses: 'circle-outline',
+  Oilseeds: 'water',
 };
 
 type CropTypeChipsProps = {
@@ -42,7 +42,7 @@ export function CropTypeChips({ label, value, onChange, error }: CropTypeChipsPr
                   : 'border-border bg-white'
               }`}
             >
-              <Ionicons
+              <AppIcon
                 name={CROP_TYPE_ICONS[type]}
                 size={15}
                 color={selected ? Palette.indiaGreen : Palette.indigo}
@@ -59,7 +59,7 @@ export function CropTypeChips({ label, value, onChange, error }: CropTypeChipsPr
 
       {error ? (
         <View className="flex-row items-center gap-1.5 px-1">
-          <Ionicons name="alert-circle" size={13} color="#EF4444" />
+          <AppIcon name="alert-circle-outline" size={13} color="#EF4444" />
           <Text className="flex-1 text-[12px] leading-4 text-red-500">{error}</Text>
         </View>
       ) : null}

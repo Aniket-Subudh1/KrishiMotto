@@ -1,8 +1,9 @@
-import type { TFunction } from 'i18next';
-
 import type { ServiceIconType } from '@/types/catalog';
 import type { StorageRequestStatus } from '@/types/storage';
 import type { CreditPurpose, CropType, Season, SoilType, VisitPurpose } from '@/types/booking';
+
+/** Minimal translate fn used across screens — compatible with i18next `t` and simple stubs. */
+export type TranslateFn = (key: string, options?: Record<string, unknown>) => string;
 
 export const CREDIT_PURPOSE_I18N_KEYS: Record<CreditPurpose, string> = {
   Inputs: 'enums.creditPurposes.inputs',
@@ -26,33 +27,33 @@ const SCHEDULE_ACTIVITY_KEYS: Record<string, string> = {
   'Pest watch': 'enums.scheduleActivities.pestWatch',
 };
 
-function translateOrFallback(t: TFunction, key: string, fallback: string): string {
+function translateOrFallback(t: TranslateFn, key: string, fallback: string): string {
   const translated = t(key);
   return translated === key ? fallback : translated;
 }
 
-export function translateCropType(t: TFunction, type: CropType): string {
+export function translateCropType(t: TranslateFn, type: CropType): string {
   return translateOrFallback(t, `enums.cropTypes.${type}`, type);
 }
 
-export function translateSoilType(t: TFunction, type: SoilType): string {
+export function translateSoilType(t: TranslateFn, type: SoilType): string {
   return translateOrFallback(t, `enums.soilTypes.${type}`, type);
 }
 
-export function translateSeason(t: TFunction, season: Season): string {
+export function translateSeason(t: TranslateFn, season: Season): string {
   return translateOrFallback(t, `enums.seasons.${season}`, season);
 }
 
-export function translateVisitPurpose(t: TFunction, purpose: VisitPurpose): string {
+export function translateVisitPurpose(t: TranslateFn, purpose: VisitPurpose): string {
   return t(VISIT_PURPOSE_I18N_KEYS[purpose]);
 }
 
-export function translateCreditPurpose(t: TFunction, purpose: CreditPurpose): string {
+export function translateCreditPurpose(t: TranslateFn, purpose: CreditPurpose): string {
   return t(CREDIT_PURPOSE_I18N_KEYS[purpose]);
 }
 
 export function translateServiceTitle(
-  t: TFunction,
+  t: TranslateFn,
   iconType: ServiceIconType,
   fallback: string,
 ): string {
@@ -60,7 +61,7 @@ export function translateServiceTitle(
 }
 
 export function translateServicePrice(
-  t: TFunction,
+  t: TranslateFn,
   iconType: ServiceIconType,
   fallback: string,
 ): string {
@@ -68,7 +69,7 @@ export function translateServicePrice(
 }
 
 export function translateServiceDescription(
-  t: TFunction,
+  t: TranslateFn,
   iconType: ServiceIconType,
   fallback?: string,
 ): string {
@@ -79,11 +80,11 @@ export function translateServiceDescription(
   );
 }
 
-export function translateStorageStatus(t: TFunction, status: StorageRequestStatus): string {
+export function translateStorageStatus(t: TranslateFn, status: StorageRequestStatus): string {
   return translateOrFallback(t, `enums.storageStatuses.${status}`, status);
 }
 
-export function translateScheduleActivity(t: TFunction, name: string): string {
+export function translateScheduleActivity(t: TranslateFn, name: string): string {
   const harvestPrefix = 'Harvest · ';
   if (name.startsWith(harvestPrefix)) {
     const crop = name.slice(harvestPrefix.length);

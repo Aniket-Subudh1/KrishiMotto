@@ -55,12 +55,32 @@
   "signIn": {
     "welcomeBack": "वापसी पर स्वागत है",
     "createAccount": "अपना खाता बनाएँ",
-    "subtitle": "KrishiMotto का उपयोग जारी रखने के लिए अपने मोबाइल नंबर से साइन इन करें।",
+    "subtitle": "अपना पंजीकृत मोबाइल नंबर दर्ज करें। हम आपको सही खाते में स्वचालित रूप से साइन इन करेंगे।",
     "registerSubtitle": "KrishiMotto का उपयोग शुरू करने के लिए अपने मोबाइल नंबर से साइन अप करें।",
     "changeRole": "बदलें",
     "comingSoon": "साइन-इन सुविधा जल्द उपलब्ध होगी।",
     "continueHome": "होम पर जाएँ",
-    "backToStart": "शुरुआत पर वापस जाएँ"
+    "backToStart": "शुरुआत पर वापस जाएँ",
+    "phoneLabel": "मोबाइल नंबर",
+    "phonePlaceholder": "9876543210",
+    "phoneHint": "10 अंकों का भारतीय मोबाइल नंबर",
+    "sendOtp": "OTP भेजें",
+    "otpTitle": "OTP दर्ज करें",
+    "otpSubtitle": "हमने आपके फ़ोन पर 6 अंकों का कोड भेजा है।",
+    "verifyOtp": "साइन इन करें",
+    "resendOtp": "OTP पुनः भेजें",
+    "backWarningTitle": "वापस जाएँ?",
+    "backWarningCancel": "रुकें",
+    "backWarningConfirm": "वापस जाएँ",
+    "backFromOtpMessage": "वापस जाने पर आपका OTP रद्द हो जाएगा। आगे बढ़ने के लिए नया कोड मँगवाना होगा।",
+    "otpResent": "आपके फ़ोन पर नया OTP भेज दिया गया है।",
+    "errors": {
+      "phone": "मान्य 10 अंकों का मोबाइल नंबर दर्ज करें।",
+      "otp": "6 अंकों का OTP दर्ज करें।",
+      "otpInvalid": "गलत OTP। कोड जाँचकर पुनः प्रयास करें।",
+      "notRegistered": "इस नंबर के लिए कोई खाता नहीं मिला। कृपया पहले पंजीकरण करें।",
+      "generic": "कुछ गलत हो गया। कृपया पुनः प्रयास करें।"
+    }
   },
   "farmerSignUp": {
     "stepAccount": "चरण 1 / 4",
@@ -197,7 +217,7 @@
     "servicePincodesPlaceholder": "250001, 201001",
     "servicePincodesHint": "6 अंकों के पिनकोड (जिले होने पर वैकल्पिक)",
     "continueToKyc": "सत्यापन पर जाएं",
-    "submitKyc": "जमा करें और होम पर जाएं",
+    "submitKyc": "स्थान पर जाएँ",
     "kycFooterHint": "ID प्रमाणपत्र आवश्यक है। अन्य दस्तावेज़ वैकल्पिक हैं लेकिन स्वीकृति तेज करते हैं।",
     "addPhoto": "फ़ोटो जोड़ें",
     "photoHint": "वैकल्पिक — किसानों को आप पहचानने में मदद करता है",
@@ -233,8 +253,26 @@
       "servicePincodes": "प्रत्येक पिनकोड 6 अंकों का मान्य कोड होना चाहिए।",
       "idRequired": "सत्यापन के लिए ID प्रमाणपत्र आवश्यक है।",
       "documentsRequired": "कम से कम एक सत्यापन दस्तावेज़ अपलोड करें।",
-      "generic": "कुछ गलत हो गया। कृपया पुनः प्रयास करें।"
-    }
+      "generic": "कुछ गलत हो गया। कृपया पुनः प्रयास करें।",
+      "locationRequired": "जमा करने से पहले अपना सेवा स्थान चुनें।"
+    },
+    "continueToLocation": "स्थान पर जाएँ",
+    "submitLocation": "समीक्षा के लिए जमा करें",
+    "locationTitle": "अपना स्थान साझा करें",
+    "locationSubtitle": "मानचित्र पर अपना वर्तमान सेवा स्थान चिह्नित करें।",
+    "locationSection": "वर्तमान स्थान",
+    "locationInstructionTitle": "समायोजन के लिए मानचित्र खिसकाएँ",
+    "locationInstructionBody": "मानचित्र को खींचें ताकि पिन आपके वर्तमान स्थान पर आ जाए, फिर ठीक है टैप करें।",
+    "locationConfirm": "ठीक है",
+    "locationFetching": "आपका स्थान प्राप्त हो रहा है…",
+    "locationReady": "स्थान कैप्चर हो गया",
+    "locationDenied": "स्थान की अनुमति नहीं मिली। जारी रखने के लिए सेटिंग्स में स्थान सक्षम करें।",
+    "locationRetry": "स्थान रिफ्रेश करें",
+    "locationCoords": "अक्षांश: {{lat}}, देशांतर: {{lon}}",
+    "locationFooterHint": "आपके निर्देशांक सुरक्षित रूप से सहेजे जाते हैं और केवल सेवा मिलान के लिए उपयोग होते हैं।",
+    "mapsUnavailable": "इस डिवाइस पर मानचित्र उपलब्ध नहीं हैं। स्थान चुनने के लिए डेवलपमेंट बिल्ड का उपयोग करें।",
+    "loadingMap": "मानचित्र लोड हो रहा है…",
+    "backFromLocationMessage": "वापस जाने पर स्थान चयन रद्द हो जाएगा। आपको फिर से अपना स्थान चुनना होगा।"
   },
   "expertSignIn": {
     "title": "विशेषज्ञ साइन इन",
@@ -333,6 +371,9 @@
       "advisoryHint": "फसल जानकारी जोड़ें",
       "servicesTitle": "सेवाएँ",
       "requestedServicesTitle": "अनुरोधित सेवाएँ",
+      "requestedServicesSubtitle": "आपकी हाल की सभी बुकिंग और स्टोरेज अनुरोध",
+      "noRequestedServices": "अभी कोई अनुरोध नहीं",
+      "noRequestedServicesHint": "टूल्स से सेवा बुक करें, आपके अनुरोध यहाँ दिखेंगे।",
       "requestedOn": "अनुरोध {{date}}",
       "aiInsightTitle": "AI · आज की जानकारी",
       "aiInsightDefault": "पहला खेत मैप करें और व्यक्तिगत फसल सलाह पाएं।",
@@ -504,6 +545,8 @@
     "clearBody": "यह इस डिवाइस पर आपकी KrishiAI बातचीत हटा देगा।",
     "clearConfirm": "साफ़ करें",
     "voiceUnavailable": "आवाज़ इनपुट के लिए डेवलपमेंट बिल्ड चाहिए। आप अभी भी टाइप करके पूछ सकते हैं।",
+    "errorUnreachable": "अभी KrishiAI तक पहुँच नहीं हो पा रही।",
+    "microphonePermission": "आवाज़ इनपुट के लिए माइक्रोफ़ोन की अनुमति ज़रूरी है।",
     "prompts": {
       "yellowLeaves": "मेरी धान की पत्तियाँ पीली हो रही हैं — मुझे क्या करना चाहिए?",
       "calendar": "इस सीज़न के लिए फसल कैलेंडर बनाने में मदद करें",
@@ -511,7 +554,7 @@
     }
   },
   "common": {
-    "back": "Back",
+    "back": "वापस",
     "cancel": "रद्द करें",
     "done": "हो गया",
     "selectDate": "तारीख चुनें",
@@ -549,10 +592,10 @@
       "other": "अन्य"
     },
     "creditPurposes": {
-      "inputs": "Farm inputs (seeds, fertiliser)",
-      "equipment": "Equipment & machinery",
-      "labour": "Seasonal labour",
-      "other": "Other farm needs"
+      "inputs": "खेती के इनपुट (बीज, उर्वरक)",
+      "equipment": "उपकरण और मशीनरी",
+      "labour": "मौसमी मज़दूरी",
+      "other": "अन्य खेती की ज़रूरतें"
     },
     "scheduleActivities": {
       "sowing": "बुवाई",
@@ -581,14 +624,14 @@
       "MARKET": "बाज़ार भाव"
     },
     "bookingStatuses": {
-      "pendingPayment": "Payment pending",
-      "paid": "Paid",
-      "open": "Open",
-      "accepted": "Accepted",
-      "travelling": "Expert on the way",
-      "inProgress": "In progress",
-      "completed": "Completed",
-      "cancelled": "Cancelled"
+      "pendingPayment": "भुगतान लंबित",
+      "paid": "भुगतान हो गया",
+      "open": "खुला",
+      "accepted": "स्वीकृत",
+      "travelling": "विशेषज्ञ रास्ते में",
+      "inProgress": "प्रगति में",
+      "completed": "पूर्ण",
+      "cancelled": "रद्द"
     },
     "storageStatuses": {
       "PENDING_PAYMENT": "भुगतान लंबित",
@@ -606,35 +649,35 @@
       "CROP_HEALTH": "₹2,499/ac",
       "SOIL_HEALTH": "₹4,999/ac",
       "EXPERT_VISIT": "₹499+",
-      "PPACS_CREDIT": "Loans",
+      "PPACS_CREDIT": "ऋण",
       "STORAGE": "₹65/kg",
-      "CROP_TRACKER": "Live",
-      "IRRIGATION": "Soon",
-      "FERTILIZER": "Soon",
-      "PEST_CONTROL": "Soon",
-      "WEATHER": "Soon",
-      "SEEDS": "Soon",
-      "HARVEST": "Soon",
-      "INSURANCE": "Soon",
-      "MARKET": "Live"
+      "CROP_TRACKER": "लाइव",
+      "IRRIGATION": "जल्द",
+      "FERTILIZER": "जल्द",
+      "PEST_CONTROL": "जल्द",
+      "WEATHER": "जल्द",
+      "SEEDS": "जल्द",
+      "HARVEST": "जल्द",
+      "INSURANCE": "जल्द",
+      "MARKET": "लाइव"
     },
     "serviceDescriptions": {
-      "CROP_CALENDAR": "Season-long sowing, irrigation, and fertilizer plan.",
-      "DRONE_SPRAY": "Fast, even crop spraying across your field.",
-      "CROP_HEALTH": "Satellite and field checks for crop stress.",
-      "SOIL_HEALTH": "Lab soil test with nutrient recommendations.",
-      "EXPERT_VISIT": "On-farm visit from a certified agronomist.",
-      "PPACS_CREDIT": "Input and equipment credit through PPACS.",
-      "STORAGE": "Warehouse storage for your harvest.",
-      "CROP_TRACKER": "Track crop growth and field activity.",
-      "IRRIGATION": "Smart irrigation scheduling for your fields.",
-      "FERTILIZER": "Fertilizer planning based on soil needs.",
-      "PEST_CONTROL": "Pest scouting and treatment plans.",
-      "WEATHER": "Hyperlocal weather alerts for your farm.",
-      "SEEDS": "Quality seed sourcing and delivery.",
-      "HARVEST": "Digital harvest identification and records.",
-      "INSURANCE": "Crop insurance quotes and claims.",
-      "MARKET": "Live mandi prices for your crops."
+      "CROP_CALENDAR": "पूरे मौसम की बुवाई, सिंचाई और उर्वरक योजना।",
+      "DRONE_SPRAY": "आपके खेत में तेज़ और समान फसल छिड़काव।",
+      "CROP_HEALTH": "फसल तनाव के लिए उपग्रह और खेत जाँच।",
+      "SOIL_HEALTH": "पोषक सिफारिशों के साथ प्रयोगशाला मिट्टी परीक्षण।",
+      "EXPERT_VISIT": "प्रमाणित कृषि वैज्ञानिक की खेत विज़िट।",
+      "PPACS_CREDIT": "पीपैक्स के माध्यम से इनपुट और उपकरण ऋण।",
+      "STORAGE": "आपकी फसल के लिए गोदाम भंडारण।",
+      "CROP_TRACKER": "फसल वृद्धि और खेत गतिविधि ट्रैक करें।",
+      "IRRIGATION": "आपके खेतों के लिए स्मार्ट सिंचाई अनुसूची।",
+      "FERTILIZER": "मिट्टी की ज़रूरत के आधार पर उर्वरक योजना।",
+      "PEST_CONTROL": "कीट निरीक्षण और उपचार योजनाएँ।",
+      "WEATHER": "आपके खेत के लिए स्थानीय मौसम अलर्ट।",
+      "SEEDS": "गुणवत्ता बीज स्रोत और डिलीवरी।",
+      "HARVEST": "डिजिटल फसल पहचान और रिकॉर्ड।",
+      "INSURANCE": "फसल बीमा कोट और दावे।",
+      "MARKET": "आपकी फसलों के लिए लाइव मंडी भाव।"
     }
   },
   "cropCalendar": {
@@ -983,8 +1026,22 @@
     "errors": {
       "warehouseRequired": "गोदाम चुनें।",
       "cropType": "फसल का प्रकार चुनें।",
-      "quantityKg": "मान्य मात्रा (किग्रा) दर्ज करें।"
-    }
+      "quantityKg": "मान्य मात्रा (किग्रा) दर्ज करें।",
+      "accountHolder": "खाताधारक का नाम दर्ज करें।",
+      "accountNumber": "मान्य खाता संख्या दर्ज करें।",
+      "ifsc": "मान्य IFSC कोड दर्ज करें।",
+      "bankName": "अपने बैंक का नाम दर्ज करें।"
+    },
+    "valuationEstimate": "अनुमानित मूल्यांकन",
+    "valuationBlocks": "{{blocks}} × 100 किग्रा ब्लॉक",
+    "bankSection": "भुगतान बैंक खाता",
+    "accountHolder": "खाताधारक का नाम",
+    "accountHolderPlaceholder": "बैंक रिकॉर्ड के अनुसार",
+    "accountNumber": "खाता संख्या",
+    "ifsc": "IFSC कोड",
+    "bankName": "बैंक का नाम",
+    "bankNamePlaceholder": "भारतीय स्टेट बैंक",
+    "noWarehousesEmpty": "अभी आपके क्षेत्र में कोई गोदाम उपलब्ध नहीं है।"
   },
   "cropTracker": {
     "title": "फसल ट्रैकर",
@@ -1015,5 +1072,67 @@
     "qualityGrade": "गुणवत्ता ग्रेड",
     "forecastWindow": "पूर्वानुमान अवधि",
     "valuation": "संदर्भ मूल्यांकन"
+  },
+  "ppacsCredit": {
+    "title": "पीपैक्स क्रेडिट",
+    "subtitle": "आपके स्थानीय पीपैक्स के माध्यम से सहकारी ऋण पूछताछ",
+    "stepOf": "चरण {{current}} / {{total}}",
+    "steps": {
+      "loan": "ऋण आवश्यकता",
+      "review": "समीक्षा"
+    },
+    "stepHints": {
+      "loan": "बताएँ आपको कितना ऋण चाहिए और किस लिए",
+      "review": "यदि कोई संपार्श्विक हो तो जोड़ें, फिर अपनी पूछताछ जमा करें"
+    },
+    "inquiryNotice": "यह ऋण पूछताछ है — तत्काल वितरण नहीं। पीपैक्स अधिकारी आपके अनुरोध की समीक्षा करेगा और शर्तों पर चर्चा के लिए कॉल करेगा।",
+    "back": "वापस",
+    "continue": "आगे बढ़ें",
+    "done": "हो गया",
+    "submit": "ऋण पूछताछ जमा करें",
+    "orderRef": "आवेदन संदर्भ {{orderId}}",
+    "submitError": "आपकी पूछताछ जमा नहीं हो सकी। कृपया पुनः प्रयास करें।",
+    "successTitle": "पूछताछ जमा हो गई",
+    "successBody": "आपका पीपैक्स क्रेडिट अनुरोध दर्ज हो गया। सहकारी अधिकारी 2–3 कार्य दिवसों में आपके पंजीकृत मोबाइल पर संपर्क करेगा।",
+    "successFootnote": "अधिकारी के कॉल पर अपने ज़मीन रिकॉर्ड और आधार तैयार रखें। ऋण स्वीकृति और वितरण केवल सत्यापन के बाद होता है।",
+    "loanAmount": "आवश्यक ऋण राशि",
+    "loanAmountHint": "न्यूनतम ₹10,000। वह राशि दर्ज करें जो आप उधार लेना चाहते हैं।",
+    "loanAmountPreview": "अनुरोधित: {{amount}}",
+    "tenureMonths": "चुकौती अवधि (महीने)",
+    "tenureHint": "आप कितने समय में चुकाना चाहते हैं — सहकारी अवधि आमतौर पर 3–24 महीने होती है।",
+    "monthsShort": " माह",
+    "tenureSummary": "{{months}} महीने",
+    "maxInterest": "अधिकतम ब्याज जो आप स्वीकार कर सकते हैं",
+    "maxInterestHint": "वार्षिक दर % में। पीपैक्स दरें अक्सर अनौपचारिक उधार से कम होती हैं।",
+    "perAnnum": "प्रति वर्ष",
+    "purpose": "ऋण का उद्देश्य",
+    "commodity": "संपार्श्विक फसल (वैकल्पिक)",
+    "commodityPlaceholder": "धान, गेहूँ, मूंगफली…",
+    "commodityHint": "यदि आप भंडारित उपज गिरवी रखना चाहते हैं, तो यहाँ फसल बताएँ।",
+    "quantityKg": "गिरवी मात्रा (किग्रा, वैकल्पिक)",
+    "grade": "ग्रेड / गुणवत्ता (वैकल्पिक)",
+    "gradePlaceholder": "FAQ, ग्रेड A…",
+    "notes": "अतिरिक्त टिप्पणी (वैकल्पिक)",
+    "notesPlaceholder": "मौसम, मौजूदा ऋण, पसंदीदा कॉलबैक समय…",
+    "notesHint": "पीपैक्स अधिकारी को कॉल से पहले तैयारी में मदद करता है",
+    "reviewTitle": "पूछताछ सारांश",
+    "reviewDisclaimer": "जमा करने से स्वीकृति या वितरण की गारंटी नहीं मिलती। अंतिम शर्तें आपके पीपैक्स द्वारा खेत सत्यापन के बाद तय होती हैं।",
+    "nextStepsTitle": "आगे क्या होगा",
+    "nextSteps": {
+      "received": "आपकी पूछताछ प्राप्त होकर समीक्षा कतार में है",
+      "review": "पीपैक्स आपकी प्रोफ़ाइल और ऋण उद्देश्य सत्यापित करता है (2–3 कार्य दिवस)",
+      "callback": "अधिकारी राशि, दर और दस्तावेज़ पर चर्चा के लिए कॉल करता है",
+      "disbursement": "शर्तें स्वीकार करने और KYC पूरा करने के बाद ही राशि जारी होती है"
+    },
+    "errors": {
+      "loanAmountMin": "कम से कम ₹10,000 दर्ज करें।",
+      "loanAmountMax": "ऑनलाइन पूछताछ के लिए राशि ₹50,00,000 से अधिक नहीं हो सकती।",
+      "tenure": "1 से 120 महीने के बीच चुकौती अवधि दर्ज करें।",
+      "maxInterest": "0% से 100% के बीच मान्य ब्याज दर दर्ज करें।",
+      "purpose": "ऋण का उद्देश्य चुनें।",
+      "quantityKg": "मान्य मात्रा (किग्रा) दर्ज करें।",
+      "commodity": "फसल का नाम बहुत लंबा है।",
+      "grade": "ग्रेड बहुत लंबा है।"
+    }
   }
 }

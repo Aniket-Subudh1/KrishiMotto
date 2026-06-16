@@ -1,12 +1,14 @@
-import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { View } from 'react-native';
 
+import { AppIcon } from '@/components/ui/app-icon';
+import { FittedText } from '@/components/ui/fitted-text';
 import { Text } from '@/components/ui/text';
 import { Palette } from '@/constants/theme';
+import { resolveAppIcon, type IconName } from '@/lib/icon-names';
 
 type StatCardProps = {
-  icon: keyof typeof Ionicons.glyphMap;
+  icon: IconName;
   label: string;
   value: string;
   accent?: 'green' | 'saffron' | 'marigold';
@@ -45,13 +47,11 @@ export function StatCard({ icon, label, value, accent = 'green' }: StatCardProps
           className="h-10 w-10 items-center justify-center rounded-xl"
           style={{ backgroundColor: tone.bg }}
         >
-          <Ionicons name={icon} size={20} color={tone.color} />
+          <AppIcon name={resolveAppIcon(icon)} size={20} color={tone.color} />
         </View>
-        <View>
-          <Text className="text-[11px] font-medium uppercase tracking-wide text-muted">
-            {label}
-          </Text>
-          <Text className="mt-1 text-[22px] font-bold text-indigo">{value}</Text>
+        <View className="min-w-0">
+          <FittedText className="text-[11px] font-medium leading-4 text-muted">{label}</FittedText>
+          <FittedText className="mt-1 text-[22px] font-bold leading-7 text-indigo">{value}</FittedText>
         </View>
       </View>
     </View>

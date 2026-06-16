@@ -1,15 +1,15 @@
-import { Ionicons } from '@expo/vector-icons';
 import { Pressable, View } from 'react-native';
 
+import { AppIcon, type AppIconName } from '@/components/ui/app-icon';
 import { Text } from '@/components/ui/text';
 import { Palette } from '@/constants/theme';
 import { VISIT_PURPOSES, type VisitPurpose } from '@/types/booking';
 
-const PURPOSE_ICONS: Record<VisitPurpose, keyof typeof Ionicons.glyphMap> = {
+const PURPOSE_ICONS: Record<VisitPurpose, AppIconName> = {
   'Pest & disease diagnosis': 'bug-outline',
-  Advisory: 'chatbubbles-outline',
-  Inspection: 'search-outline',
-  Other: 'ellipsis-horizontal-outline',
+  Advisory: 'chat-outline',
+  Inspection: 'magnify',
+  Other: 'dots-horizontal',
 };
 
 type VisitPurposePickerProps = {
@@ -50,7 +50,7 @@ export function VisitPurposePicker({
                     : 'rgba(26, 54, 93, 0.06)',
                 }}
               >
-                <Ionicons
+                <AppIcon
                   name={PURPOSE_ICONS[purpose]}
                   size={18}
                   color={selected ? Palette.indiaGreen : Palette.indigo}
@@ -64,7 +64,7 @@ export function VisitPurposePicker({
                 {getLabel(purpose)}
               </Text>
               {selected ? (
-                <Ionicons name="checkmark-circle" size={22} color={Palette.indiaGreen} />
+                <AppIcon name="check-circle" size={22} color={Palette.indiaGreen} />
               ) : (
                 <View className="h-5 w-5 rounded-full border-2 border-border" />
               )}
@@ -75,7 +75,7 @@ export function VisitPurposePicker({
 
       {error ? (
         <View className="flex-row items-center gap-1.5 px-1">
-          <Ionicons name="alert-circle" size={13} color="#EF4444" />
+          <AppIcon name="alert-circle-outline" size={13} color="#EF4444" />
           <Text className="flex-1 text-[12px] leading-4 text-red-500">{error}</Text>
         </View>
       ) : null}

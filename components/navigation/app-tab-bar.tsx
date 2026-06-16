@@ -4,6 +4,7 @@ import { Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppIcon, type AppIconName } from '@/components/ui/app-icon';
+import { FittedText } from '@/components/ui/fitted-text';
 import { Text } from '@/components/ui/text';
 import { Palette } from '@/constants/theme';
 
@@ -37,7 +38,7 @@ export function AppTabBar({ state, descriptors, navigation }: BottomTabBarProps)
         />
       </View>
 
-      <View className="h-[56px] flex-row items-stretch px-1" style={{ paddingBottom: 0 }}>
+      <View className="min-h-[60px] flex-row items-stretch px-1 py-1" style={{ paddingBottom: 0 }}>
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
           const isFocused = state.index === index;
@@ -64,9 +65,9 @@ export function AppTabBar({ state, descriptors, navigation }: BottomTabBarProps)
               accessibilityState={isFocused ? { selected: true } : {}}
               accessibilityLabel={options.tabBarAccessibilityLabel}
               onPress={onPress}
-              className="flex-1 items-center justify-center"
+              className="flex-1 items-center justify-center px-0.5 py-1.5"
             >
-              <View className="items-center justify-center gap-1">
+              <View className="w-full items-center justify-center gap-0.5">
                 <View
                   className="h-8 w-11 items-center justify-center rounded-2xl"
                   style={isFocused ? { backgroundColor: 'rgba(70, 150, 47, 0.12)' } : undefined}
@@ -77,12 +78,13 @@ export function AppTabBar({ state, descriptors, navigation }: BottomTabBarProps)
                     color={color}
                   />
                 </View>
-                <Text
-                  className="text-[10px] font-condensed-semibold"
+                <FittedText
+                  maxLines={2}
+                  className="w-full text-center text-[10px] font-condensed-semibold leading-3"
                   style={{ color, fontWeight: isFocused ? '700' : '500' }}
                 >
                   {label}
-                </Text>
+                </FittedText>
               </View>
             </Pressable>
           );

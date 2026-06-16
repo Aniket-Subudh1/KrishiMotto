@@ -1,9 +1,9 @@
-import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useState } from 'react';
-import { Modal, Platform, Pressable, TextInput, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Platform, Pressable, TextInput, View } from 'react-native';
 
+import { BottomSheetModal } from '@/components/ui/bottom-sheet-modal';
+import { AppIcon } from '@/components/ui/app-icon';
 import { Text } from '@/components/ui/text';
 import { useAppLocale } from '@/hooks/use-app-locale';
 import { parseLocalIsoDate, toLocalIsoDate } from '@/lib/date';
@@ -37,7 +37,6 @@ export function DateField({
   error,
 }: DateFieldProps) {
   const { t } = useAppLocale();
-  const insets = useSafeAreaInsets();
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState(parseLocalIsoDate(value));
   const isWeb = Platform.OS === 'web';
@@ -76,7 +75,7 @@ export function DateField({
         }`}
       >
         <View className="mr-3 h-10 w-10 items-center justify-center rounded-xl bg-surface">
-          <Ionicons name="calendar-outline" size={18} color={Palette.indiaGreen} />
+          <AppIcon name="calendar-month-outline" size={18} color={Palette.indiaGreen} />
         </View>
         {isWeb ? (
           <TextInput
@@ -91,14 +90,14 @@ export function DateField({
             <Text className="flex-1 text-[16px] text-indigo">
               {formatDisplayDate(value, t('common.selectDate'))}
             </Text>
-            <Ionicons name="chevron-down" size={18} color={Palette.indigo} />
+            <AppIcon name="chevron-down" size={18} color={Palette.indigo} />
           </>
         )}
       </Pressable>
 
       {error ? (
         <View className="flex-row items-center gap-1.5 px-1">
-          <Ionicons name="alert-circle" size={13} color="#EF4444" />
+          <AppIcon name="alert-circle-outline" size={13} color="#EF4444" />
           <Text className="flex-1 text-[12px] leading-4 text-red-500">{error}</Text>
         </View>
       ) : null}
@@ -115,31 +114,29 @@ export function DateField({
       ) : null}
 
       {Platform.OS === 'ios' && !isWeb ? (
-        <Modal visible={open} transparent animationType="slide" onRequestClose={() => setOpen(false)}>
-          <Pressable className="flex-1 bg-black/40" onPress={() => setOpen(false)} />
-          <View
-            className="rounded-t-3xl bg-white px-4 pt-3"
-            style={{ paddingBottom: Math.max(insets.bottom, 16) }}
-          >
-            <View className="mb-2 flex-row items-center justify-between">
-              <Pressable onPress={() => setOpen(false)} className="px-2 py-2">
-                <Text className="text-[16px] text-muted">{t('common.cancel')}</Text>
-              </Pressable>
-              <Text className="text-[16px] font-semibold text-indigo">{label}</Text>
-              <Pressable onPress={confirmIos} className="px-2 py-2">
-                <Text className="text-[16px] font-semibold text-india-green">{t('common.done')}</Text>
-              </Pressable>
-            </View>
-            <DateTimePicker
-              value={draft}
-              mode="date"
-              display="spinner"
-              minimumDate={minimumDate}
-              maximumDate={maximumDate}
-              onChange={handleChange}
-            />
+        <BottomSheetModal
+          visible={open}
+          onClose={() => setOpen(false)}
+          sheetClassName="rounded-t-3xl bg-white px-4 pt-3"
+        >
+          <View className="mb-2 flex-row items-center justify-between">
+            <Pressable onPress={() => setOpen(false)} className="px-2 py-2">
+              <Text className="text-[16px] text-muted">{t('common.cancel')}</Text>
+            </Pressable>
+            <Text className="text-[16px] font-semibold text-indigo">{label}</Text>
+            <Pressable onPress={confirmIos} className="px-2 py-2">
+              <Text className="text-[16px] font-semibold text-india-green">{t('common.done')}</Text>
+            </Pressable>
           </View>
-        </Modal>
+          <DateTimePicker
+            value={draft}
+            mode="date"
+            display="spinner"
+            minimumDate={minimumDate}
+            maximumDate={maximumDate}
+            onChange={handleChange}
+          />
+        </BottomSheetModal>
       ) : null}
     </View>
   );

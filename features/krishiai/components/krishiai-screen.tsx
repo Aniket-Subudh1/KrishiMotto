@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import { AppIcon } from '@/components/ui/app-icon';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Redirect, router } from 'expo-router';
@@ -7,12 +7,12 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
-  KeyboardAvoidingView,
   Platform,
   Pressable,
   TextInput,
   View,
 } from 'react-native';
+import { KeyboardStickyView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ErrorBanner } from '@/components/auth/auth-screen-layout';
@@ -41,13 +41,14 @@ export function KrishiAiScreen() {
 
   const [input, setInput] = useState('');
   const { messages, sendMessage, clearConversation, failedPrompt, isSending, isClearing, errorMessage } =
-    useKrishiAiChat(locale);
+    useKrishiAiChat({ locale, errorFallback: t('krishiai.errorUnreachable') });
 
   const speech = useSpeechInput({
     locale,
     onTranscript: setInput,
     disabled: isSending,
     unavailableMessage: t('krishiai.voiceUnavailable'),
+    microphonePermissionMessage: t('krishiai.microphonePermission'),
   });
 
   useEffect(() => {
@@ -124,7 +125,7 @@ export function KrishiAiScreen() {
             onPress={() => router.back()}
             className="h-10 w-10 items-center justify-center rounded-full bg-white/15"
           >
-            <Ionicons name="arrow-back" size={22} color="#FFFFFF" />
+            <AppIcon name="arrow-left" size={22} color="#FFFFFF" />
           </Pressable>
 
           <View className="flex-1 items-center px-3">
@@ -149,17 +150,13 @@ export function KrishiAiScreen() {
             {isClearing ? (
               <ActivityIndicator size="small" color="#FFFFFF" />
             ) : (
-              <Ionicons name="trash-outline" size={20} color="#FFFFFF" />
+              <AppIcon name="delete-outline" size={20} color="#FFFFFF" />
             )}
           </Pressable>
         </View>
       </LinearGradient>
 
-      <KeyboardAvoidingView
-        className="flex-1"
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 8 : 0}
-      >
+      <View className="flex-1">
         <FlatList
           ref={listRef}
           data={messages}
@@ -186,78 +183,82 @@ export function KrishiAiScreen() {
           }
         />
 
-        {(errorMessage || speech.error) && (
-          <View className="px-5 pb-2">
-            <ErrorBanner message={errorMessage ?? speech.error ?? ''} />
-          </View>
-        )}
+        <KeyboardStickyView>
+          <View>
+            {(errorMessage || speech.error) && (
+              <View className="px-5 pb-2">
+                <ErrorBanner message={errorMessage ?? speech.error ?? ''} />
+              </View>
+            )}
 
-        <View
-          className="border-t border-border bg-white px-4 pt-3"
-          style={{ paddingBottom: Math.max(insets.bottom, 12) }}
-        >
-          {speech.isListening ? (
-            <View className="mb-2 flex-row items-center gap-2 rounded-xl bg-india-green/10 px-3 py-2">
-              <View className="h-2 w-2 rounded-full bg-india-green" />
-              <Text className="text-[13px] font-medium text-india-green">
-                {t('krishiai.listening')}
-              </Text>
-            </View>
-          ) : null}
-
-          <View className="flex-row items-end gap-2">
-            <View className="min-h-[48px] flex-1 flex-row items-end rounded-2xl border border-border bg-surface px-3 py-2">
-              <TextInput
-                value={input}
-                onChangeText={setInput}
-                placeholder={t('krishiai.inputPlaceholder')}
-                placeholderTextColor="#94A3B8"
-                multiline
-                maxLength={4000}
-                editable={!isSending}
-                className="max-h-28 flex-1 text-[15px] leading-5 text-indigo"
-                style={{ paddingTop: Platform.OS === 'ios' ? 8 : 4, paddingBottom: 4 }}
-                onSubmitEditing={handleSend}
-                blurOnSubmit={false}
-              />
-            </View>
-
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={
-                speech.isListening ? t('krishiai.stopListening') : t('krishiai.startListening')
-              }
-              onPress={() => void speech.toggleListening()}
-              disabled={isSending || !speech.isAvailable}
-              className={`h-12 w-12 items-center justify-center rounded-2xl ${
-                speech.isListening ? 'bg-red-500' : 'bg-indigo/10'
-              }`}
+            <View
+              className="border-t border-border bg-white px-4 pt-3"
+              style={{ paddingBottom: Math.max(insets.bottom, 12) }}
             >
-              <Ionicons
-                name={speech.isListening ? 'stop' : 'mic'}
-                size={22}
-                color={speech.isListening ? '#FFFFFF' : Palette.indigo}
-              />
-            </Pressable>
+              {speech.isListening ? (
+                <View className="mb-2 flex-row items-center gap-2 rounded-xl bg-india-green/10 px-3 py-2">
+                  <View className="h-2 w-2 rounded-full bg-india-green" />
+                  <Text className="text-[13px] font-medium text-india-green">
+                    {t('krishiai.listening')}
+                  </Text>
+                </View>
+              ) : null}
 
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={t('krishiai.send')}
-              onPress={handleSend}
-              disabled={!input.trim() || isSending}
-              className={`h-12 w-12 items-center justify-center rounded-2xl ${
-                input.trim() && !isSending ? 'bg-india-green' : 'bg-india-green/30'
-              }`}
-            >
-              {isSending ? (
-                <ActivityIndicator size="small" color="#FFFFFF" />
-              ) : (
-                <Ionicons name="send" size={20} color="#FFFFFF" />
-              )}
-            </Pressable>
+              <View className="flex-row items-end gap-2">
+                <View className="min-h-[48px] flex-1 flex-row items-end rounded-2xl border border-border bg-surface px-3 py-2">
+                  <TextInput
+                    value={input}
+                    onChangeText={setInput}
+                    placeholder={t('krishiai.inputPlaceholder')}
+                    placeholderTextColor="#94A3B8"
+                    multiline
+                    maxLength={4000}
+                    editable={!isSending}
+                    className="max-h-28 flex-1 text-[15px] leading-5 text-indigo"
+                    style={{ paddingTop: Platform.OS === 'ios' ? 8 : 4, paddingBottom: 4 }}
+                    onSubmitEditing={handleSend}
+                    blurOnSubmit={false}
+                  />
+                </View>
+
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={
+                    speech.isListening ? t('krishiai.stopListening') : t('krishiai.startListening')
+                  }
+                  onPress={() => void speech.toggleListening()}
+                  disabled={isSending || !speech.isAvailable}
+                  className={`h-12 w-12 items-center justify-center rounded-2xl ${
+                    speech.isListening ? 'bg-red-500' : 'bg-indigo/10'
+                  }`}
+                >
+                  <AppIcon
+                    name={speech.isListening ? 'stop' : 'microphone'}
+                    size={22}
+                    color={speech.isListening ? '#FFFFFF' : Palette.indigo}
+                  />
+                </Pressable>
+
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={t('krishiai.send')}
+                  onPress={handleSend}
+                  disabled={!input.trim() || isSending}
+                  className={`h-12 w-12 items-center justify-center rounded-2xl ${
+                    input.trim() && !isSending ? 'bg-india-green' : 'bg-india-green/30'
+                  }`}
+                >
+                  {isSending ? (
+                    <ActivityIndicator size="small" color="#FFFFFF" />
+                  ) : (
+                    <AppIcon name="send" size={20} color="#FFFFFF" />
+                  )}
+                </Pressable>
+              </View>
+            </View>
           </View>
-        </View>
-      </KeyboardAvoidingView>
+        </KeyboardStickyView>
+      </View>
     </View>
   );
 }

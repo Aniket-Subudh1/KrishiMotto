@@ -3,6 +3,7 @@ import { Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppIcon, type AppIconName } from '@/components/ui/app-icon';
+import { FittedText } from '@/components/ui/fitted-text';
 import { Text } from '@/components/ui/text';
 import { FarmerHeaderActions } from '@/features/home/components/farmer-header-actions';
 import { AppBarGradient, Palette } from '@/constants/theme';
@@ -113,7 +114,7 @@ export function HomeHeroHeader({
           />
         </View>
 
-        <View className="flex-row">
+        <View className="flex-row items-stretch">
           <HeroStatColumn
             icon="terrain"
             iconBg="rgba(233, 175, 67, 0.12)"
@@ -165,7 +166,7 @@ function HeroStatColumn({
   bottom: string;
 }) {
   return (
-    <View className="flex-1 items-center px-2 py-4">
+    <View className="flex-1 self-stretch items-center px-2 py-4">
       <View
         className="mb-2 h-9 w-9 items-center justify-center rounded-xl"
         style={{ backgroundColor: iconBg }}
@@ -173,20 +174,17 @@ function HeroStatColumn({
         <AppIcon name={icon} size={20} color={iconColor} />
       </View>
       {label ? (
-        <Text className="text-[10px] font-medium uppercase tracking-wide text-muted" numberOfLines={1}>
+        <FittedText className="w-full text-center text-[10px] font-medium leading-4 text-muted">
           {label}
-        </Text>
+        </FittedText>
       ) : null}
-      <Text
-        className="mt-0.5 text-center text-[16px] font-bold leading-5"
+      <FittedText
+        className="mt-0.5 w-full text-center text-[16px] font-bold leading-5"
         style={{ color: valueColor ?? Palette.indigo }}
-        numberOfLines={1}
       >
         {value}
-      </Text>
-      <Text className="mt-1 text-center text-[11px] leading-4 text-muted" numberOfLines={2}>
-        {bottom}
-      </Text>
+      </FittedText>
+      <FittedText className="mt-1 w-full text-center text-[11px] leading-4 text-muted">{bottom}</FittedText>
     </View>
   );
 }

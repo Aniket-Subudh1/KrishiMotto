@@ -1,15 +1,15 @@
-import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
   RefreshControl,
-  ScrollView,
   View,
 } from 'react-native';
 
+import { AppIcon } from '@/components/ui/app-icon';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { KeyboardAwareFormShell } from '@/components/ui/keyboard-aware-form-shell';
 import { Text } from '@/components/ui/text';
 import { useLogout, useLogoutAll } from '@/features/auth/hooks/use-auth';
 import { ProfileHeroHeader } from '@/features/home/components/profile-hero-header';
@@ -18,6 +18,7 @@ import {
   useUpdateFarmerProfile,
 } from '@/features/farmer/hooks/use-farmer-profile';
 import { formatAcres } from '@/lib/format';
+import { resolveAppIcon, type IconName } from '@/lib/icon-names';
 import {
   isValidLocationField,
   isValidProfileName,
@@ -33,6 +34,20 @@ type ProfileTabProps = {
   onRefresh: () => void;
   t: (key: string) => string;
 };
+
+function SectionHeader({ icon, title }: { icon: IconName; title: string }) {
+  return (
+    <View className="mb-4 flex-row items-center gap-2.5">
+      <View
+        className="h-8 w-8 items-center justify-center rounded-xl"
+        style={{ backgroundColor: 'rgba(70, 150, 47, 0.1)' }}
+      >
+        <AppIcon name={resolveAppIcon(icon)} size={18} color={Palette.indiaGreen} />
+      </View>
+      <Text className="text-[18px] font-bold text-indigo">{title}</Text>
+    </View>
+  );
+}
 
 export function ProfileTab({
   profile,
@@ -113,11 +128,8 @@ export function ProfileTab({
 
   return (
     <View className="flex-1 bg-background">
-      <ScrollView
-        className="flex-1"
-        contentContainerClassName="pb-8"
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
+      <KeyboardAwareFormShell
+        contentClassName="pb-8"
         refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />}
       >
         {isLoading ? (
@@ -134,21 +146,29 @@ export function ProfileTab({
               t={t}
             />
 
-            <View className="mt-6 px-5">
+            <View className="mt-7 px-5">
               {isEditing ? (
                 <View
                   className="gap-4 rounded-2xl border border-border bg-white p-4"
                   style={{
                     shadowColor: Palette.indigo,
-                    shadowOffset: { width: 0, height: 2 },
-                    shadowOpacity: 0.06,
-                    shadowRadius: 8,
-                    elevation: 3,
+                    shadowOffset: { width: 0, height: 3 },
+                    shadowOpacity: 0.08,
+                    shadowRadius: 10,
+                    elevation: 4,
                   }}
                 >
-                  <Text className="text-[18px] font-bold text-indigo">
-                    {t('home.profile.edit')}
-                  </Text>
+                  <View className="flex-row items-center gap-2.5">
+                    <View
+                      className="h-8 w-8 items-center justify-center rounded-xl"
+                      style={{ backgroundColor: 'rgba(70, 150, 47, 0.1)' }}
+                    >
+                      <AppIcon name="pencil-outline" size={18} color={Palette.indiaGreen} />
+                    </View>
+                    <Text className="text-[18px] font-bold text-indigo">
+                      {t('home.profile.edit')}
+                    </Text>
+                  </View>
                   <Input
                     label={t('home.profile.nameLabel')}
                     value={name}
@@ -192,9 +212,7 @@ export function ProfileTab({
                 </View>
               ) : (
                 <>
-                  <Text className="mb-3 text-[18px] font-bold text-indigo">
-                    {t('home.profile.farmDetails')}
-                  </Text>
+                  <SectionHeader icon="sprout-outline" title={t('home.profile.farmDetails')} />
                   <View className="gap-3">
                     <ProfileDetail
                       icon="resize-outline"
@@ -227,18 +245,16 @@ export function ProfileTab({
               )}
             </View>
 
-            <View className="mt-6 px-5">
-              <Text className="mb-3 text-[18px] font-bold text-indigo">
-                {t('home.profile.accountSection')}
-              </Text>
+            <View className="mt-7 px-5">
+              <SectionHeader icon="account-outline" title={t('home.profile.accountSection')} />
               <View
                 className="overflow-hidden rounded-2xl border border-border bg-white"
                 style={{
                   shadowColor: Palette.indigo,
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.06,
-                  shadowRadius: 8,
-                  elevation: 3,
+                  shadowOffset: { width: 0, height: 3 },
+                  shadowOpacity: 0.08,
+                  shadowRadius: 10,
+                  elevation: 4,
                 }}
               >
                 <ProfileDetail
@@ -277,7 +293,7 @@ export function ProfileTab({
             </View>
           </>
         )}
-      </ScrollView>
+      </KeyboardAwareFormShell>
     </View>
   );
 }
@@ -288,7 +304,7 @@ function ProfileDetail({
   value,
   compact = false,
 }: {
-  icon: keyof typeof Ionicons.glyphMap;
+  icon: IconName;
   label: string;
   value: string;
   compact?: boolean;
@@ -312,7 +328,7 @@ function ProfileDetail({
         className="h-9 w-9 items-center justify-center rounded-xl"
         style={{ backgroundColor: 'rgba(70, 150, 47, 0.1)' }}
       >
-        <Ionicons name={icon} size={18} color={Palette.indiaGreen} />
+        <AppIcon name={resolveAppIcon(icon)} size={18} color={Palette.indiaGreen} />
       </View>
       <View className="flex-1">
         <Text className="text-[11px] font-medium uppercase tracking-wide text-muted">{label}</Text>

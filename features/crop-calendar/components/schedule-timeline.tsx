@@ -1,7 +1,7 @@
-import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ActivityIndicator, Pressable, View } from 'react-native';
 
+import { AppIcon, type AppIconName } from '@/components/ui/app-icon';
 import { Text } from '@/components/ui/text';
 import { useAppLocale } from '@/hooks/use-app-locale';
 import { translateScheduleActivity } from '@/lib/booking-i18n';
@@ -9,9 +9,9 @@ import { parseLocalIsoDate } from '@/lib/date';
 import { Palette } from '@/constants/theme';
 import type { ScheduledActivity } from '@/types/booking';
 
-const ACTIVITY_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
+const ACTIVITY_ICONS: Record<string, AppIconName> = {
   Sowing: 'seed-outline',
-  '1st Irrigation': 'water-outline',
+  '1st Irrigation': 'water',
   'Fertilizer (DAP)': 'flask-outline',
   'Fertilizer (Urea)': 'flask-outline',
   'Pest watch': 'bug-outline',
@@ -37,10 +37,10 @@ type ScheduleTimelineProps = {
   generating?: boolean;
 };
 
-function getActivityIcon(name: string): keyof typeof Ionicons.glyphMap {
+function getActivityIcon(name: string): AppIconName {
   if (ACTIVITY_ICONS[name]) return ACTIVITY_ICONS[name];
   if (name.startsWith('Harvest')) return 'basket-outline';
-  return 'calendar-outline';
+  return 'calendar-month-outline';
 }
 
 function formatActivityDate(isoDate: string): string {
@@ -77,7 +77,7 @@ export function ScheduleTimeline({
       <View className="overflow-hidden rounded-2xl border border-dashed border-border bg-surface">
         <View className="items-center px-5 py-8">
           <View className="h-14 w-14 items-center justify-center rounded-2xl bg-white">
-            <Ionicons name="calendar-outline" size={28} color={Palette.indigo} />
+            <AppIcon name="calendar-month-outline" size={28} color={Palette.indigo} />
           </View>
           <Text className="mt-4 text-center text-[15px] font-semibold text-indigo">{emptyLabel}</Text>
           {emptyHint ? (
@@ -92,7 +92,7 @@ export function ScheduleTimeline({
               {generating ? (
                 <ActivityIndicator size="small" color="#FFFFFF" />
               ) : (
-                <Ionicons name="sparkles-outline" size={18} color="#FFFFFF" />
+                <AppIcon name="auto-fix" size={18} color="#FFFFFF" />
               )}
               <Text className="text-[15px] font-semibold text-white">{generateLabel}</Text>
             </Pressable>
@@ -163,7 +163,7 @@ export function ScheduleTimeline({
                     className="h-9 w-9 items-center justify-center rounded-xl"
                     style={{ backgroundColor: `${dotColor}18` }}
                   >
-                    <Ionicons name={getActivityIcon(activity.name)} size={16} color={dotColor} />
+                    <AppIcon name={getActivityIcon(activity.name)} size={16} color={dotColor} />
                   </View>
                   {!isLast ? (
                     <View className="my-1 w-0.5 flex-1 rounded-full bg-border" />
@@ -192,7 +192,7 @@ export function ScheduleTimeline({
             {generating ? (
               <ActivityIndicator size="small" color={Palette.indiaGreen} />
             ) : (
-              <Ionicons name="refresh-outline" size={16} color={Palette.indiaGreen} />
+              <AppIcon name="refresh" size={16} color={Palette.indiaGreen} />
             )}
             <Text className="text-[14px] font-semibold text-india-green">{generateLabel}</Text>
           </Pressable>

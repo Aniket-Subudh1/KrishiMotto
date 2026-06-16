@@ -1,4 +1,5 @@
-import { Ionicons } from '@expo/vector-icons';
+import { AppIcon } from '@/components/ui/app-icon';
+import { resolveAppIcon } from '@/lib/icon-names';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -300,7 +301,7 @@ export default function PaymentResultScreen() {
           {isLoading ? (
             <ActivityIndicator size="large" color={Palette.indiaGreen} />
           ) : (
-            <Ionicons name={iconName} size={72} color={iconColor} />
+            <AppIcon name={resolveAppIcon(iconName)} size={72} color={iconColor} />
           )}
 
           <Text className="mt-5 text-center text-[22px] font-bold text-indigo">{title}</Text>

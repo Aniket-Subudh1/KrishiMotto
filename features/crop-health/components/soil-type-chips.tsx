@@ -1,19 +1,19 @@
-import { Ionicons } from '@expo/vector-icons';
 import { Pressable, View } from 'react-native';
 
+import { AppIcon, type AppIconName } from '@/components/ui/app-icon';
 import { Text } from '@/components/ui/text';
 import { useAppLocale } from '@/hooks/use-app-locale';
 import { translateSoilType } from '@/lib/booking-i18n';
 import { Palette } from '@/constants/theme';
 import { SOIL_TYPES, type SoilType } from '@/types/booking';
 
-const SOIL_TYPE_ICONS: Record<SoilType, keyof typeof Ionicons.glyphMap> = {
-  Clay: 'water-outline',
-  Sandy: 'sunny-outline',
-  Loamy: 'leaf-outline',
+const SOIL_TYPE_ICONS: Record<SoilType, AppIconName> = {
+  Clay: 'water',
+  Sandy: 'weather-sunny',
+  Loamy: 'sprout-outline',
   Silty: 'layers-outline',
   Peaty: 'flask-outline',
-  Chalky: 'ellipse-outline',
+  Chalky: 'circle-outline',
 };
 
 type SoilTypeChipsProps = {
@@ -41,7 +41,7 @@ export function SoilTypeChips({ label, value, onChange, error }: SoilTypeChipsPr
                 selected ? 'border-india-green bg-india-green/10' : 'border-border bg-white'
               }`}
             >
-              <Ionicons
+              <AppIcon
                 name={SOIL_TYPE_ICONS[type]}
                 size={15}
                 color={selected ? Palette.indiaGreen : Palette.indigo}
@@ -58,7 +58,7 @@ export function SoilTypeChips({ label, value, onChange, error }: SoilTypeChipsPr
 
       {error ? (
         <View className="flex-row items-center gap-1.5 px-1">
-          <Ionicons name="alert-circle" size={13} color="#EF4444" />
+          <AppIcon name="alert-circle-outline" size={13} color="#EF4444" />
           <Text className="flex-1 text-[12px] leading-4 text-red-500">{error}</Text>
         </View>
       ) : null}

@@ -11,7 +11,12 @@ function createMessageId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
-export function useKrishiAiChat(locale: AppLocale) {
+type UseKrishiAiChatOptions = {
+  locale: AppLocale;
+  errorFallback: string;
+};
+
+export function useKrishiAiChat({ locale, errorFallback }: UseKrishiAiChatOptions) {
   const [messages, setMessages] = useState<AiChatMessage[]>([]);
   const [failedPrompt, setFailedPrompt] = useState<string | null>(null);
 
@@ -77,7 +82,7 @@ export function useKrishiAiChat(locale: AppLocale) {
   }, [clearMutation]);
 
   const errorMessage = chatMutation.error
-    ? getApiErrorMessage(chatMutation.error, 'Unable to reach KrishiAI right now.')
+    ? getApiErrorMessage(chatMutation.error, errorFallback)
     : null;
 
   return {

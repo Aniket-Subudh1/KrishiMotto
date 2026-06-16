@@ -1,4 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
+import { AppIcon } from "@/components/ui/app-icon";
 import { LinearGradient } from "expo-linear-gradient";
 import * as ExpoLinking from "expo-linking";
 import { router, useLocalSearchParams } from "expo-router";
@@ -327,10 +327,10 @@ export default function PaymentCheckoutScreen() {
             className="h-10 w-10 items-center justify-center rounded-full bg-white/20"
             accessibilityRole="button"
           >
-            <Ionicons name="chevron-back" size={22} color="#FFFFFF" />
+            <AppIcon name="chevron-left" size={22} color="#FFFFFF" />
           </Pressable>
           <View className="h-10 w-10 items-center justify-center rounded-full bg-white/20">
-            <Ionicons name="card-outline" size={20} color="#FFFFFF" />
+            <AppIcon name="credit-card-outline" size={20} color="#FFFFFF" />
           </View>
         </View>
 

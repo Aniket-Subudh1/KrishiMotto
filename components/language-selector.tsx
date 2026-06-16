@@ -1,13 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import {
-  Modal,
   Platform,
   Pressable,
   ScrollView,
   View,
 } from 'react-native';
 
+import { BottomSheetModal } from '@/components/ui/bottom-sheet-modal';
 import { FittedText } from '@/components/ui/fitted-text';
 import { LANGUAGES } from '@/constants/languages';
 import { Colors, Palette } from '@/constants/theme';
@@ -76,20 +76,12 @@ export function LanguageSelector({ variant = 'default' }: LanguageSelectorProps)
         ) : null}
       </Pressable>
 
-      <Modal
+      <BottomSheetModal
         visible={open}
-        transparent
+        onClose={() => setOpen(false)}
         animationType="fade"
-        onRequestClose={() => setOpen(false)}
+        sheetClassName="max-h-[85%] rounded-t-2xl bg-background px-5 pb-8 pt-5"
       >
-        <Pressable
-          className="flex-1 justify-end bg-black/40"
-          onPress={() => setOpen(false)}
-        >
-          <Pressable
-            className="max-h-[85%] rounded-t-2xl bg-background px-5 pb-8 pt-5"
-            onPress={(event) => event.stopPropagation()}
-          >
             <View className="mb-1 flex-row items-start justify-between gap-3">
               <View className="min-w-0 flex-1">
                 <FittedText
@@ -158,9 +150,7 @@ export function LanguageSelector({ variant = 'default' }: LanguageSelectorProps)
                 );
               })}
             </ScrollView>
-          </Pressable>
-        </Pressable>
-      </Modal>
+      </BottomSheetModal>
     </>
   );
 }

@@ -11,6 +11,7 @@ import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import Animated, { FadeOut } from 'react-native-reanimated';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AppSplash, SPLASH_DURATION_MS } from '@/components/app-splash';
@@ -52,51 +53,57 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaProvider>
-        <QueryClientProvider client={queryClient}>
-          <AuthSessionProvider>
-            <I18nProvider>
-              <View className="flex-1 bg-background font-sans">
-                <ThemeProvider value={NavigationTheme}>
-                  <Stack
-                    screenOptions={{
-                      contentStyle: { backgroundColor: Colors.background },
-                      headerTitleStyle: {
-                        fontFamily: Fonts.sansSemibold,
-                        fontWeight: '600',
-                      },
-                    }}
-                  >
-                    <Stack.Screen name="index" options={{ headerShown: false }} />
-                    <Stack.Screen name="get-started" options={{ headerShown: false }} />
-                    <Stack.Screen name="select-role" options={{ headerShown: false }} />
-                    <Stack.Screen name="sign-in" options={{ headerShown: false }} />
-                    <Stack.Screen name="farmer" options={{ headerShown: false }} />
-                    <Stack.Screen name="expert" options={{ headerShown: false }} />
-                    <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                    <Stack.Screen name="services" options={{ headerShown: false }} />
-                    <Stack.Screen name="payment" options={{ headerShown: false }} />
-                    <Stack.Screen
-                      name="modal"
-                      options={{ presentation: 'modal', title: 'Modal' }}
-                    />
-                  </Stack>
-                  <StatusBar style="dark" />
-                </ThemeProvider>
+      <KeyboardProvider
+        navigationBarTranslucent
+        statusBarTranslucent
+        preload={false}
+      >
+        <SafeAreaProvider>
+          <QueryClientProvider client={queryClient}>
+            <AuthSessionProvider>
+              <I18nProvider>
+                <View className="flex-1 bg-background font-sans">
+                  <ThemeProvider value={NavigationTheme}>
+                    <Stack
+                      screenOptions={{
+                        contentStyle: { backgroundColor: Colors.background },
+                        headerTitleStyle: {
+                          fontFamily: Fonts.sansSemibold,
+                          fontWeight: '600',
+                        },
+                      }}
+                    >
+                      <Stack.Screen name="index" options={{ headerShown: false }} />
+                      <Stack.Screen name="get-started" options={{ headerShown: false }} />
+                      <Stack.Screen name="select-role" options={{ headerShown: false }} />
+                      <Stack.Screen name="sign-in" options={{ headerShown: false }} />
+                      <Stack.Screen name="farmer" options={{ headerShown: false }} />
+                      <Stack.Screen name="expert" options={{ headerShown: false }} />
+                      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                      <Stack.Screen name="services" options={{ headerShown: false }} />
+                      <Stack.Screen name="payment" options={{ headerShown: false }} />
+                      <Stack.Screen
+                        name="modal"
+                        options={{ presentation: 'modal', title: 'Modal' }}
+                      />
+                    </Stack>
+                    <StatusBar style="dark" translucent />
+                  </ThemeProvider>
 
-                {!splashDone && (
-                  <Animated.View
-                    exiting={FadeOut.duration(500)}
-                    className="absolute inset-0 z-100"
-                  >
-                    <AppSplash visible />
-                  </Animated.View>
-                )}
-              </View>
-            </I18nProvider>
-          </AuthSessionProvider>
-        </QueryClientProvider>
-      </SafeAreaProvider>
+                  {!splashDone && (
+                    <Animated.View
+                      exiting={FadeOut.duration(500)}
+                      className="absolute inset-0 z-100"
+                    >
+                      <AppSplash visible />
+                    </Animated.View>
+                  )}
+                </View>
+              </I18nProvider>
+            </AuthSessionProvider>
+          </QueryClientProvider>
+        </SafeAreaProvider>
+      </KeyboardProvider>
     </GestureHandlerRootView>
   );
 }

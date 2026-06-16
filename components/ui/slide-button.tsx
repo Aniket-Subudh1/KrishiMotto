@@ -24,7 +24,7 @@ type SlideButtonProps = {
   resetKey?: number;
 };
 
-const TRACK_HEIGHT = 56;
+const TRACK_MIN_HEIGHT = 56;
 const THUMB_SIZE = 48;
 const TRACK_PADDING = 4;
 const COMPLETE_THRESHOLD = 0.85;
@@ -39,6 +39,7 @@ export function SlideButton({
 }: SlideButtonProps) {
   'use no memo';
   const [trackWidth, setTrackWidth] = useState(0);
+  const [trackHeight, setTrackHeight] = useState(TRACK_MIN_HEIGHT);
   const translateX = useSharedValue(0);
   const maxSlide = useSharedValue(0);
   const completed = useSharedValue(false);
@@ -62,8 +63,12 @@ export function SlideButton({
   }
 
   function handleTrackLayout(event: LayoutChangeEvent) {
-    setTrackWidth(event.nativeEvent.layout.width);
+    const { width, height } = event.nativeEvent.layout;
+    setTrackWidth(width);
+    setTrackHeight(height);
   }
+
+  const thumbTop = Math.max(TRACK_PADDING, (trackHeight - THUMB_SIZE) / 2);
 
   const pan = Gesture.Pan()
     .enabled(isInteractive)
@@ -107,18 +112,17 @@ export function SlideButton({
         className={`overflow-hidden rounded-2xl border bg-surface ${
           disabled ? 'border-border opacity-50' : 'border-india-green/50'
         }`}
-        style={{ height: TRACK_HEIGHT }}
+        style={{ minHeight: TRACK_MIN_HEIGHT }}
         onLayout={handleTrackLayout}
       >
-        <View className="absolute inset-0 items-center justify-center px-14">
+        <View className="items-center justify-center px-14 py-3">
           {loading ? (
             <ActivityIndicator color={Palette.indiaGreen} />
           ) : (
             <FittedText
               shrink
-              maxLines={1}
-              minScale={0.75}
-              className="text-center text-[14px] font-semibold text-muted"
+              maxLines={2}
+              className="text-center text-[14px] font-semibold leading-5 text-muted"
             >
               {label}
             </FittedText>
@@ -131,7 +135,7 @@ export function SlideButton({
               {
                 position: 'absolute',
                 left: TRACK_PADDING,
-                top: TRACK_PADDING,
+                top: thumbTop,
                 width: THUMB_SIZE,
                 height: THUMB_SIZE,
                 borderRadius: 14,

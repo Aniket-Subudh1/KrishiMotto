@@ -16,6 +16,7 @@ type UseSpeechInputOptions = {
   onTranscript: (text: string) => void;
   disabled?: boolean;
   unavailableMessage?: string;
+  microphonePermissionMessage?: string;
 };
 
 export function useSpeechInput({
@@ -23,6 +24,7 @@ export function useSpeechInput({
   onTranscript,
   disabled = false,
   unavailableMessage = 'Voice input is not available in this build. Use a development build to enable the microphone.',
+  microphonePermissionMessage = 'Microphone permission is required for voice input.',
 }: UseSpeechInputOptions) {
   const [isListening, setIsListening] = useState(false);
   const [isAvailable, setIsAvailable] = useState(false);
@@ -108,7 +110,7 @@ export function useSpeechInput({
     try {
       const permissions = await module.requestPermissionsAsync();
       if (!permissions.granted) {
-        setError('Microphone permission is required for voice input.');
+        setError(microphonePermissionMessage);
         return false;
       }
 
