@@ -1,28 +1,34 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, AppState, type AppStateStatus, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import {
-  checkBookingPaymentOnce,
-  pollBookingPayment,
-  startPaymentPoller,
-} from '@/lib/booking-payment';
+  buildPaymentResultParams,
+  checkPaymentOnce,
+  confirmFailedPaymentForSession,
+  parsePaymentSession,
+  pollPaymentForSession,
+  startPaymentPollerForSession,
+  toPaymentSessionSnapshot,
+  type PaymentSessionSnapshot,
+} from '@/lib/payment-session';
 import { formatPaise } from '@/lib/currency';
 import { AppBarGradient, Palette } from '@/constants/theme';
 import { useAppLocale } from '@/hooks/use-app-locale';
-import type { Booking, PaymentStatus } from '@/types/booking';
+import type { PaymentStatus } from '@/types/booking';
 
 type ResultState = 'loading' | PaymentStatus | 'ABANDONED';
 
 function parseInitialStatus(value?: string): ResultState {
-  if (value === 'PAID' || value === 'FAILED') {
+  if (value === 'PAID') {
     return value;
   }
+  // FAILED deep links can arrive before the gateway settles after UPI return.
   return 'loading';
 }
 
@@ -33,11 +39,23 @@ function isTerminal(status: ResultState): status is PaymentStatus {
 export default function PaymentResultScreen() {
   const { t } = useAppLocale();
   const insets = useSafeAreaInsets();
-  const { bookingId, orderId: orderIdParam, status: statusParam } = useLocalSearchParams<{
+  const {
+    bookingId,
+    storageRequestId,
+    orderId: orderIdParam,
+    status: statusParam,
+  } = useLocalSearchParams<{
     bookingId?: string;
+    storageRequestId?: string;
     orderId?: string;
     status?: string;
   }>();
+
+  const session = useMemo(
+    () => parsePaymentSession({ bookingId, storageRequestId }),
+    [bookingId, storageRequestId],
+  );
+
   const [status, setStatus] = useState<ResultState>(() => parseInitialStatus(statusParam));
   const [orderId, setOrderId] = useState(orderIdParam ?? '');
   const [totalPaise, setTotalPaise] = useState<number | null>(null);
@@ -45,25 +63,35 @@ export default function PaymentResultScreen() {
   const leftAppForPaymentRef = useRef(false);
   const appStateRef = useRef<AppStateStatus>(AppState.currentState);
 
-  const applyBooking = useCallback((booking: Pick<Booking, 'orderId' | 'pricing' | 'paymentUrl'>) => {
-    setTotalPaise(booking.pricing.totalPaise);
-    if (booking.orderId) setOrderId(booking.orderId);
-    setPaymentUrl(booking.paymentUrl ?? null);
+  const applySnapshot = useCallback((snapshot: PaymentSessionSnapshot) => {
+    setTotalPaise(snapshot.totalPaise);
+    if (snapshot.orderId) setOrderId(snapshot.orderId);
+    setPaymentUrl(snapshot.paymentUrl);
   }, []);
 
   useEffect(() => {
-    if (!bookingId) {
+    if (!session) {
       return;
     }
 
     let cancelled = false;
 
-    void checkBookingPaymentOnce(bookingId)
-      .then(({ status: paymentStatus, booking }) => {
+    void checkPaymentOnce(session)
+      .then(async (result) => {
         if (cancelled) return;
-        applyBooking(booking);
-        if (isTerminal(paymentStatus)) {
-          setStatus(paymentStatus);
+        applySnapshot(toPaymentSessionSnapshot(result));
+
+        if (result.status === 'PAID') {
+          setStatus('PAID');
+          return;
+        }
+        if (result.status === 'FAILED') {
+          const confirmed = await confirmFailedPaymentForSession(session);
+          if (cancelled) return;
+          applySnapshot(toPaymentSessionSnapshot(confirmed));
+          if (isTerminal(confirmed.status)) {
+            setStatus(confirmed.status);
+          }
         }
       })
       .catch(() => {
@@ -73,39 +101,42 @@ export default function PaymentResultScreen() {
     return () => {
       cancelled = true;
     };
-  }, [applyBooking, bookingId]);
+  }, [applySnapshot, session]);
 
   useEffect(() => {
-    if (!bookingId) {
+    if (!session) {
       setStatus('FAILED');
       return;
     }
 
-    if (statusParam === 'PAID' || statusParam === 'FAILED') {
+    if (statusParam === 'PAID') {
       return;
     }
 
-    const stop = startPaymentPoller(bookingId, {
-      onUpdate: (booking, paymentStatus) => {
-        applyBooking(booking);
+    const stop = startPaymentPollerForSession(session, {
+      onUpdate: (snapshot, paymentStatus) => {
+        applySnapshot(snapshot);
         setStatus((current) => {
-          if (isTerminal(paymentStatus)) {
-            return paymentStatus;
+          if (paymentStatus === 'PAID') {
+            return 'PAID';
+          }
+          if (paymentStatus === 'FAILED') {
+            return current;
           }
           return current === 'ABANDONED' ? 'ABANDONED' : 'PENDING';
         });
       },
-      onTerminal: ({ status: paymentStatus, booking }) => {
-        applyBooking(booking);
-        setStatus(paymentStatus);
+      onTerminal: (result) => {
+        applySnapshot(toPaymentSessionSnapshot(result));
+        setStatus(result.status);
       },
     });
 
     return stop;
-  }, [applyBooking, bookingId, statusParam]);
+  }, [applySnapshot, session, statusParam]);
 
   useEffect(() => {
-    if (!bookingId || statusParam === 'PAID' || statusParam === 'FAILED') {
+    if (!session || statusParam === 'PAID') {
       return;
     }
 
@@ -126,11 +157,25 @@ export default function PaymentResultScreen() {
 
       void (async () => {
         try {
-          const { status: paymentStatus, booking } = await checkBookingPaymentOnce(bookingId);
-          applyBooking(booking);
-          if (isTerminal(paymentStatus)) {
-            setStatus(paymentStatus);
+          const result = await checkPaymentOnce(session);
+          applySnapshot(toPaymentSessionSnapshot(result));
+
+          if (result.status === 'PAID') {
+            setStatus('PAID');
             return;
+          }
+          if (result.status === 'FAILED') {
+            const confirmed = await confirmFailedPaymentForSession(session);
+            applySnapshot(toPaymentSessionSnapshot(confirmed));
+
+            if (confirmed.status === 'PAID') {
+              setStatus('PAID');
+              return;
+            }
+            if (confirmed.status === 'FAILED') {
+              setStatus('FAILED');
+              return;
+            }
           }
           setStatus('ABANDONED');
         } catch {
@@ -141,13 +186,14 @@ export default function PaymentResultScreen() {
 
     const subscription = AppState.addEventListener('change', handleAppStateChange);
     return () => subscription.remove();
-  }, [applyBooking, bookingId, statusParam]);
+  }, [applySnapshot, session, statusParam]);
 
   const isSuccess = status === 'PAID';
   const isFailed = status === 'FAILED';
   const isPending = status === 'PENDING';
   const isAbandoned = status === 'ABANDONED';
   const isLoading = status === 'loading';
+  const isStorageSession = session?.kind === 'storage';
 
   const title = isLoading
     ? t('paymentResult.loadingTitle')
@@ -162,7 +208,9 @@ export default function PaymentResultScreen() {
   const body = isLoading
     ? t('paymentResult.loadingBody')
     : isSuccess
-      ? t('paymentResult.successBody')
+      ? isStorageSession
+        ? t('paymentResult.storageSuccessBody')
+        : t('paymentResult.successBody')
       : isFailed
         ? t('paymentResult.failedBody')
         : isAbandoned
@@ -185,34 +233,45 @@ export default function PaymentResultScreen() {
         : Palette.marigold;
 
   async function handleRetry() {
-    if (!bookingId) return;
+    if (!session) return;
     setStatus('loading');
     try {
-      const quick = await checkBookingPaymentOnce(bookingId);
-      applyBooking(quick.booking);
+      const quick = await checkPaymentOnce(session);
+      applySnapshot(toPaymentSessionSnapshot(quick));
+
       if (isTerminal(quick.status)) {
-        setStatus(quick.status);
-        return;
+        if (quick.status === 'FAILED') {
+          const confirmed = await confirmFailedPaymentForSession(session);
+          applySnapshot(toPaymentSessionSnapshot(confirmed));
+          if (isTerminal(confirmed.status)) {
+            setStatus(confirmed.status);
+            return;
+          }
+        } else {
+          setStatus(quick.status);
+          return;
+        }
       }
 
-      const { status: paymentStatus, booking } = await pollBookingPayment(bookingId, applyBooking);
-      applyBooking(booking);
-      setStatus(isTerminal(paymentStatus) ? paymentStatus : 'PENDING');
+      const result = await pollPaymentForSession(session, applySnapshot);
+      applySnapshot(toPaymentSessionSnapshot(result));
+      setStatus(isTerminal(result.status) ? result.status : 'PENDING');
     } catch {
       setStatus('FAILED');
     }
   }
 
   function handleContinuePayment() {
-    if (!bookingId) {
+    if (!session) {
       return;
     }
     router.replace({
       pathname: '/payment/checkout',
-      params: {
-        bookingId,
+      params: buildPaymentResultParams(session, 'PENDING', {
         orderId,
-      },
+        paymentUrl,
+        totalPaise: totalPaise ?? 0,
+      }),
     });
   }
 
@@ -261,6 +320,15 @@ export default function PaymentResultScreen() {
 
           {!isLoading ? (
             <View className="mt-8 w-full gap-3">
+              {isSuccess && isStorageSession ? (
+                <Button
+                  size="lg"
+                  className="w-full"
+                  onPress={() => router.replace('/services/crop-tracker')}
+                >
+                  {t('paymentResult.openCropTracker')}
+                </Button>
+              ) : null}
               <Button size="lg" className="w-full" onPress={() => router.replace('/(tabs)')}>
                 {t('paymentResult.goHome')}
               </Button>

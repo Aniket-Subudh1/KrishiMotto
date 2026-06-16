@@ -84,12 +84,14 @@ const overrides = {
       },
       servicePrices: en.enums.servicePrices,
       storageStatuses: {
+        PENDING_PAYMENT: 'भुगतान लंबित',
         SUBMITTED: 'अनुरोध जमा',
         ACCEPTED: 'गोदाम ने स्वीकार किया',
         PAYOUT_PAID: 'मूल्यांकन भुगतान',
         PICKED_UP: 'फसल उठाई गई',
         IN_STORAGE: 'भंडारण में',
         RELEASED: 'रिलीज़',
+        CANCELLED: 'रद्द',
       },
     },
     home: {
@@ -166,12 +168,14 @@ const overrides = {
       },
       servicePrices: en.enums.servicePrices,
       storageStatuses: {
+        PENDING_PAYMENT: 'பணம் நிலுவையில்',
         SUBMITTED: 'கோரிக்கை சமர்ப்பிக்கப்பட்டது',
         ACCEPTED: 'கிடங்கு ஏற்றுக்கொண்டது',
         PAYOUT_PAID: 'மதிப்பீடு செலுத்தப்பட்டது',
         PICKED_UP: 'பயிர் எடுக்கப்பட்டது',
         IN_STORAGE: 'சேமிப்பில்',
         RELEASED: 'விடுவிக்கப்பட்டது',
+        CANCELLED: 'ரத்து',
       },
     },
     home: {
@@ -248,12 +252,14 @@ const overrides = {
       },
       servicePrices: en.enums.servicePrices,
       storageStatuses: {
+        PENDING_PAYMENT: 'చెల్లింపు పెండింగ్',
         SUBMITTED: 'అభ్యర్థన సమర్పించబడింది',
         ACCEPTED: 'గోదాము అంగీకరించింది',
         PAYOUT_PAID: 'మూల్యాంకనం చెల్లించబడింది',
         PICKED_UP: 'పంట తీసుకెళ్లబడింది',
         IN_STORAGE: 'నిల్వలో',
         RELEASED: 'విడుదల',
+        CANCELLED: 'రద్దు',
       },
     },
     home: {
@@ -330,12 +336,14 @@ const overrides = {
       },
       servicePrices: en.enums.servicePrices,
       storageStatuses: {
+        PENDING_PAYMENT: 'ଦେୟ ବାକି',
         SUBMITTED: 'ଅନୁରୋଧ ଦାଖଲ',
         ACCEPTED: 'ଗୋଦାମ ଗ୍ରହଣ କଲା',
         PAYOUT_PAID: 'ମୂଲ୍ୟାୟନ ଦେୟ',
         PICKED_UP: 'ଫସଲ ଉଠାଗଲା',
         IN_STORAGE: 'ଭଣ୍ଡାରରେ',
         RELEASED: 'ମୁକ୍ତ',
+        CANCELLED: 'ରଦ୍ଦ',
       },
     },
     home: {

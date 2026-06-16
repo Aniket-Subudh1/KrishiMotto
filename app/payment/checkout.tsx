@@ -23,10 +23,15 @@ import { Text } from "@/components/ui/text";
 import { AppBarGradient, Palette } from "@/constants/theme";
 import { useAppLocale } from "@/hooks/use-app-locale";
 import {
-    checkBookingPaymentOnce,
-    startPaymentPoller,
-} from "@/lib/booking-payment";
-import type { Booking, PaymentStatus } from "@/types/booking";
+    buildPaymentResultParams,
+    checkPaymentOnce,
+    confirmFailedPaymentForSession,
+    parsePaymentSession,
+    startPaymentPollerForSession,
+    toPaymentSessionSnapshot,
+    type PaymentSessionRef,
+} from "@/lib/payment-session";
+import type { PaymentStatus } from "@/types/booking";
 
 type CheckoutState = "loading" | "ready" | "returning" | "error";
 
@@ -53,10 +58,16 @@ export default function PaymentCheckoutScreen() {
   const appStateRef = useRef<AppStateStatus>(AppState.currentState);
   const leftForExternalPaymentRef = useRef(false);
   const hasNavigatedRef = useRef(false);
-  const { bookingId, orderId: orderIdParam } = useLocalSearchParams<{
+  const { bookingId, storageRequestId, orderId: orderIdParam } = useLocalSearchParams<{
     bookingId?: string;
+    storageRequestId?: string;
     orderId?: string;
   }>();
+
+  const session = useMemo(
+    () => parsePaymentSession({ bookingId, storageRequestId }),
+    [bookingId, storageRequestId],
+  );
 
   const [checkoutState, setCheckoutState] = useState<CheckoutState>("loading");
   const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
@@ -72,36 +83,59 @@ export default function PaymentCheckoutScreen() {
   );
 
   const navigateToResult = useCallback(
-    (status: PaymentStatus, booking: Pick<Booking, "id" | "orderId">) => {
+    (
+      status: PaymentStatus,
+      activeSession: PaymentSessionRef,
+      nextOrderId: string,
+    ) => {
       if (hasNavigatedRef.current) return;
       hasNavigatedRef.current = true;
       router.replace({
         pathname: "/payment/result",
-        params: {
-          bookingId: booking.id,
-          orderId: booking.orderId,
-          status,
-        },
+        params: buildPaymentResultParams(activeSession, status, {
+          orderId: nextOrderId,
+          paymentUrl,
+          totalPaise: 0,
+        }),
       });
     },
-    [],
+    [paymentUrl],
   );
 
-  const syncBookingState = useCallback(
-    async (showAbandonedOnPending = false) => {
-      if (!bookingId) return;
-
+  const syncPaymentState = useCallback(
+    async (activeSession: PaymentSessionRef, showAbandonedOnPending = false) => {
       try {
-        const { status, booking } = await checkBookingPaymentOnce(bookingId);
-        if (booking.orderId) {
-          setOrderId(booking.orderId);
+        const result = await checkPaymentOnce(activeSession);
+        const snapshot = toPaymentSessionSnapshot(result);
+
+        if (snapshot.orderId) {
+          setOrderId(snapshot.orderId);
         }
-        if (booking.paymentUrl) {
-          setPaymentUrl(booking.paymentUrl);
+        if (snapshot.paymentUrl) {
+          setPaymentUrl(snapshot.paymentUrl);
         }
 
-        if (isTerminalStatus(status)) {
-          navigateToResult(status, booking);
+        if (isTerminalStatus(result.status)) {
+          if (result.status === "FAILED") {
+            const confirmed = await confirmFailedPaymentForSession(activeSession);
+            const confirmedSnapshot = toPaymentSessionSnapshot(confirmed);
+
+            if (confirmed.status === "PAID") {
+              navigateToResult("PAID", activeSession, confirmedSnapshot.orderId);
+              return;
+            }
+            if (confirmed.status === "FAILED") {
+              navigateToResult("FAILED", activeSession, confirmedSnapshot.orderId);
+              return;
+            }
+            if (showAbandonedOnPending) {
+              setCheckoutState("ready");
+              setInfoMessage(t("paymentCheckout.notCompletedBody"));
+            }
+            return;
+          }
+
+          navigateToResult(result.status, activeSession, snapshot.orderId);
           return;
         }
 
@@ -118,43 +152,45 @@ export default function PaymentCheckoutScreen() {
         setInfoMessage(t("paymentCheckout.loadError"));
       }
     },
-    [bookingId, navigateToResult, t],
+    [navigateToResult, t],
   );
 
   useEffect(() => {
-    if (!bookingId) {
+    if (!session) {
       setCheckoutState("error");
-      setInfoMessage(t("paymentCheckout.missingBooking"));
+      setInfoMessage(t("paymentCheckout.missingSession"));
       return;
     }
 
-    void syncBookingState();
-  }, [bookingId, syncBookingState, t]);
+    void syncPaymentState(session);
+  }, [session, syncPaymentState, t]);
 
   useEffect(() => {
-    if (!bookingId) return;
+    if (!session) return;
 
-    const stop = startPaymentPoller(bookingId, {
-      onUpdate: (booking, status) => {
-        if (booking.orderId) {
-          setOrderId(booking.orderId);
+    const stop = startPaymentPollerForSession(session, {
+      onUpdate: (snapshot, status) => {
+        if (snapshot.orderId) {
+          setOrderId(snapshot.orderId);
         }
-        if (booking.paymentUrl) {
-          setPaymentUrl(booking.paymentUrl);
+        if (snapshot.paymentUrl) {
+          setPaymentUrl(snapshot.paymentUrl);
         }
         if (!isTerminalStatus(status) && checkoutState === "loading") {
           setCheckoutState("ready");
         }
       },
-      onTerminal: ({ status, booking }) => {
-        navigateToResult(status, booking);
+      onTerminal: (result) => {
+        navigateToResult(result.status, session, toPaymentSessionSnapshot(result).orderId);
       },
     });
 
     return stop;
-  }, [bookingId, checkoutState, navigateToResult]);
+  }, [checkoutState, navigateToResult, orderId, session]);
 
   useEffect(() => {
+    if (!session) return;
+
     const handleAppState = (nextState: AppStateStatus) => {
       const previous = appStateRef.current;
       appStateRef.current = nextState;
@@ -171,12 +207,12 @@ export default function PaymentCheckoutScreen() {
       leftForExternalPaymentRef.current = false;
       setCheckoutState("returning");
       setInfoMessage(t("paymentCheckout.returningBody"));
-      void syncBookingState(true);
+      void syncPaymentState(session, true);
     };
 
     const subscription = AppState.addEventListener("change", handleAppState);
     return () => subscription.remove();
-  }, [syncBookingState, t]);
+  }, [session, syncPaymentState, t]);
 
   const handleShouldStartLoad = useCallback(
     (request: ShouldStartLoadRequest) => {
@@ -186,18 +222,42 @@ export default function PaymentCheckoutScreen() {
         const parsed = ExpoLinking.parse(url);
         const status = parsed.queryParams?.status;
         const deepLinkBookingId = parsed.queryParams?.bookingId;
+        const deepLinkStorageRequestId = parsed.queryParams?.storageRequestId;
         const deepLinkOrderId = parsed.queryParams?.orderId;
+
+        const deepLinkSession = parsePaymentSession({
+          bookingId:
+            typeof deepLinkBookingId === "string" ? deepLinkBookingId : undefined,
+          storageRequestId:
+            typeof deepLinkStorageRequestId === "string"
+              ? deepLinkStorageRequestId
+              : undefined,
+        });
 
         if (
           typeof status === "string" &&
           (status === "PAID" || status === "FAILED") &&
-          typeof deepLinkBookingId === "string"
+          deepLinkSession
         ) {
-          navigateToResult(status, {
-            id: deepLinkBookingId,
-            orderId:
-              typeof deepLinkOrderId === "string" ? deepLinkOrderId : orderId,
-          });
+          void (async () => {
+            const verified =
+              status === "FAILED"
+                ? await confirmFailedPaymentForSession(deepLinkSession)
+                : await checkPaymentOnce(deepLinkSession);
+
+            if (!isTerminalStatus(verified.status)) {
+              return;
+            }
+
+            const verifiedOrderId = toPaymentSessionSnapshot(verified).orderId;
+
+            navigateToResult(
+              verified.status,
+              deepLinkSession,
+              verifiedOrderId ||
+                (typeof deepLinkOrderId === "string" ? deepLinkOrderId : orderId),
+            );
+          })();
         }
         return false;
       }
@@ -230,17 +290,22 @@ export default function PaymentCheckoutScreen() {
   );
 
   function handleRetryLoad() {
+    if (!session) return;
     setCheckoutState("loading");
     setInfoMessage(null);
     webViewRef.current?.reload();
-    void syncBookingState();
+    void syncPaymentState(session);
   }
 
   function handleGoResult() {
-    if (!bookingId) return;
+    if (!session) return;
     router.replace({
       pathname: "/payment/result",
-      params: { bookingId, orderId },
+      params: buildPaymentResultParams(session, "PENDING", {
+        orderId,
+        paymentUrl,
+        totalPaise: 0,
+      }),
     });
   }
 

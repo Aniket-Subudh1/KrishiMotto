@@ -184,6 +184,7 @@ export default function SignInScreen() {
 
     if (!isValidOtp(otp)) {
       setFormError(t("signIn.errors.otp"));
+      resetOtpInput();
       bumpSlideReset();
       return;
     }

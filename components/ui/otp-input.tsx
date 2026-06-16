@@ -49,10 +49,19 @@ export function OtpInput({
   autoFocus = true,
 }: OtpInputProps) {
   const inputRef = useRef<TextInput>(null);
+  const prevErrorRef = useRef(error);
   const [focused, setFocused] = useState(false);
+  const [inputInstanceKey, setInputInstanceKey] = useState(0);
   const scrollField = useRegisterScrollField(fieldId ?? '__unused_otp__');
   const enableScroll = Boolean(fieldId);
   const digits = value.padEnd(length, ' ').slice(0, length).split('');
+
+  function remountInput() {
+    setInputInstanceKey((key) => key + 1);
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 100);
+  }
 
   useEffect(() => {
     if (!autoFocus) {
@@ -71,12 +80,23 @@ export function OtpInput({
       return;
     }
 
-    const timer = setTimeout(() => {
-      inputRef.current?.focus();
-    }, 100);
-
-    return () => clearTimeout(timer);
+    remountInput();
   }, [resetKey]);
+
+  useEffect(() => {
+    const previousError = prevErrorRef.current;
+    prevErrorRef.current = error;
+
+    if (!error || error === previousError) {
+      return;
+    }
+
+    if (value) {
+      onChange('');
+    }
+
+    remountInput();
+  }, [error, value, onChange]);
 
   function handleChange(text: string) {
     onChange(text.replace(/\D/g, '').slice(0, length));
@@ -135,6 +155,7 @@ export function OtpInput({
       {boxes}
 
       <TextInput
+        key={`otp-input-${inputInstanceKey}`}
         ref={inputRef}
         value={value}
         onChangeText={handleChange}

@@ -1,7 +1,7 @@
-import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { Pressable, View } from 'react-native';
 
+import { AppIcon } from '@/components/ui/app-icon';
 import { Text } from '@/components/ui/text';
 import { getServiceIconStyle } from '@/features/home/constants/service-icons';
 import { SERVICE_ROUTES } from '@/features/home/utils/catalog-display';
@@ -25,14 +25,17 @@ export function FeaturedServiceCard({ service, t }: FeaturedServiceCardProps) {
           router.push(href);
         }
       }}
-      className="mr-3 w-[220px] overflow-hidden rounded-2xl border border-border bg-white"
-      style={{
+      className="mr-3 w-[220px] overflow-hidden rounded-2xl bg-white"
+      style={({ pressed }) => ({
         shadowColor: Palette.indigo,
         shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.08,
+        shadowOpacity: pressed ? 0.06 : 0.1,
         shadowRadius: 10,
         elevation: 4,
-      }}
+        borderWidth: 1,
+        borderColor: 'rgba(226, 232, 240, 0.8)',
+        transform: [{ scale: pressed ? 0.98 : 1 }],
+      })}
     >
       <View className="p-4">
         <View className="flex-row items-start justify-between gap-3">
@@ -40,7 +43,7 @@ export function FeaturedServiceCard({ service, t }: FeaturedServiceCardProps) {
             className="h-11 w-11 items-center justify-center rounded-2xl"
             style={{ backgroundColor: iconStyle.iconBg }}
           >
-            <Ionicons name={iconStyle.icon} size={22} color={iconStyle.iconColor} />
+            <AppIcon name={iconStyle.icon} size={24} color={iconStyle.iconColor} />
           </View>
           <View
             className="rounded-full px-2.5 py-1"
@@ -59,11 +62,11 @@ export function FeaturedServiceCard({ service, t }: FeaturedServiceCardProps) {
           {translateServiceDescription(t, service.iconType, service.description)}
         </Text>
 
-        <View className="mt-4 flex-row items-center gap-1">
+        <View className="mt-4 flex-row items-center gap-1.5">
           <Text className="text-[13px] font-semibold text-india-green">
             {t('home.tools.bookNow')}
           </Text>
-          <Ionicons name="arrow-forward" size={14} color={Palette.indiaGreen} />
+          <AppIcon name="arrow-right" size={16} color={Palette.indiaGreen} />
         </View>
       </View>
     </Pressable>

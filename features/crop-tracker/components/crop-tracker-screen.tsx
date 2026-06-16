@@ -13,6 +13,7 @@ import { AppBarGradient, Palette } from '@/constants/theme';
 import { useAppLocale } from '@/hooks/use-app-locale';
 import { translateCropType, translateStorageStatus } from '@/lib/booking-i18n';
 import { formatPaise } from '@/lib/currency';
+import { getStorageRoute } from '@/features/home/utils/storage-display';
 import { useAuthStore } from '@/stores/auth.store';
 import type { CropType } from '@/types/booking';
 
@@ -24,6 +25,7 @@ export function CropTrackerScreen() {
     requests,
     latestRequest,
     trackableRequest,
+    pendingPaymentRequest,
     hasStorageRequest,
     canTrack,
     isLoading,
@@ -96,6 +98,26 @@ export function CropTrackerScreen() {
             </View>
             <Button onPress={() => router.push('/services/storage')}>
               {t('cropTracker.optStorage')}
+            </Button>
+          </View>
+        ) : pendingPaymentRequest ? (
+          <View className="gap-5">
+            <View className="items-center rounded-2xl border border-dashed border-border bg-surface px-5 py-10">
+              <View className="mb-4 h-14 w-14 items-center justify-center rounded-full bg-marigold/15">
+                <Ionicons name="card-outline" size={28} color={Palette.marigold} />
+              </View>
+              <Text className="text-center text-[18px] font-bold text-indigo">
+                {t('cropTracker.paymentPendingTitle')}
+              </Text>
+              <Text className="mt-2 text-center text-[14px] leading-5 text-muted">
+                {t('cropTracker.paymentPendingBody')}
+              </Text>
+              <Text className="mt-4 text-[13px] font-semibold text-india-green">
+                {pendingPaymentRequest.requestNumber}
+              </Text>
+            </View>
+            <Button onPress={() => router.push(getStorageRoute(pendingPaymentRequest))}>
+              {t('cropTracker.completePayment')}
             </Button>
           </View>
         ) : canTrack && trackableRequest ? (

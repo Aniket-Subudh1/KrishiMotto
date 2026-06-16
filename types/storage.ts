@@ -1,10 +1,14 @@
+import type { PaymentStatus } from '@/types/booking';
+
 export const STORAGE_REQUEST_STATUSES = [
+  'PENDING_PAYMENT',
   'SUBMITTED',
   'ACCEPTED',
   'PAYOUT_PAID',
   'PICKED_UP',
   'IN_STORAGE',
   'RELEASED',
+  'CANCELLED',
 ] as const;
 
 export type StorageRequestStatus = (typeof STORAGE_REQUEST_STATUSES)[number];
@@ -23,7 +27,6 @@ export type StorageDetails = {
 
 export type CreateStorageRequestPayload = {
   warehouseId: string;
-  bankDetails: BankDetails;
   details: StorageDetails;
   query?: string;
 };
@@ -45,6 +48,7 @@ export type StorageStatusTimelineEntry = {
 export type StorageRequest = {
   id: string;
   requestNumber: string;
+  orderId?: string;
   farmerId: string;
   warehouseId: string;
   cropType: string;
@@ -53,6 +57,9 @@ export type StorageRequest = {
   bankDetails: BankDetails;
   valuationPaise: number;
   pricing: StoragePricing;
+  paymentStatus?: PaymentStatus;
+  txnId?: string | null;
+  paymentUrl?: string | null;
   status: StorageRequestStatus;
   statusTimeline: StorageStatusTimelineEntry[];
   query?: string;

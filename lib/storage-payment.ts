@@ -2,8 +2,9 @@ import { isAxiosError } from "axios";
 import * as WebBrowser from "expo-web-browser";
 import { AppState, type AppStateStatus } from "react-native";
 
-import { bookingService } from "@/services/booking.service";
-import type { Booking, BookingStatus, PaymentStatus } from "@/types/booking";
+import { storageRequestService } from "@/services/storage-request.service";
+import type { PaymentStatus } from "@/types/booking";
+import type { StorageRequest, StorageRequestStatus } from "@/types/storage";
 
 const POLL_INTERVAL_MS = 4000;
 const RATE_LIMIT_BACKOFF_MS = 30_000;
@@ -11,13 +12,13 @@ const MAX_POLL_MS = 10 * 60 * 1000;
 const FAILED_CONFIRM_ATTEMPTS = 3;
 const FAILED_CONFIRM_INTERVAL_MS = 2000;
 
-const PAID_BOOKING_STATUSES: readonly BookingStatus[] = [
-  "PAID",
-  "OPEN",
+const PAID_STORAGE_STATUSES: readonly StorageRequestStatus[] = [
+  "SUBMITTED",
   "ACCEPTED",
-  "TRAVELLING",
-  "IN_PROGRESS",
-  "COMPLETED",
+  "PAYOUT_PAID",
+  "PICKED_UP",
+  "IN_STORAGE",
+  "RELEASED",
 ] as const;
 
 async function dismissCheckoutBrowser() {
@@ -28,21 +29,28 @@ async function dismissCheckoutBrowser() {
   }
 }
 
-async function fetchBooking(bookingId: string): Promise<Booking> {
-  const { data } = await bookingService.getBooking(bookingId);
+async function fetchStorageRequest(requestId: string): Promise<StorageRequest> {
+  const { data } = await storageRequestService.get(requestId);
   return data.data;
 }
 
-function createFallbackBooking(bookingId: string): Booking {
+function createFallbackStorageRequest(requestId: string): StorageRequest {
   const now = new Date().toISOString();
   return {
-    id: bookingId,
-    orderId: "",
-    serviceIconType: "CROP_CALENDAR",
-    serviceTitle: "Crop Calendar",
-    paymentStatus: "PENDING",
-    bookingStatus: "PENDING_PAYMENT",
+    id: requestId,
+    requestNumber: "",
+    farmerId: "",
+    warehouseId: "",
+    cropType: "",
+    quantityKg: 0,
     details: {},
+    bankDetails: {
+      accountHolder: "",
+      accountNumber: "",
+      ifsc: "",
+      bankName: "",
+    },
+    valuationPaise: 0,
     pricing: {
       basePaise: 0,
       areaUnits: 0,
@@ -50,57 +58,59 @@ function createFallbackBooking(bookingId: string): Booking {
       totalPaise: 0,
       computedAt: now,
     },
+    paymentStatus: "PENDING",
+    status: "PENDING_PAYMENT",
     statusTimeline: [],
     createdAt: now,
     updatedAt: now,
   };
 }
 
-/** Infer payment outcome from booking fields because gateway callbacks can lag. */
-export function resolvePaymentStatus(booking: Booking): PaymentStatus {
-  if (booking.paymentStatus === "PAID" || booking.paymentStatus === "FAILED") {
-    return booking.paymentStatus;
+/** Infer payment outcome from storage request fields because gateway callbacks can lag. */
+export function resolveStoragePaymentStatus(request: StorageRequest): PaymentStatus {
+  if (request.paymentStatus === "PAID" || request.paymentStatus === "FAILED") {
+    return request.paymentStatus;
   }
 
-  if (PAID_BOOKING_STATUSES.includes(booking.bookingStatus)) {
+  if (PAID_STORAGE_STATUSES.includes(request.status)) {
     return "PAID";
   }
 
-  if (booking.bookingStatus === "CANCELLED") {
+  if (request.status === "CANCELLED") {
     return "FAILED";
   }
 
-  return booking.paymentStatus;
+  return request.paymentStatus ?? "PENDING";
 }
 
 function isTerminalStatus(status: PaymentStatus): boolean {
   return status === "PAID" || status === "FAILED";
 }
 
-export type PaymentCheckoutResult = {
+export type StoragePaymentCheckoutResult = {
   status: PaymentStatus;
-  booking: Booking;
+  request: StorageRequest;
 };
 
-export async function checkBookingPaymentOnce(
-  bookingId: string,
-): Promise<PaymentCheckoutResult> {
-  const booking = await fetchBooking(bookingId);
-  const status = resolvePaymentStatus(booking);
+export async function checkStoragePaymentOnce(
+  requestId: string,
+): Promise<StoragePaymentCheckoutResult> {
+  const request = await fetchStorageRequest(requestId);
+  const status = resolveStoragePaymentStatus(request);
   if (isTerminalStatus(status)) {
     await dismissCheckoutBrowser();
   }
-  return { status, booking };
+  return { status, request };
 }
 
 /**
  * Gateway callbacks and WebView redirects can briefly report FAILED while the
  * UPI app is still settling. Re-check before treating failure as final.
  */
-export async function confirmFailedPayment(
-  bookingId: string,
-): Promise<PaymentCheckoutResult> {
-  let lastResult: PaymentCheckoutResult | null = null;
+export async function confirmFailedStoragePayment(
+  requestId: string,
+): Promise<StoragePaymentCheckoutResult> {
+  let lastResult: StoragePaymentCheckoutResult | null = null;
 
   for (let attempt = 0; attempt < FAILED_CONFIRM_ATTEMPTS; attempt++) {
     if (attempt > 0) {
@@ -109,7 +119,7 @@ export async function confirmFailedPayment(
       );
     }
 
-    lastResult = await checkBookingPaymentOnce(bookingId);
+    lastResult = await checkStoragePaymentOnce(requestId);
     if (lastResult.status === "PAID") {
       return lastResult;
     }
@@ -122,22 +132,22 @@ export async function confirmFailedPayment(
 }
 
 type PollerCallbacks = {
-  onUpdate: (booking: Booking, status: PaymentStatus) => void;
-  onTerminal: (result: PaymentCheckoutResult) => void;
+  onUpdate: (request: StorageRequest, status: PaymentStatus) => void;
+  onTerminal: (result: StoragePaymentCheckoutResult) => void;
 };
 
 /**
- * Poll booking status until terminal. Also re-checks immediately when the app
- * returns from PhonePe / another UPI app.
+ * Poll storage request status until terminal. Also re-checks immediately when
+ * the app returns from PhonePe / another UPI app.
  */
-export function startPaymentPoller(
-  bookingId: string,
+export function startStoragePaymentPoller(
+  requestId: string,
   callbacks: PollerCallbacks,
 ): () => void {
   const startedAt = Date.now();
   let stopped = false;
   let timer: ReturnType<typeof setTimeout> | null = null;
-  let lastBooking: Booking | null = null;
+  let lastRequest: StorageRequest | null = null;
   let lastStatus: PaymentStatus = "PENDING";
   let inFlight = false;
   let nextDelayMs = POLL_INTERVAL_MS;
@@ -165,29 +175,29 @@ export function startPaymentPoller(
         stop();
         callbacks.onTerminal({
           status: lastStatus,
-          booking: lastBooking ?? createFallbackBooking(bookingId),
+          request: lastRequest ?? createFallbackStorageRequest(requestId),
         });
         return;
       }
 
-      const booking = await fetchBooking(bookingId);
-      const status = resolvePaymentStatus(booking);
-      lastBooking = booking;
+      const request = await fetchStorageRequest(requestId);
+      const status = resolveStoragePaymentStatus(request);
+      lastRequest = request;
       lastStatus = status;
-      callbacks.onUpdate(booking, status);
+      callbacks.onUpdate(request, status);
 
       if (status === "PAID") {
         stop();
         await dismissCheckoutBrowser();
-        callbacks.onTerminal({ status, booking });
+        callbacks.onTerminal({ status, request });
         return;
       }
 
       if (status === "FAILED") {
-        const confirmed = await confirmFailedPayment(bookingId);
-        lastBooking = confirmed.booking;
+        const confirmed = await confirmFailedStoragePayment(requestId);
+        lastRequest = confirmed.request;
         lastStatus = confirmed.status;
-        callbacks.onUpdate(confirmed.booking, confirmed.status);
+        callbacks.onUpdate(confirmed.request, confirmed.status);
 
         if (confirmed.status === "PAID") {
           stop();
@@ -233,17 +243,17 @@ export function startPaymentPoller(
   };
 }
 
-export function pollBookingPayment(
-  bookingId: string,
-  onUpdate?: (booking: Booking) => void,
-): Promise<PaymentCheckoutResult> {
+export function pollStoragePayment(
+  requestId: string,
+  onUpdate?: (request: StorageRequest) => void,
+): Promise<StoragePaymentCheckoutResult> {
   return new Promise((resolve) => {
     let settled = false;
     let stopPoller = () => {};
 
-    stopPoller = startPaymentPoller(bookingId, {
-      onUpdate: (booking) => {
-        onUpdate?.(booking);
+    stopPoller = startStoragePaymentPoller(requestId, {
+      onUpdate: (request) => {
+        onUpdate?.(request);
       },
       onTerminal: (result) => {
         if (settled) return;

@@ -511,7 +511,7 @@
     }
   },
   "common": {
-    "back": "वापस",
+    "back": "Back",
     "cancel": "रद्द करें",
     "done": "हो गया",
     "selectDate": "तारीख चुनें",
@@ -590,6 +590,16 @@
       "completed": "Completed",
       "cancelled": "Cancelled"
     },
+    "storageStatuses": {
+      "PENDING_PAYMENT": "भुगतान लंबित",
+      "SUBMITTED": "अनुरोध जमा",
+      "ACCEPTED": "गोदाम ने स्वीकार किया",
+      "PAYOUT_PAID": "मूल्यांकन भुगतान",
+      "PICKED_UP": "फसल उठाई गई",
+      "IN_STORAGE": "भंडारण में",
+      "RELEASED": "रिलीज़",
+      "CANCELLED": "रद्द"
+    },
     "servicePrices": {
       "CROP_CALENDAR": "₹199/crop",
       "DRONE_SPRAY": "₹399/acre",
@@ -597,7 +607,7 @@
       "SOIL_HEALTH": "₹4,999/ac",
       "EXPERT_VISIT": "₹499+",
       "PPACS_CREDIT": "Loans",
-      "STORAGE": "₹6,499",
+      "STORAGE": "₹65/kg",
       "CROP_TRACKER": "Live",
       "IRRIGATION": "Soon",
       "FERTILIZER": "Soon",
@@ -607,6 +617,24 @@
       "HARVEST": "Soon",
       "INSURANCE": "Soon",
       "MARKET": "Live"
+    },
+    "serviceDescriptions": {
+      "CROP_CALENDAR": "Season-long sowing, irrigation, and fertilizer plan.",
+      "DRONE_SPRAY": "Fast, even crop spraying across your field.",
+      "CROP_HEALTH": "Satellite and field checks for crop stress.",
+      "SOIL_HEALTH": "Lab soil test with nutrient recommendations.",
+      "EXPERT_VISIT": "On-farm visit from a certified agronomist.",
+      "PPACS_CREDIT": "Input and equipment credit through PPACS.",
+      "STORAGE": "Warehouse storage for your harvest.",
+      "CROP_TRACKER": "Track crop growth and field activity.",
+      "IRRIGATION": "Smart irrigation scheduling for your fields.",
+      "FERTILIZER": "Fertilizer planning based on soil needs.",
+      "PEST_CONTROL": "Pest scouting and treatment plans.",
+      "WEATHER": "Hyperlocal weather alerts for your farm.",
+      "SEEDS": "Quality seed sourcing and delivery.",
+      "HARVEST": "Digital harvest identification and records.",
+      "INSURANCE": "Crop insurance quotes and claims.",
+      "MARKET": "Live mandi prices for your crops."
     }
   },
   "cropCalendar": {
@@ -876,6 +904,7 @@
     "loadingBody": "ब्राउज़र में भुगतान पूरा करें। गेटवे अपडेट होते ही हम स्वचालित रूप से पुष्टि करेंगे।",
     "successTitle": "भुगतान सफल",
     "successBody": "आपकी बुकिंग पुष्टि हो गई। विशेषज्ञ जल्द ही आपकी सेवा तैयार करेंगे।",
+    "storageSuccessBody": "भंडारण शुल्क भुगतान हो गया। आपका अनुरोध जमा हो गया और गोदाम उठाने की व्यवस्था करेगा।",
     "failedTitle": "भुगतान पुष्टि नहीं हुआ",
     "failedBody": "भुगतान की पुष्टि नहीं हो सकी। अगर पैसे कट गए हैं तो ऑर्डर संदर्भ के साथ सहायता से संपर्क करें।",
     "abandonedTitle": "भुगतान पूरा नहीं हुआ",
@@ -884,6 +913,7 @@
     "pendingBody": "हम अभी भी गेटवे से भुगतान की पुष्टि का इंतज़ार कर रहे हैं।",
     "orderRef": "ऑर्डर {{orderId}}",
     "goHome": "होम पर जाएँ",
+    "openCropTracker": "फसल ट्रैकर खोलें",
     "continuePayment": "भुगतान जारी रखें",
     "retryCheck": "फिर जाँचें"
   },
@@ -901,7 +931,89 @@
     "loadError": "भुगतान पेज लोड नहीं हो सका। कृपया फिर लोड करें।",
     "httpError": "भुगतान पेज से त्रुटि आई। कृपया फिर लोड करें।",
     "missingBooking": "भुगतान सत्र मौजूद नहीं है। कृपया बुकिंग फिर से शुरू करें।",
+    "missingSession": "भुगतान सत्र मौजूद नहीं है। कृपया अनुरोध फिर से शुरू करें।",
     "checkStatus": "भुगतान स्थिति जाँचें",
     "reloadPage": "भुगतान पेज फिर लोड करें"
+  },
+  "storage": {
+    "title": "फसल भंडारण",
+    "subtitle": "₹65 प्रति किग्रा गोदाम भंडारण",
+    "stepOf": "चरण {{current}} / {{total}}",
+    "steps": {
+      "warehouse": "गोदाम",
+      "storage": "फसल विवरण",
+      "review": "समीक्षा"
+    },
+    "stepHints": {
+      "warehouse": "अपने खेत के पास लाइसेंस प्राप्त गोदाम चुनें",
+      "storage": "फसल का प्रकार और मात्रा दर्ज करें, फिर भंडारण शुल्क का भुगतान करें",
+      "review": "विवरण की पुष्टि करें और अनुरोध भेजने के लिए भंडारण शुल्क का भुगतान करें"
+    },
+    "payoutNotice": "गोदाम स्थान आरक्षित करने के लिए प्रति किग्रा भंडारण शुल्क का भुगतान करें। फसल मूल्यांकन का भुगतान गोदाम द्वारा सत्यापन के बाद आपके बैंक खाते में किया जाता है।",
+    "back": "वापस",
+    "continue": "आगे बढ़ें",
+    "done": "हो गया",
+    "submit": "भुगतान करें और अनुरोध भेजें",
+    "submitting": "भेजा जा रहा है…",
+    "paying": "चेकआउट खुल रहा है…",
+    "submitError": "भंडारण अनुरोध भेजा नहीं जा सका। कृपया फिर कोशिश करें।",
+    "successTitle": "भंडारण अनुरोध जमा",
+    "successBody": "आपका फसल भंडारण अनुरोध दर्ज हो गया। गोदाम मात्रा सत्यापित करके उठाने की व्यवस्था करेगा।",
+    "requestRef": "संदर्भ {{requestNumber}}",
+    "openTracker": "फसल ट्रैकर खोलें",
+    "nextStepsTitle": "आगे क्या होगा",
+    "nextSteps": {
+      "submitted": "गोदाम आपके अनुरोध और फसल विवरण की समीक्षा करेगा",
+      "pickup": "स्वीकृति के बाद उठाने का समय तय होगा",
+      "payout": "मूल्यांकन आपके बैंक खाते में भेजा जाएगा",
+      "tracker": "गोदाम में भंडारण होने पर लाइव ट्रैकर खुलेगा"
+    },
+    "warehouseLabel": "गोदाम",
+    "warehouseHint": "पास के गोदामों की तुलना के लिए स्वाइप करें",
+    "cropType": "फसल का प्रकार",
+    "quantityKg": "मात्रा (किग्रा)",
+    "quantityKgHint": "न्यूनतम 1 किग्रा। भंडारण शुल्क प्रति किग्रा लिया जाता है।",
+    "storageFeeEstimate": "अनुमानित भंडारण शुल्क",
+    "storageFeePerKg": "{{kg}} किग्रा प्रति-किग्रा दर पर",
+    "notes": "टिप्पणी (वैकल्पिक)",
+    "notesPlaceholder": "उठाने का समय, नमी, ग्रेड…",
+    "notesHint": "गोदाम को तैयारी में मदद करता है",
+    "reviewTitle": "अनुरोध सारांश",
+    "reviewDisclaimer": "अंतिम मूल्यांकन गोदाम में ग्रेडिंग के बाद बदल सकता है। भुगतान केवल भौतिक सत्यापन के बाद। भंडारण शुल्क UPI से अग्रिम लिया जाता है।",
+    "errors": {
+      "warehouseRequired": "गोदाम चुनें।",
+      "cropType": "फसल का प्रकार चुनें।",
+      "quantityKg": "मान्य मात्रा (किग्रा) दर्ज करें।"
+    }
+  },
+  "cropTracker": {
+    "title": "फसल ट्रैकर",
+    "subtitle": "भंडारण वाली फसल की लाइव स्थिति",
+    "lockedTitle": "भंडारण आवश्यक",
+    "lockedBody": "फसल ट्रैकर तभी काम करता है जब आप गोदाम भंडारण चुनें। लाइव तापमान, नमी और गुणवत्ता निगरानी के लिए भंडारण अनुरोध भेजें।",
+    "optStorage": "भंडारण चुनें",
+    "tracking": "अभी ट्रैक हो रहा है",
+    "pendingTitle": "भंडारण इनटेक की प्रतीक्षा",
+    "pendingBody": "आपका भंडारण अनुरोध प्रगति में है। गोदाम में भंडारण होने पर लाइव IoT ट्रैकिंग शुरू होगी।",
+    "paymentPendingTitle": "भंडारण शुल्क लंबित",
+    "paymentPendingBody": "अपना भंडारण अनुरोध जमा करने और फसल ट्रैकिंग खोलने के लिए भुगतान पूरा करें।",
+    "completePayment": "भुगतान पूरा करें",
+    "statusTimeline": "अनुरोध प्रगति",
+    "otherRequests": "आपके खाते पर {{count}} और भंडारण अनुरोध",
+    "addStorage": "एक और भंडारण अनुरोध भेजें",
+    "loadingDashboard": "लाइव रीडिंग लोड हो रही है…",
+    "dashboardError": "लाइव ट्रैकर डेटा लोड नहीं हो सका। रिफ्रेश करें।",
+    "liveStatus": "भंडारण स्थिति",
+    "lastUpdated": "अपडेट {{time}}",
+    "sensors": {
+      "temperature": "तापमान",
+      "humidity": "नमी",
+      "co2": "CO₂"
+    },
+    "aiForecast": "AI गुणवत्ता पूर्वानुमान",
+    "spoilageRisk": "खराब होने का जोखिम",
+    "qualityGrade": "गुणवत्ता ग्रेड",
+    "forecastWindow": "पूर्वानुमान अवधि",
+    "valuation": "संदर्भ मूल्यांकन"
   }
 }

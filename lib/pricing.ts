@@ -30,3 +30,10 @@ export function computePer100kgPricing(quantityKg: number, basePricePaise: numbe
   const basePaise = basePricePaise * areaUnits;
   return { areaUnits, basePaise, transportPaise: 0, totalPaise: basePaise };
 }
+
+/** Mirrors backend PerKgStrategy — billed per kg, min 1 kg. */
+export function computePerKgPricing(quantityKg: number, basePricePaise: number) {
+  const areaUnits = Math.max(1, Math.ceil(quantityKg));
+  const basePaise = basePricePaise * areaUnits;
+  return { areaUnits, basePaise, transportPaise: 0, totalPaise: basePaise };
+}

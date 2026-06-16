@@ -243,6 +243,7 @@ export default function FarmerSignUpScreen() {
 
     if (!isValidOtp(otp)) {
       setFormError(t('farmerSignUp.errors.otp'));
+      resetOtpInput();
       bumpSlideReset();
       return;
     }

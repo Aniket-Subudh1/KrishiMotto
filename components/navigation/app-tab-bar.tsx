@@ -1,20 +1,17 @@
-import { Ionicons } from '@expo/vector-icons';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { AppIcon, type AppIconName } from '@/components/ui/app-icon';
 import { Text } from '@/components/ui/text';
 import { Palette } from '@/constants/theme';
 
-const TAB_ICONS: Record<
-  string,
-  { icon: keyof typeof Ionicons.glyphMap; iconFocused: keyof typeof Ionicons.glyphMap }
-> = {
-  index: { icon: 'home-outline', iconFocused: 'home' },
-  land: { icon: 'map-outline', iconFocused: 'map' },
-  explore: { icon: 'grid-outline', iconFocused: 'grid' },
-  profile: { icon: 'person-outline', iconFocused: 'person' },
+const TAB_ICONS: Record<string, { icon: AppIconName; iconFocused: AppIconName }> = {
+  index: { icon: 'home-variant-outline', iconFocused: 'home-variant' },
+  land: { icon: 'map-marker-radius-outline', iconFocused: 'map-marker-radius' },
+  explore: { icon: 'view-grid-outline', iconFocused: 'view-grid' },
+  profile: { icon: 'account-circle-outline', iconFocused: 'account-circle' },
 };
 
 export function AppTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
@@ -25,10 +22,10 @@ export function AppTabBar({ state, descriptors, navigation }: BottomTabBarProps)
       className="bg-white"
       style={{
         shadowColor: Palette.indigo,
-        shadowOffset: { width: 0, height: -2 },
-        shadowOpacity: 0.06,
-        shadowRadius: 8,
-        elevation: 8,
+        shadowOffset: { width: 0, height: -4 },
+        shadowOpacity: 0.08,
+        shadowRadius: 12,
+        elevation: 12,
       }}
     >
       <View className="h-[3px] overflow-hidden">
@@ -40,7 +37,7 @@ export function AppTabBar({ state, descriptors, navigation }: BottomTabBarProps)
         />
       </View>
 
-      <View className="h-[52px] flex-row items-stretch px-1" style={{ paddingBottom: 0 }}>
+      <View className="h-[56px] flex-row items-stretch px-1" style={{ paddingBottom: 0 }}>
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
           const isFocused = state.index === index;
@@ -69,18 +66,21 @@ export function AppTabBar({ state, descriptors, navigation }: BottomTabBarProps)
               onPress={onPress}
               className="flex-1 items-center justify-center"
             >
-              <View className="items-center justify-center gap-0.5">
+              <View className="items-center justify-center gap-1">
                 <View
-                  className="h-7 w-10 items-center justify-center rounded-full"
-                  style={isFocused ? { backgroundColor: 'rgba(70, 150, 47, 0.1)' } : undefined}
+                  className="h-8 w-11 items-center justify-center rounded-2xl"
+                  style={isFocused ? { backgroundColor: 'rgba(70, 150, 47, 0.12)' } : undefined}
                 >
-                  <Ionicons
+                  <AppIcon
                     name={isFocused ? icons.iconFocused : icons.icon}
-                    size={20}
+                    size={22}
                     color={color}
                   />
                 </View>
-                <Text className="text-[10px] font-condensed-semibold" style={{ color }}>
+                <Text
+                  className="text-[10px] font-condensed-semibold"
+                  style={{ color, fontWeight: isFocused ? '700' : '500' }}
+                >
                   {label}
                 </Text>
               </View>

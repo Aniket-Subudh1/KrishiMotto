@@ -319,6 +319,7 @@ export default function ExpertSignUpScreen() {
 
     if (!isValidOtp(otp)) {
       setFormError(t('expertSignUp.errors.otp'));
+      resetOtpInput();
       bumpSlideReset();
       return;
     }

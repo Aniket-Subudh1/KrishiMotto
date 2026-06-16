@@ -10,6 +10,7 @@ const SERVICE_ROUTES: Partial<Record<ServiceIconType, Href>> = {
   SOIL_HEALTH: '/services/soil-health',
   EXPERT_VISIT: '/services/expert-visit',
   PPACS_CREDIT: '/services/ppacs-credit',
+  STORAGE: '/services/storage',
 };
 
 const ACTION_ROUTES: Partial<Record<AiSuggestedAction['action'], Href>> = {
@@ -18,6 +19,7 @@ const ACTION_ROUTES: Partial<Record<AiSuggestedAction['action'], Href>> = {
   EXPLAIN_SOIL: '/services/soil-health',
   APPLY_CREDIT: '/services/ppacs-credit',
   BOOK_EXPERT_VISIT: '/services/expert-visit',
+  VIEW_STORAGE: '/services/storage',
 };
 
 export function resolveSuggestedActionRoute(action: AiSuggestedAction): Href | null {

@@ -593,12 +593,14 @@
       "cancelled": "Cancelled"
     },
     "storageStatuses": {
+      "PENDING_PAYMENT": "Payment pending",
       "SUBMITTED": "Request submitted",
       "ACCEPTED": "Accepted by warehouse",
       "PAYOUT_PAID": "Valuation paid",
       "PICKED_UP": "Crop picked up",
       "IN_STORAGE": "In storage",
-      "RELEASED": "Released"
+      "RELEASED": "Released",
+      "CANCELLED": "Cancelled"
     },
     "servicePrices": {
       "CROP_CALENDAR": "₹199/crop",
@@ -607,7 +609,7 @@
       "SOIL_HEALTH": "₹4,999/ac",
       "EXPERT_VISIT": "₹499+",
       "PPACS_CREDIT": "Loans",
-      "STORAGE": "₹6,499",
+      "STORAGE": "₹65/kg",
       "CROP_TRACKER": "Live",
       "IRRIGATION": "Soon",
       "FERTILIZER": "Soon",
@@ -966,6 +968,7 @@
     "loadingBody": "Complete payment in the browser. We will confirm automatically once the gateway updates.",
     "successTitle": "Payment successful",
     "successBody": "Your booking is confirmed. An expert will prepare your service shortly.",
+    "storageSuccessBody": "Storage fee paid. Your request is submitted and the warehouse will arrange pickup.",
     "failedTitle": "Payment not confirmed",
     "failedBody": "We could not confirm the payment. If money was deducted, contact support with your order reference.",
     "abandonedTitle": "Payment not completed",
@@ -974,6 +977,7 @@
     "pendingBody": "We are still waiting for the gateway to confirm payment.",
     "orderRef": "Order {{orderId}}",
     "goHome": "Go to home",
+    "openCropTracker": "Open crop tracker",
     "continuePayment": "Continue payment",
     "retryCheck": "Check again"
   },
@@ -991,29 +995,31 @@
     "loadError": "Could not load the payment page. Please reload and try again.",
     "httpError": "The payment page returned an error. Please reload and try again.",
     "missingBooking": "Payment session is missing. Please start the booking again.",
+    "missingSession": "Payment session is missing. Please start the request again.",
     "checkStatus": "Check payment status",
     "reloadPage": "Reload payment page"
   },
   "storage": {
     "title": "Crop Storage",
-    "subtitle": "₹6,499 per 100 kg block",
+    "subtitle": "₹65 per kg warehouse storage",
     "stepOf": "Step {{current}} of {{total}}",
     "steps": {
       "warehouse": "Warehouse",
-      "storage": "Crop & payout",
+      "storage": "Crop details",
       "review": "Review"
     },
     "stepHints": {
       "warehouse": "Choose a licensed warehouse near your farm",
-      "storage": "Enter crop quantity and bank details for warehouse payout",
-      "review": "Confirm details before submitting your storage request"
+      "storage": "Enter crop type and quantity, then pay the storage fee",
+      "review": "Confirm details and pay the storage fee to submit your request"
     },
-    "payoutNotice": "The warehouse pays you upfront based on crop valuation. KrishiMotto does not collect payment for storage — you receive funds in your bank account after verification.",
+    "payoutNotice": "Pay the storage fee per kg to reserve warehouse space. Crop valuation payout to your bank account is handled by the warehouse after intake verification.",
     "back": "Back",
     "continue": "Continue",
     "done": "Done",
-    "submit": "Submit storage request",
+    "submit": "Pay & submit request",
     "submitting": "Submitting…",
+    "paying": "Opening checkout…",
     "submitError": "Could not submit your storage request. Please try again.",
     "successTitle": "Storage request submitted",
     "successBody": "Your crop storage request is recorded. The warehouse will verify quantity and arrange pickup.",
@@ -1030,7 +1036,9 @@
     "warehouseHint": "Swipe to compare nearby warehouses",
     "cropType": "Crop type",
     "quantityKg": "Quantity (kg)",
-    "quantityKgHint": "Minimum 1 kg. Billing is per 100 kg block.",
+    "quantityKgHint": "Minimum 1 kg. Storage fee is billed per kg.",
+    "storageFeeEstimate": "Estimated storage fee",
+    "storageFeePerKg": "{{kg}} kg at per-kg rate",
     "valuationEstimate": "Estimated valuation",
     "valuationBlocks": "{{blocks}} × 100 kg blocks",
     "bankSection": "Payout bank account",
@@ -1044,7 +1052,7 @@
     "notesPlaceholder": "Pickup window, moisture level, grade…",
     "notesHint": "Helps the warehouse prepare for intake",
     "reviewTitle": "Request summary",
-    "reviewDisclaimer": "Final valuation may change after warehouse grading at intake. Payout is released only after physical verification.",
+    "reviewDisclaimer": "Final valuation may change after warehouse grading at intake. Payout is released only after physical verification. Storage fee is charged upfront via UPI.",
     "errors": {
       "warehouseRequired": "Select a warehouse.",
       "cropType": "Select a crop type.",
@@ -1064,6 +1072,9 @@
     "tracking": "Now tracking",
     "pendingTitle": "Waiting for storage intake",
     "pendingBody": "Your storage request is in progress. Live IoT tracking begins once your crop is marked in storage at the warehouse.",
+    "paymentPendingTitle": "Storage fee pending",
+    "paymentPendingBody": "Complete payment to submit your storage request and unlock crop tracking.",
+    "completePayment": "Complete payment",
     "statusTimeline": "Request progress",
     "otherRequests": "{{count}} more storage request(s) on your account",
     "addStorage": "Submit another storage request",

@@ -32,7 +32,7 @@ import { AppBarGradient, Palette } from '@/constants/theme';
 import { useAppLocale } from '@/hooks/use-app-locale';
 import { translateCropType } from '@/lib/booking-i18n';
 import { formatPaise } from '@/lib/currency';
-import { computePer100kgPricing } from '@/lib/pricing';
+import { computePerKgPricing } from '@/lib/pricing';
 import { useAuthStore } from '@/stores/auth.store';
 import type { CropType } from '@/types/booking';
 import type { CatalogService } from '@/types/catalog';
@@ -61,7 +61,7 @@ export function StorageScreen() {
   const [selectedWarehouseId, setSelectedWarehouseId] = useState<string | null>(null);
   const [formErrors, setFormErrors] = useState<ReturnType<typeof validateStorageForm>>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [submitState, setSubmitState] = useState<'idle' | 'submitting' | 'done'>('idle');
+  const [submitState, setSubmitState] = useState<'idle' | 'submitting' | 'paying' | 'done'>('idle');
   const [completedRequestNumber, setCompletedRequestNumber] = useState<string | null>(null);
 
   const storageService = useMemo(
@@ -84,9 +84,9 @@ export function StorageScreen() {
   );
 
   const quantityKg = parseQuantityKg(form.quantityKg);
-  const valuationEstimate = useMemo(() => {
+  const storageFeeEstimate = useMemo(() => {
     if (!storageService || !Number.isFinite(quantityKg) || quantityKg <= 0) return null;
-    return computePer100kgPricing(quantityKg, storageService.basePricePaise);
+    return computePerKgPricing(quantityKg, storageService.basePricePaise);
   }, [quantityKg, storageService]);
 
   if (!user) {
@@ -112,7 +112,7 @@ export function StorageScreen() {
 
   function validateStorageStep(): boolean {
     const errors = validateStorageForm(form, t, selectedWarehouseId);
-    const stepKeys = ['cropType', 'quantityKg', 'accountHolder', 'accountNumber', 'ifsc', 'bankName'] as const;
+    const stepKeys = ['cropType', 'quantityKg'] as const;
     const stepErrors = Object.fromEntries(
       stepKeys.filter((key) => errors[key]).map((key) => [key, errors[key]]),
     );
@@ -162,18 +162,24 @@ export function StorageScreen() {
     try {
       const request = await createRequest.mutateAsync({
         warehouseId: selectedWarehouseId,
-        bankDetails: {
-          accountHolder: form.accountHolder.trim(),
-          accountNumber: form.accountNumber.trim(),
-          ifsc: form.ifsc.trim().toUpperCase(),
-          bankName: form.bankName.trim(),
-        },
         details: {
           cropType: form.cropType,
           quantityKg,
         },
         query: form.query.trim() || undefined,
       });
+
+      if (request.paymentUrl) {
+        setSubmitState('paying');
+        router.replace({
+          pathname: '/payment/checkout',
+          params: {
+            storageRequestId: request.id,
+            orderId: request.orderId ?? request.requestNumber,
+          },
+        });
+        return;
+      }
 
       setSubmitState('done');
       setCompletedRequestNumber(request.requestNumber);
@@ -183,7 +189,8 @@ export function StorageScreen() {
     }
   }
 
-  const isBusy = createRequest.isPending || submitState === 'submitting';
+  const isBusy =
+    createRequest.isPending || submitState === 'submitting' || submitState === 'paying';
   const currentStepIndex = stepIndex(step);
   const isLastStep = step === 'review';
   const showSuccess = submitState === 'done' && completedRequestNumber;
@@ -336,53 +343,19 @@ export function StorageScreen() {
                 error={formErrors.quantityKg}
               />
 
-              {valuationEstimate ? (
+              {storageFeeEstimate ? (
                 <View className="rounded-2xl border border-dashed border-india-green/40 bg-surface px-4 py-3">
                   <Text className="text-[12px] font-semibold uppercase tracking-wide text-muted">
-                    {t('storage.valuationEstimate')}
+                    {t('storage.storageFeeEstimate')}
                   </Text>
                   <Text className="mt-1 text-[18px] font-bold text-india-green">
-                    {formatPaise(valuationEstimate.totalPaise)}
+                    {formatPaise(storageFeeEstimate.totalPaise)}
                   </Text>
                   <Text className="mt-1 text-[12px] text-muted">
-                    {t('storage.valuationBlocks', { blocks: valuationEstimate.areaUnits })}
+                    {t('storage.storageFeePerKg', { kg: storageFeeEstimate.areaUnits })}
                   </Text>
                 </View>
               ) : null}
-
-              <View className="gap-4 rounded-2xl border border-border bg-white p-4">
-                <Text className="text-[15px] font-bold text-indigo">{t('storage.bankSection')}</Text>
-                <Input
-                  label={t('storage.accountHolder')}
-                  value={form.accountHolder}
-                  onChangeText={(value) => updateForm('accountHolder', value)}
-                  placeholder={t('storage.accountHolderPlaceholder')}
-                  error={formErrors.accountHolder}
-                />
-                <Input
-                  label={t('storage.accountNumber')}
-                  value={form.accountNumber}
-                  onChangeText={(value) => updateForm('accountNumber', value)}
-                  keyboardType="number-pad"
-                  placeholder="XXXXXXXXXXXX"
-                  error={formErrors.accountNumber}
-                />
-                <Input
-                  label={t('storage.ifsc')}
-                  value={form.ifsc}
-                  onChangeText={(value) => updateForm('ifsc', value.toUpperCase())}
-                  autoCapitalize="characters"
-                  placeholder="SBIN0001234"
-                  error={formErrors.ifsc}
-                />
-                <Input
-                  label={t('storage.bankName')}
-                  value={form.bankName}
-                  onChangeText={(value) => updateForm('bankName', value)}
-                  placeholder={t('storage.bankNamePlaceholder')}
-                  error={formErrors.bankName}
-                />
-              </View>
 
               <Input
                 label={t('storage.notes')}
@@ -407,12 +380,13 @@ export function StorageScreen() {
                   label={t('storage.quantityKg')}
                   value={Number.isFinite(quantityKg) ? `${quantityKg.toLocaleString('en-IN')} kg` : '—'}
                 />
-                <ReviewRow label={t('storage.accountHolder')} value={form.accountHolder || '—'} />
-                <ReviewRow label={t('storage.bankName')} value={form.bankName || '—'} />
-                {valuationEstimate ? (
+                {form.query.trim() ? (
+                  <ReviewRow label={t('storage.notes')} value={form.query.trim()} />
+                ) : null}
+                {storageFeeEstimate ? (
                   <ReviewRow
-                    label={t('storage.valuationEstimate')}
-                    value={formatPaise(valuationEstimate.totalPaise)}
+                    label={t('storage.storageFeeEstimate')}
+                    value={formatPaise(storageFeeEstimate.totalPaise)}
                     highlight
                   />
                 ) : null}
@@ -432,7 +406,11 @@ export function StorageScreen() {
           >
             {isLastStep ? (
               <Button onPress={handleSubmit} disabled={isBusy}>
-                {isBusy ? t('storage.submitting') : t('storage.submit')}
+                {isBusy
+                  ? submitState === 'paying'
+                    ? t('storage.paying')
+                    : t('storage.submitting')
+                  : t('storage.submit')}
               </Button>
             ) : (
               <Button onPress={goNext}>{t('storage.continue')}</Button>

@@ -508,7 +508,7 @@
     }
   },
   "common": {
-    "back": "ପଛକୁ",
+    "back": "Back",
     "cancel": "ବାତିଲ୍",
     "done": "ହୋଇଗଲା",
     "selectDate": "ତାରିଖ ବାଛନ୍ତୁ",
@@ -587,6 +587,16 @@
       "completed": "Completed",
       "cancelled": "Cancelled"
     },
+    "storageStatuses": {
+      "PENDING_PAYMENT": "ଦେୟ ବାକି",
+      "SUBMITTED": "ଅନୁରୋଧ ଦାଖଲ",
+      "ACCEPTED": "ଗୋଦାମ ଗ୍ରହଣ କଲା",
+      "PAYOUT_PAID": "ମୂଲ୍ୟାୟନ ଦେୟ",
+      "PICKED_UP": "ଫସଲ ଉଠାଗଲା",
+      "IN_STORAGE": "ଭଣ୍ଡାରରେ",
+      "RELEASED": "ମୁକ୍ତ",
+      "CANCELLED": "ରଦ୍ଦ"
+    },
     "servicePrices": {
       "CROP_CALENDAR": "₹199/crop",
       "DRONE_SPRAY": "₹399/acre",
@@ -594,7 +604,7 @@
       "SOIL_HEALTH": "₹4,999/ac",
       "EXPERT_VISIT": "₹499+",
       "PPACS_CREDIT": "Loans",
-      "STORAGE": "₹6,499",
+      "STORAGE": "₹65/kg",
       "CROP_TRACKER": "Live",
       "IRRIGATION": "Soon",
       "FERTILIZER": "Soon",
@@ -604,6 +614,24 @@
       "HARVEST": "Soon",
       "INSURANCE": "Soon",
       "MARKET": "Live"
+    },
+    "serviceDescriptions": {
+      "CROP_CALENDAR": "Season-long sowing, irrigation, and fertilizer plan.",
+      "DRONE_SPRAY": "Fast, even crop spraying across your field.",
+      "CROP_HEALTH": "Satellite and field checks for crop stress.",
+      "SOIL_HEALTH": "Lab soil test with nutrient recommendations.",
+      "EXPERT_VISIT": "On-farm visit from a certified agronomist.",
+      "PPACS_CREDIT": "Input and equipment credit through PPACS.",
+      "STORAGE": "Warehouse storage for your harvest.",
+      "CROP_TRACKER": "Track crop growth and field activity.",
+      "IRRIGATION": "Smart irrigation scheduling for your fields.",
+      "FERTILIZER": "Fertilizer planning based on soil needs.",
+      "PEST_CONTROL": "Pest scouting and treatment plans.",
+      "WEATHER": "Hyperlocal weather alerts for your farm.",
+      "SEEDS": "Quality seed sourcing and delivery.",
+      "HARVEST": "Digital harvest identification and records.",
+      "INSURANCE": "Crop insurance quotes and claims.",
+      "MARKET": "Live mandi prices for your crops."
     }
   },
   "cropCalendar": {
@@ -873,6 +901,7 @@
     "loadingBody": "ବ୍ରାଉଜରରେ ଦେୟ ପୂର୍ଣ୍ଣ କରନ୍ତୁ। ଗେଟୱେ ଅପଡେଟ୍ ହେବା ପରେ ଆମେ ସ୍ୱଚାଳିତ ଭାବେ ନିଶ୍ଚିତ କରିବୁ।",
     "successTitle": "ଦେୟ ସଫଳ",
     "successBody": "ଆପଣଙ୍କ ବୁକିଂ ନିଶ୍ଚିତ ହେଲା। ବିଶେଷଜ୍ଞ ଶୀଘ୍ର ଆପଣଙ୍କ ସେବା ତିଆରି କରିବେ।",
+    "storageSuccessBody": "ଭଣ୍ଡାର ଶୁଳ୍କ ଦେୟ ହୋଇଛି। ଆପଣଙ୍କ ଅନୁରୋଧ ଦାଖଲ ହୋଇଛି ଏବଂ ଗୋଦାମ ଉଠାଇ ନେବା ବ୍ୟବସ୍ଥା କରିବ।",
     "failedTitle": "ଦେୟ ନିଶ୍ଚିତ ହୋଇନାହିଁ",
     "failedBody": "ଦେୟ ନିଶ୍ଚିତ କରିପାରିଲୁ ନାହିଁ। ଟଙ୍କା କଟିଥିଲେ ଅର୍ଡର ସନ୍ଦର୍ଭ ସହ ସହାୟତା ସମ୍ପର୍କ କରନ୍ତୁ।",
     "abandonedTitle": "ଦେୟ ପୂର୍ଣ୍ଣ ହୋଇନାହିଁ",
@@ -881,6 +910,7 @@
     "pendingBody": "ଗେଟୱେରୁ ଦେୟ ନିଶ୍ଚିତ ହେବା ପାଇଁ ଆମେ ଏପର୍ଯ୍ୟନ୍ତ ଅପେକ୍ଷା କରୁଛୁ।",
     "orderRef": "ଅର୍ଡର {{orderId}}",
     "goHome": "ହୋମକୁ ଯାଆନ୍ତୁ",
+    "openCropTracker": "ଫସଲ ଟ୍ରାକର ଖୋଲନ୍ତୁ",
     "continuePayment": "ଦେୟ ଜାରି ରଖନ୍ତୁ",
     "retryCheck": "ପୁଣି ଯାଞ୍ଚ କରନ୍ତୁ"
   },
@@ -898,7 +928,89 @@
     "loadError": "ଦେୟ ପୃଷ୍ଠା ଲୋଡ୍ ହୋଇପାରିଲା ନାହିଁ। ପୁଣି ଲୋଡ୍ କରନ୍ତୁ।",
     "httpError": "ଦେୟ ପୃଷ୍ଠାରୁ ତ୍ରୁଟି ଆସିଲା। ପୁଣି ଲୋଡ୍ କରନ୍ତୁ।",
     "missingBooking": "ଦେୟ ସେସନ୍ ନାହିଁ। ବୁକିଂ ପୁଣି ଆରମ୍ଭ କରନ୍ତୁ।",
+    "missingSession": "ଦେୟ ସେସନ୍ ନାହିଁ। ଅନୁରୋଧ ପୁଣି ଆରମ୍ଭ କରନ୍ତୁ।",
     "checkStatus": "ଦେୟ ସ୍ଥିତି ଯାଞ୍ଚ କରନ୍ତୁ",
     "reloadPage": "ଦେୟ ପୃଷ୍ଠା ପୁଣି ଲୋଡ୍ କରନ୍ତୁ"
+  },
+  "storage": {
+    "title": "ଫସଲ ଭଣ୍ଡାର",
+    "subtitle": "₹65 ପ୍ରତି କିଗ୍ରା ଗୋଦାମ ଭଣ୍ଡାର",
+    "stepOf": "ପଦ {{current}} / {{total}}",
+    "steps": {
+      "warehouse": "ଗୋଦାମ",
+      "storage": "ଫସଲ ବିବରଣୀ",
+      "review": "ସମୀକ୍ଷା"
+    },
+    "stepHints": {
+      "warehouse": "ଆପଣଙ୍କ ଜମି ନିକଟରେ ଲାଇସେନ୍ସଯୁକ୍ତ ଗୋଦାମ ବାଛନ୍ତୁ",
+      "storage": "ଫସଲ ପ୍ରକାର ଓ ପରିମାଣ ଦିଅନ୍ତୁ, ତାପରେ ଭଣ୍ଡାର ଶୁଳ୍କ ଦେଇବେ",
+      "review": "ବିବରଣୀ ନିଶ୍ଚିତ କରି ଅନୁରୋଧ ଦାଖଲ ପାଇଁ ଭଣ୍ଡାର ଶୁଳ୍କ ଦେଇବେ"
+    },
+    "payoutNotice": "ଗୋଦାମ ସ୍ଥାନ ଆରକ୍ଷିତ କରିବାକୁ ପ୍ରତି କିଗ୍ରା ଭଣ୍ଡାର ଶୁଳ୍କ ଦେଇବେ। ଫସଲ ମୂଲ୍ୟାଙ୍କନ ଦେୟ ସତ୍ୟାପନ ପରେ ଗୋଦାମ ଦ୍ୱାରା ଆପଣଙ୍କ ବ୍ୟାଙ୍କ ଖାତାକୁ ଯାଇଥାଏ।",
+    "back": "ପଛକୁ",
+    "continue": "ଆଗକୁ ବଢ଼ନ୍ତୁ",
+    "done": "ସମ୍ପନ୍ନ",
+    "submit": "ଦେୟ ଦିଅନ୍ତୁ ଓ ଅନୁରୋଧ ଦାଖଲ କରନ୍ତୁ",
+    "submitting": "ଦାଖଲ ହେଉଛି…",
+    "paying": "ଚେକଆଉଟ୍ ଖୋଲୁଛି…",
+    "submitError": "ଭଣ୍ଡାର ଅନୁରୋଧ ଦାଖଲ ହୋଇପାରିଲା ନାହିଁ।",
+    "successTitle": "ଭଣ୍ଡାର ଅନୁରୋଧ ଦାଖଲ",
+    "successBody": "ଆପଣଙ୍କ ଫସଲ ଭଣ୍ଡାର ଅନୁରୋଧ ଲିପିବଦ୍ଧ ହୋଇଛି।",
+    "requestRef": "ସନ୍ଦର୍ଭ {{requestNumber}}",
+    "openTracker": "ଫସଲ ଟ୍ରାକର ଖୋଲନ୍ତୁ",
+    "nextStepsTitle": "ପରେ କଣ ହେବ",
+    "nextSteps": {
+      "submitted": "ଗୋଦାମ ଆପଣଙ୍କ ଅନୁରୋଧ ସମୀକ୍ଷା କରିବ",
+      "pickup": "ଗ୍ରହଣ ପରେ ଉଠାଇ ନେବା ସମୟ ନିର୍ଦ୍ଧାରିତ ହେବ",
+      "payout": "ମୂଲ୍ୟାଙ୍କନ ଆପଣଙ୍କ ବ୍ୟାଙ୍କ ଖାତାକୁ ଯିବ",
+      "tracker": "ଭଣ୍ଡାରରେ ଥିବା ବେଳେ ଲାଇଭ ଟ୍ରାକର ଖୁଲିବ"
+    },
+    "warehouseLabel": "ଗୋଦାମ",
+    "warehouseHint": "ନିକଟସ୍ଥ ଗୋଦାମ ତୁଳନା ପାଇଁ ସ୍ୱାଇପ୍ କରନ୍ତୁ",
+    "cropType": "ଫସଲ ପ୍ରକାର",
+    "quantityKg": "ପରିମାଣ (କିଗ୍ରା)",
+    "quantityKgHint": "ସର୍ବନିମ୍ନ 1 କିଗ୍ରା। ଭଣ୍ଡାର ଶୁଳ୍କ ପ୍ରତି କିଗ୍ରା ଆଧାରରେ।",
+    "storageFeeEstimate": "ଅନୁମାନିତ ଭଣ୍ଡାର ଶୁଳ୍କ",
+    "storageFeePerKg": "{{kg}} କିଗ୍ରା ପ୍ରତି-କିଗ୍ରା ଦରରେ",
+    "notes": "ଟିପ୍ପଣୀ (ଇଚ୍ଛାଧୀନ)",
+    "notesPlaceholder": "ଉଠାଇ ନେବା ସମୟ, ଆର୍ଦ୍ରତା…",
+    "notesHint": "ଗୋଦାମକୁ ପ୍ରସ୍ତୁତ କରିବାରେ ସାହାଯ୍ୟ କରେ",
+    "reviewTitle": "ଅନୁରୋଧ ସାରାଂଶ",
+    "reviewDisclaimer": "ଅନ୍ତିମ ମୂଲ୍ୟାଙ୍କନ ଗୋଦାମରେ ଗ୍ରେଡିଂ ପରେ ବଦଳିପାରେ। ଭଣ୍ଡାର ଶୁଳ୍କ UPI ମାଧ୍ୟମରେ ଅଗ୍ରିମ ନିଆଯାଏ।",
+    "errors": {
+      "warehouseRequired": "ଗୋଦାମ ବାଛନ୍ତୁ।",
+      "cropType": "ଫସଲ ପ୍ରକାର ବାଛନ୍ତୁ।",
+      "quantityKg": "ସଠିକ ପରିମାଣ (କିଗ୍ରା) ଦିଅନ୍ତୁ।"
+    }
+  },
+  "cropTracker": {
+    "title": "ଫସଲ ଟ୍ରାକର",
+    "subtitle": "ଭଣ୍ଡାର ବାଛିଥିବା ଅମଳ ପାଇଁ ଲାଇଭ ସ୍ଥିତି",
+    "lockedTitle": "ଭଣ୍ଡାର ଆବଶ୍ୟକ",
+    "lockedBody": "ଗୋଦାମ ଭଣ୍ଡାର ବାଛିବା ପରେ ହିଁ ଫସଲ ଟ୍ରାକର କାମ କରେ।",
+    "optStorage": "ଭଣ୍ଡାର ବାଛନ୍ତୁ",
+    "tracking": "ବର୍ତ୍ତମାନ ଟ୍ରାକ୍ ହେଉଛି",
+    "pendingTitle": "ଭଣ୍ଡାର ଇନଟେକ୍ ଅପେକ୍ଷା",
+    "pendingBody": "ଆପଣଙ୍କ ଭଣ୍ଡାର ଅନୁରୋଧ ଚାଲିଛି। ଭଣ୍ଡାରରେ ଥିବା ବେଳେ ଲାଇଭ IoT ଟ୍ରାକିଂ ଆରମ୍ଭ ହେବ।",
+    "paymentPendingTitle": "ଭଣ୍ଡାର ଶୁଳ୍କ ବାକି",
+    "paymentPendingBody": "ଆପଣଙ୍କ ଭଣ୍ଡାର ଅନୁରୋଧ ଦାଖଲ କରିବା ଏବଂ ଫସଲ ଟ୍ରାକିଂ ଖୋଲିବା ପାଇଁ ଦେୟ ପୂର୍ଣ୍ଣ କରନ୍ତୁ।",
+    "completePayment": "ଦେୟ ପୂର୍ଣ୍ଣ କରନ୍ତୁ",
+    "statusTimeline": "ଅନୁରୋଧ ପ୍ରଗତି",
+    "otherRequests": "ଆପଣଙ୍କ ଖାତାରେ {{count}} ଅଧିକ ଭଣ୍ଡାର ଅନୁରୋଧ",
+    "addStorage": "ଆଉ ଏକ ଭଣ୍ଡାର ଅନୁରୋଧ ଦାଖଲ କରନ୍ତୁ",
+    "loadingDashboard": "ଲାଇଭ ରିଡିଂ ଲୋଡ୍ ହେଉଛି…",
+    "dashboardError": "ଲାଇଭ ଟ୍ରାକର ଡାଟା ଲୋଡ୍ ହୋଇପାରିଲା ନାହିଁ।",
+    "liveStatus": "ଭଣ୍ଡାର ସ୍ଥିତି",
+    "lastUpdated": "ଅପଡେଟ୍ {{time}}",
+    "sensors": {
+      "temperature": "ତାପମାତ୍ରା",
+      "humidity": "ଆର୍ଦ୍ରତା",
+      "co2": "CO₂"
+    },
+    "aiForecast": "AI ଗୁଣବତ୍ତା ପୂର୍ବାନୁମାନ",
+    "spoilageRisk": "ନଷ୍ଟ ହେବା ଝୁଁକି",
+    "qualityGrade": "ଗୁଣବତ୍ତା ଗ୍ରେଡ୍",
+    "forecastWindow": "ପୂର୍ବାନୁମାନ ସମୟ",
+    "valuation": "ସନ୍ଦର୍ଭ ମୂଲ୍ୟାଙ୍କନ"
   }
 }
