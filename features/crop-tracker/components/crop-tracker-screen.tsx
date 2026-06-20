@@ -108,26 +108,6 @@ export function CropTrackerScreen() {
               {t('cropTracker.optStorage')}
             </Button>
           </View>
-        ) : pendingPaymentRequest ? (
-          <View className="gap-5">
-            <View className="items-center rounded-2xl border border-dashed border-border bg-surface px-5 py-10">
-              <View className="mb-4 h-14 w-14 items-center justify-center rounded-full bg-marigold/15">
-                <AppIcon name="credit-card-outline" size={28} color={Palette.marigold} />
-              </View>
-              <Text className="text-center text-[18px] font-bold text-indigo">
-                {t('cropTracker.paymentPendingTitle')}
-              </Text>
-              <Text className="mt-2 text-center text-[14px] leading-5 text-muted">
-                {t('cropTracker.paymentPendingBody')}
-              </Text>
-              <Text className="mt-4 text-[13px] font-semibold text-india-green">
-                {pendingPaymentRequest.requestNumber}
-              </Text>
-            </View>
-            <Button onPress={() => router.push(getStorageRoute(pendingPaymentRequest))}>
-              {t('cropTracker.completePayment')}
-            </Button>
-          </View>
         ) : canTrack && trackableRequest ? (
           <View className="gap-5">
             {activeReceipt ? (
@@ -160,6 +140,26 @@ export function CropTrackerScreen() {
               </Text>
             </View>
             <StorageDashboard request={trackableRequest} />
+          </View>
+        ) : pendingPaymentRequest ? (
+          <View className="gap-5">
+            <View className="items-center rounded-2xl border border-dashed border-border bg-surface px-5 py-10">
+              <View className="mb-4 h-14 w-14 items-center justify-center rounded-full bg-marigold/15">
+                <AppIcon name="credit-card-outline" size={28} color={Palette.marigold} />
+              </View>
+              <Text className="text-center text-[18px] font-bold text-indigo">
+                {t('cropTracker.paymentPendingTitle')}
+              </Text>
+              <Text className="mt-2 text-center text-[14px] leading-5 text-muted">
+                {t('cropTracker.paymentPendingBody')}
+              </Text>
+              <Text className="mt-4 text-[13px] font-semibold text-india-green">
+                {pendingPaymentRequest.requestNumber}
+              </Text>
+            </View>
+            <Button onPress={() => router.push(getStorageRoute(pendingPaymentRequest))}>
+              {t('cropTracker.completePayment')}
+            </Button>
           </View>
         ) : activeRequest ? (
           <View className="gap-5">
