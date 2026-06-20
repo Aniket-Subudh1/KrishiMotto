@@ -7,6 +7,7 @@ import { Text } from '@/components/ui/text';
 import { HomeHeroHeader } from '@/features/home/components/home-hero-header';
 import { HomeServicesGrid } from '@/features/home/components/home-services-grid';
 import { RequestedServicesSection } from '@/features/home/components/requested-services-section';
+import { SmartContractsHomeSection } from '@/features/smart-contracts/components/smart-contracts-home-section';
 import { Palette } from '@/constants/theme';
 import type { FarmerProfile } from '@/types/farmer';
 import type { LandParcel } from '@/types/farmer';
@@ -103,6 +104,8 @@ export function OverviewTab({
             </View>
 
             <RequestedServicesSection t={t} locale={locale} />
+
+            <SmartContractsHomeSection t={t} />
           </>
         )}
       </ScrollView>

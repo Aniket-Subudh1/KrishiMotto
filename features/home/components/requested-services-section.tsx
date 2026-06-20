@@ -40,7 +40,13 @@ export function RequestedServicesSection({ t, locale }: RequestedServicesSection
       <View className="gap-3">
         {previewItems.map((item) => (
           <RequestedServiceListItem
-            key={item.kind === 'booking' ? `booking-${item.booking.id}` : `storage-${item.request.id}`}
+            key={
+              item.kind === 'booking'
+                ? `booking-${item.booking.id}`
+                : item.kind === 'loan'
+                  ? `loan-${item.loan.id}`
+                  : `storage-${item.request.id}`
+            }
             item={item}
             t={t}
             locale={locale}

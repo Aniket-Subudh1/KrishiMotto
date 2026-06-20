@@ -1,14 +1,16 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+export {
+  BOOKING_KEYS,
+  getBookingError,
+  mergeDocumentPublicUrls,
+  useAttachCompletionDocument,
+  useBooking,
+} from '@/features/bookings/hooks/use-booking';
 
-import { getApiErrorMessage } from '@/lib/api-error';
-import { bookingService, type ListBookingsParams } from '@/services/booking.service';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+
+import { BOOKING_KEYS } from '@/features/bookings/hooks/use-booking';
+import { bookingService } from '@/services/booking.service';
 import type { CreateCropCalendarBookingPayload } from '@/types/booking';
-
-export const BOOKING_KEYS = {
-  all: ['bookings'] as const,
-  list: (params?: ListBookingsParams) => ['bookings', 'list', params] as const,
-  detail: (id: string) => ['bookings', 'detail', id] as const,
-};
 
 export function useCreateCropCalendarBooking() {
   const queryClient = useQueryClient();
@@ -23,25 +25,4 @@ export function useCreateCropCalendarBooking() {
       queryClient.setQueryData(BOOKING_KEYS.detail(booking.id), booking);
     },
   });
-}
-
-export function useBooking(id: string | null, pollPayment = false) {
-  return useQuery({
-    queryKey: BOOKING_KEYS.detail(id ?? ''),
-    queryFn: async () => {
-      const { data } = await bookingService.getBooking(id!);
-      return data.data;
-    },
-    enabled: Boolean(id),
-    refetchInterval: (query) => {
-      if (!pollPayment) return false;
-      const status = query.state.data?.paymentStatus;
-      if (status === 'PAID' || status === 'FAILED') return false;
-      return 3000;
-    },
-  });
-}
-
-export function getBookingError(error: unknown, fallback: string) {
-  return getApiErrorMessage(error, fallback);
 }

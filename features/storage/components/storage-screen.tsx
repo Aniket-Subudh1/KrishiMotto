@@ -301,7 +301,7 @@ export function StorageScreen() {
               <View className="rounded-2xl border border-border bg-surface px-4 py-4">
                 <Text className="text-[14px] font-bold text-indigo">{t('storage.nextStepsTitle')}</Text>
                 <View className="mt-3 gap-2">
-                  {(['submitted', 'pickup', 'payout', 'tracker'] as const).map((key) => (
+                  {(['submitted', 'pickup', 'payout', 'receipt', 'tracker'] as const).map((key) => (
                     <View key={key} className="flex-row items-start gap-2">
                       <View className="mt-1.5 h-2 w-2 rounded-full bg-india-green" />
                       <Text className="flex-1 text-[13px] leading-5 text-muted">

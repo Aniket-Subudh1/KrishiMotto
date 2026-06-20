@@ -9,6 +9,9 @@ import { Text } from '@/components/ui/text';
 import { StorageDashboard } from '@/features/crop-tracker/components/storage-dashboard';
 import { StorageStatusTimeline } from '@/features/crop-tracker/components/storage-status-timeline';
 import { useCropTrackerAccess } from '@/features/crop-tracker/hooks/use-crop-tracker';
+import { SmartContractReceiptBanner } from '@/features/smart-contracts/components/smart-contract-receipt-banner';
+import { useFarmerSmartContracts } from '@/features/smart-contracts/hooks/use-smart-contracts';
+import { findSmartContractByStorageRequest } from '@/features/smart-contracts/utils/display';
 import { AppBarGradient, Palette } from '@/constants/theme';
 import { useAppLocale } from '@/hooks/use-app-locale';
 import { translateCropType, translateStorageStatus } from '@/lib/booking-i18n';
@@ -32,6 +35,11 @@ export function CropTrackerScreen() {
     isRefetching,
     refetch,
   } = useCropTrackerAccess();
+  const { data: smartContracts = [] } = useFarmerSmartContracts();
+
+  const activeReceipt = trackableRequest
+    ? findSmartContractByStorageRequest(smartContracts, trackableRequest.id)
+    : undefined;
 
   if (!user) {
     return <Redirect href="/get-started" />;
@@ -122,6 +130,23 @@ export function CropTrackerScreen() {
           </View>
         ) : canTrack && trackableRequest ? (
           <View className="gap-5">
+            {activeReceipt ? (
+              <SmartContractReceiptBanner
+                contract={activeReceipt}
+                t={t}
+                variant="cropTracker"
+              />
+            ) : trackableRequest.status === 'IN_STORAGE' ? (
+              <View className="rounded-2xl border border-dashed border-india-green/30 bg-india-green/5 px-4 py-4">
+                <Text className="text-[14px] font-semibold text-indigo">
+                  {t('smartContracts.cropTrackerPendingReceiptTitle')}
+                </Text>
+                <Text className="mt-1 text-[13px] leading-5 text-muted">
+                  {t('smartContracts.cropTrackerPendingReceiptBody')}
+                </Text>
+              </View>
+            ) : null}
+
             <View className="rounded-2xl border border-border bg-white p-4">
               <Text className="text-[12px] font-semibold uppercase tracking-wide text-muted">
                 {t('cropTracker.tracking')}
@@ -143,6 +168,11 @@ export function CropTrackerScreen() {
               <Text className="mt-2 text-[14px] leading-5 text-muted">
                 {t('cropTracker.pendingBody')}
               </Text>
+              <View className="mt-4 rounded-xl bg-surface px-3 py-3">
+                <Text className="text-[13px] leading-5 text-muted">
+                  {t('smartContracts.pendingStorageHint')}
+                </Text>
+              </View>
               <View className="mt-4 flex-row flex-wrap gap-2">
                 <StatusPill
                   label={translateStorageStatus(t, activeRequest.status)}

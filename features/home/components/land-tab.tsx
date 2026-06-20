@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { LandHeroHeader } from '@/features/home/components/land-hero-header';
 import { LandParcelCard } from '@/features/home/components/land-parcel-card';
+import { SmartContractsHomeSection } from '@/features/smart-contracts/components/smart-contracts-home-section';
 import { Palette } from '@/constants/theme';
 import type { FarmerProfile } from '@/types/farmer';
 import type { LandParcel } from '@/types/farmer';
@@ -116,6 +117,8 @@ export function LandTab({
                 </View>
               )}
             </View>
+
+            <SmartContractsHomeSection t={t} />
           </>
         )}
       </ScrollView>

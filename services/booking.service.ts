@@ -1,6 +1,7 @@
 import { apiClient } from '@/lib/api-client';
 import type { V1Response } from '@/types/api';
 import type {
+  AttachCompletionDocumentPayload,
   Booking,
   BookingListPage,
   CreateCropCalendarBookingPayload,
@@ -38,6 +39,9 @@ export const bookingService = {
     apiClient.post<V1Response<Booking>>('/farmer/bookings', payload),
 
   getBooking: (id: string) => apiClient.get<V1Response<Booking>>(`/farmer/bookings/${id}`),
+
+  attachCompletionDocument: (id: string, payload: AttachCompletionDocumentPayload) =>
+    apiClient.post<V1Response<Booking>>(`/farmer/bookings/${id}/completion-documents`, payload),
 
   listBookings: (params?: ListBookingsParams) =>
     apiClient.get<V1Response<BookingListPage>>('/farmer/bookings', { params }),

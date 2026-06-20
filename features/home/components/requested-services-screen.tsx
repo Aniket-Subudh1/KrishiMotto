@@ -94,7 +94,9 @@ export function RequestedServicesScreen() {
                   key={
                     item.kind === 'booking'
                       ? `booking-${item.booking.id}`
-                      : `storage-${item.request.id}`
+                      : item.kind === 'loan'
+                        ? `loan-${item.loan.id}`
+                        : `storage-${item.request.id}`
                   }
                   item={item}
                   t={t}

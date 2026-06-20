@@ -2,8 +2,8 @@ import { AppIcon } from '@/components/ui/app-icon';
 import { resolveAppIcon, type IconName } from '@/lib/icon-names';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Redirect, router } from 'expo-router';
-import { useMemo, useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { useEffect, useMemo, useState } from 'react';
+import { Linking, Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ErrorBanner } from '@/components/auth/auth-screen-layout';
@@ -16,27 +16,43 @@ import {
 import { Text } from '@/components/ui/text';
 import { OptionPicker } from '@/features/crop-calendar/components/option-picker';
 import { StepIndicator } from '@/features/crop-calendar/components/step-indicator';
+import { LenderPicker } from '@/features/ppacs-credit/components/lender-picker';
+import { SmartContractPicker } from '@/features/ppacs-credit/components/smart-contract-picker';
 import {
-  getBookingError,
-  useCreatePpacsCreditBooking,
-} from '@/features/ppacs-credit/hooks/use-ppacs-credit-booking';
+  getCreditError,
+  useApplyAgriCredit,
+  useFarmerKyc,
+  useFarmerSmartContracts,
+  usePublicLenders,
+  useSubmitFarmerKyc,
+} from '@/features/ppacs-credit/hooks/use-ppacs-credit';
+import { getLoanTrackRoute } from '@/features/ppacs-credit/utils/loan-display';
 import {
   buildDefaultPpacsCreditForm,
-  toPpacsCreditDetails,
+  parseLoanAmountRupees,
+  toApplyAgriCreditPayload,
+  toKycPayload,
+  validateBankStep,
+  validateKycStep,
+  validateLenderStep,
   validatePpacsCreditForm,
+  validateReceiptStep,
+  validateTermsStep,
   type PpacsCreditFormValues,
 } from '@/features/ppacs-credit/utils/validate-form';
 import { useCatalog } from '@/features/home/hooks/use-catalog';
 import { AppBarGradient, Palette } from '@/constants/theme';
 import { useAppLocale } from '@/hooks/use-app-locale';
-import { translateCreditPurpose } from '@/lib/booking-i18n';
+import { translateCreditPurpose, translateServiceDescription } from '@/lib/booking-i18n';
 import { formatPaise } from '@/lib/currency';
 import { useAuthStore } from '@/stores/auth.store';
 import { CREDIT_PURPOSES, type CreditPurpose } from '@/types/booking';
 import type { CatalogService } from '@/types/catalog';
+import type { FarmerSmartContract, Lender } from '@/types/credit';
 
-const STEPS = ['loan', 'review'] as const;
-type WizardStep = (typeof STEPS)[number];
+const BASE_STEPS = ['receipt', 'lender', 'terms', 'bank', 'review'] as const;
+const KYC_STEP = 'kyc' as const;
+type WizardStep = typeof KYC_STEP | (typeof BASE_STEPS)[number];
 
 const TENURE_PRESETS_MONTHS = ['3', '6', '12', '18', '24'] as const;
 const INTEREST_PRESETS = ['10', '12', '15', '18'] as const;
@@ -45,8 +61,13 @@ function findPpacsCreditService(services?: CatalogService[]): CatalogService | u
   return services?.find((service) => service.iconType === 'PPACS_CREDIT');
 }
 
-function stepIndex(step: WizardStep): number {
-  return STEPS.indexOf(step) + 1;
+function eligibleContracts(contracts: FarmerSmartContract[]): FarmerSmartContract[] {
+  return contracts.filter(
+    (contract) =>
+      contract.freeQuantityKg > 0 &&
+      contract.status !== 'FULLY_PLEDGED' &&
+      contract.status !== 'RELEASED',
+  );
 }
 
 export function PpacsCreditScreen() {
@@ -54,14 +75,44 @@ export function PpacsCreditScreen() {
   const insets = useSafeAreaInsets();
   const user = useAuthStore((s) => s.user);
   const { data: catalogServices, isLoading: catalogLoading } = useCatalog();
-  const createBooking = useCreatePpacsCreditBooking();
+  const { data: kyc, isLoading: kycLoading } = useFarmerKyc();
+  const { data: smartContracts = [], isLoading: contractsLoading } = useFarmerSmartContracts();
+  const { data: lenders = [], isLoading: lendersLoading } = usePublicLenders();
+  const submitKyc = useSubmitFarmerKyc();
+  const applyCredit = useApplyAgriCredit();
 
-  const [step, setStep] = useState<WizardStep>('loan');
-  const [form, setForm] = useState<PpacsCreditFormValues>(() => buildDefaultPpacsCreditForm());
-  const [formErrors, setFormErrors] = useState<ReturnType<typeof validatePpacsCreditForm>>({});
+  const kycVerified = kyc?.status === 'VERIFIED';
+  const steps = useMemo(
+    () => (kycVerified ? [...BASE_STEPS] : [KYC_STEP, ...BASE_STEPS]),
+    [kycVerified],
+  );
+
+  const [step, setStep] = useState<WizardStep>(kycVerified ? 'receipt' : 'kyc');
+  const [form, setForm] = useState<PpacsCreditFormValues>(() =>
+    buildDefaultPpacsCreditForm(user?.username ?? ''),
+  );
+  const [formErrors, setFormErrors] = useState<
+    Partial<Record<keyof PpacsCreditFormValues, string>>
+  >({});
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitState, setSubmitState] = useState<'idle' | 'submitting' | 'done'>('idle');
-  const [completedOrderId, setCompletedOrderId] = useState<string | null>(null);
+  const [completedLoanId, setCompletedLoanId] = useState<string | null>(null);
+  const [completedLoanNumber, setCompletedLoanNumber] = useState<string | null>(null);
+
+  const availableContracts = useMemo(
+    () => eligibleContracts(smartContracts),
+    [smartContracts],
+  );
+
+  const selectedContract = useMemo(
+    () => availableContracts.find((contract) => contract.id === form.smartContractId),
+    [availableContracts, form.smartContractId],
+  );
+
+  const selectedLender = useMemo(
+    () => lenders.find((lender) => lender.id === form.lenderId),
+    [form.lenderId, lenders],
+  );
 
   const ppacsService = useMemo(
     () => findPpacsCreditService(catalogServices),
@@ -69,15 +120,26 @@ export function PpacsCreditScreen() {
   );
 
   const stepLabels = useMemo(
-    () => [t('ppacsCredit.steps.loan'), t('ppacsCredit.steps.review')],
-    [t],
+    () =>
+      steps.map((wizardStep) => t(`ppacsCredit.steps.${wizardStep}`)),
+    [steps, t],
   );
 
-  const loanAmountLabel = useMemo(() => {
-    const paise = Math.round(Number.parseFloat(form.loanAmountRupee.replace(/,/g, '') || '0') * 100);
-    if (!Number.isFinite(paise) || paise <= 0) return null;
-    return formatPaise(paise);
-  }, [form.loanAmountRupee]);
+  useEffect(() => {
+    if (!kycLoading && kycVerified && step === 'kyc') {
+      setStep('receipt');
+    }
+  }, [kycLoading, kycVerified, step]);
+
+  useEffect(() => {
+    if (user?.username && !form.fullName) {
+      setForm((current) => ({
+        ...current,
+        fullName: user.username ?? current.fullName,
+        accountHolder: current.accountHolder || user.username || '',
+      }));
+    }
+  }, [form.fullName, form.accountHolder, user?.username]);
 
   if (!user) {
     return <Redirect href="/get-started" />;
@@ -100,31 +162,54 @@ export function PpacsCreditScreen() {
     setSubmitError(null);
   }
 
-  function validateLoanStep(): boolean {
-    const errors = validatePpacsCreditForm(form, t);
-    const loanKeys = ['loanAmountRupee', 'tenureMonths', 'maxInterestPa', 'purpose'] as const;
-    const stepErrors = Object.fromEntries(
-      loanKeys.filter((key) => errors[key]).map((key) => [key, errors[key]]),
-    );
-    setFormErrors(stepErrors);
-    return Object.keys(stepErrors).length === 0;
-  }
-
   function validateCurrentStep(): boolean {
-    if (step === 'loan') {
-      return validateLoanStep();
+    let errors: Partial<Record<keyof PpacsCreditFormValues, string>> = {};
+
+    if (step === 'kyc') {
+      errors = validateKycStep(form, t);
+    } else if (step === 'receipt') {
+      errors = validateReceiptStep(form, selectedContract?.freeQuantityKg ?? null, t);
+    } else if (step === 'lender') {
+      errors = validateLenderStep(form, t);
+    } else if (step === 'terms') {
+      errors = validateTermsStep(form, t);
+    } else if (step === 'bank') {
+      errors = validateBankStep(form, t);
+    } else {
+      errors = validatePpacsCreditForm(
+        form,
+        selectedContract?.freeQuantityKg ?? null,
+        t,
+        { skipKyc: kycVerified },
+      );
     }
 
-    const errors = validatePpacsCreditForm(form, t);
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   }
 
-  function goNext() {
+  async function handleKycSubmit() {
     if (!validateCurrentStep()) return;
-    const index = STEPS.indexOf(step);
-    if (index < STEPS.length - 1) {
-      setStep(STEPS[index + 1]);
+
+    setSubmitError(null);
+    try {
+      await submitKyc.mutateAsync(toKycPayload(form));
+      setStep('receipt');
+    } catch (error) {
+      setSubmitError(getCreditError(error, t('ppacsCredit.kycSubmitError')));
+    }
+  }
+
+  function goNext() {
+    if (step === 'kyc') {
+      void handleKycSubmit();
+      return;
+    }
+
+    if (!validateCurrentStep()) return;
+    const index = steps.indexOf(step);
+    if (index < steps.length - 1) {
+      setStep(steps[index + 1]);
     }
   }
 
@@ -134,48 +219,57 @@ export function PpacsCreditScreen() {
       return;
     }
 
-    const index = STEPS.indexOf(step);
+    const index = steps.indexOf(step);
     if (index > 0) {
-      setStep(STEPS[index - 1]);
+      setStep(steps[index - 1]);
       return;
     }
     router.back();
   }
 
   async function handleSubmit() {
-    if (!validateLoanStep()) {
-      setStep('loan');
+    const errors = validatePpacsCreditForm(
+      form,
+      selectedContract?.freeQuantityKg ?? null,
+      t,
+      { skipKyc: kycVerified },
+    );
+    setFormErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      if (errors.aadhaarNumber || errors.fullName) setStep('kyc');
+      else if (errors.smartContractId || errors.collateralQuantityKg) setStep('receipt');
+      else if (errors.lenderId) setStep('lender');
+      else if (errors.loanAmountRupee || errors.tenureMonths || errors.maxInterestPa || errors.purpose) {
+        setStep('terms');
+      } else setStep('bank');
       return;
     }
-
-    const errors = validatePpacsCreditForm(form, t);
-    setFormErrors(errors);
-    if (Object.keys(errors).length > 0) return;
 
     setSubmitError(null);
     setSubmitState('submitting');
 
     try {
-      const details = toPpacsCreditDetails(form);
-      const booking = await createBooking.mutateAsync({
-        serviceIconType: 'PPACS_CREDIT',
-        details,
-        query: form.query.trim() || undefined,
-      });
-
+      const loan = await applyCredit.mutateAsync(toApplyAgriCreditPayload(form));
       setSubmitState('done');
-      setCompletedOrderId(booking.orderId);
+      setCompletedLoanId(loan.id);
+      setCompletedLoanNumber(loan.loanNumber);
     } catch (error) {
       setSubmitState('idle');
-      setSubmitError(getBookingError(error, t('ppacsCredit.submitError')));
+      setSubmitError(getCreditError(error, t('ppacsCredit.submitError')));
     }
   }
 
-  const isBusy = createBooking.isPending || submitState === 'submitting';
-  const currentStepIndex = stepIndex(step);
+  const isBusy =
+    submitKyc.isPending || applyCredit.isPending || submitState === 'submitting' || kycLoading;
+  const currentStepIndex = steps.indexOf(step) + 1;
   const isLastStep = step === 'review';
-  const showSuccess = submitState === 'done' && completedOrderId;
+  const showSuccess = submitState === 'done' && completedLoanId;
   const keyboardBottomOffset = DEFAULT_FORM_FOOTER_OFFSET + Math.max(insets.bottom, 12);
+  const loanAmountLabel = useMemo(() => {
+    const rupees = parseLoanAmountRupees(form.loanAmountRupee);
+    if (!Number.isFinite(rupees) || rupees <= 0) return null;
+    return formatPaise(Math.round(rupees * 100));
+  }, [form.loanAmountRupee]);
 
   return (
     <View className="flex-1 bg-background">
@@ -198,7 +292,7 @@ export function PpacsCreditScreen() {
               <Text className="text-[12px] font-semibold text-white">
                 {t('ppacsCredit.stepOf')
                   .replace('{{current}}', String(currentStepIndex))
-                  .replace('{{total}}', String(STEPS.length))}
+                  .replace('{{total}}', String(steps.length))}
               </Text>
             </View>
           ) : null}
@@ -213,7 +307,11 @@ export function PpacsCreditScreen() {
             <Text className="mt-0.5 text-[14px] text-white/85">
               {catalogLoading
                 ? '…'
-                : ppacsService?.description ?? t('ppacsCredit.subtitle')}
+                : translateServiceDescription(
+                    t,
+                    'PPACS_CREDIT',
+                    ppacsService?.description ?? t('ppacsCredit.subtitle'),
+                  )}
             </Text>
           </View>
         </View>
@@ -221,7 +319,7 @@ export function PpacsCreditScreen() {
         {!showSuccess ? (
           <>
             <Text className="mt-3 text-[14px] text-white/85">
-              {step === 'loan' ? t('ppacsCredit.stepHints.loan') : t('ppacsCredit.stepHints.review')}
+              {t(`ppacsCredit.stepHints.${step}`)}
             </Text>
             <View className="mt-5">
               <StepIndicator steps={stepLabels} currentStep={currentStepIndex} />
@@ -239,9 +337,18 @@ export function PpacsCreditScreen() {
             style={{ paddingBottom: Math.max(insets.bottom, 12) }}
           >
             {showSuccess ? (
-              <Button size="lg" className="w-full" onPress={() => router.back()}>
-                {t('ppacsCredit.done')}
-              </Button>
+              <View className="gap-3">
+                <Button
+                  size="lg"
+                  className="w-full"
+                  onPress={() => router.push(getLoanTrackRoute(completedLoanId!))}
+                >
+                  {t('ppacsCredit.trackApplication')}
+                </Button>
+                <Button size="lg" variant="secondary" className="w-full" onPress={() => router.back()}>
+                  {t('ppacsCredit.done')}
+                </Button>
+              </View>
             ) : isLastStep ? (
               <Button size="lg" className="w-full" loading={isBusy} onPress={handleSubmit}>
                 {t('ppacsCredit.submit')}
@@ -253,12 +360,17 @@ export function PpacsCreditScreen() {
                     size="lg"
                     variant="secondary"
                     className="min-w-[100px]"
-                    onPress={() => setStep(STEPS[currentStepIndex - 2])}
+                    onPress={() => setStep(steps[currentStepIndex - 2])}
                   >
                     {t('ppacsCredit.back')}
                   </Button>
                 ) : null}
-                <Button size="lg" className="flex-1" onPress={goNext}>
+                <Button
+                  size="lg"
+                  className="flex-1"
+                  loading={step === 'kyc' && submitKyc.isPending}
+                  onPress={goNext}
+                >
                   {t('ppacsCredit.continue')}
                 </Button>
               </View>
@@ -266,134 +378,210 @@ export function PpacsCreditScreen() {
           </View>
         }
       >
-          {submitError ? (
-            <View className="mb-4">
-              <ErrorBanner message={submitError} />
-            </View>
-          ) : null}
+        {submitError ? (
+          <View className="mb-4">
+            <ErrorBanner message={submitError} />
+          </View>
+        ) : null}
 
-          {showSuccess ? (
-            <SuccessView orderId={completedOrderId} t={t} />
-          ) : (
-            <>
-              <InfoBanner message={t('ppacsCredit.inquiryNotice')} />
+        {showSuccess ? (
+          <SuccessView loanNumber={completedLoanNumber} t={t} />
+        ) : (
+          <>
+            <InfoBanner message={t('ppacsCredit.inquiryNotice')} />
 
-              {step === 'loan' ? (
-                <View className="mt-5 gap-5">
+            {step === 'kyc' ? (
+              <View className="mt-5 gap-5">
+                <Input
+                  label={t('ppacsCredit.fullName')}
+                  value={form.fullName}
+                  onChangeText={(value) => updateForm('fullName', value)}
+                  placeholder={t('ppacsCredit.fullNamePlaceholder')}
+                  error={formErrors.fullName}
+                  icon="account-outline"
+                />
+                <Input
+                  label={t('ppacsCredit.aadhaar')}
+                  value={form.aadhaarNumber}
+                  onChangeText={(value) => updateForm('aadhaarNumber', value)}
+                  placeholder="1234-5678-9012"
+                  keyboardType="number-pad"
+                  error={formErrors.aadhaarNumber}
+                  icon="card-outline"
+                  hint={t('ppacsCredit.aadhaarHint')}
+                />
+                <View className="rounded-2xl border border-india-green/20 bg-india-green/5 px-4 py-3">
+                  <Text className="text-[13px] leading-5 text-indigo">
+                    {t('ppacsCredit.kycNotice')}
+                  </Text>
+                </View>
+              </View>
+            ) : null}
+
+            {step === 'receipt' ? (
+              <View className="mt-5 gap-5">
+                <SmartContractPicker
+                  t={t}
+                  label={t('ppacsCredit.smartContract')}
+                  hint={t('ppacsCredit.smartContractHint')}
+                  emptyMessage={t('ppacsCredit.noSmartContracts')}
+                  emptyActionLabel={t('ppacsCredit.openStorage')}
+                  onEmptyAction={() => router.push('/services/storage')}
+                  contracts={availableContracts}
+                  selectedId={form.smartContractId || null}
+                  onSelect={(id) => updateForm('smartContractId', id)}
+                  loading={contractsLoading}
+                  error={formErrors.smartContractId}
+                />
+                <Input
+                  label={t('ppacsCredit.collateralQuantityKg')}
+                  value={form.collateralQuantityKg}
+                  onChangeText={(value) => updateForm('collateralQuantityKg', value)}
+                  keyboardType="decimal-pad"
+                  placeholder={selectedContract ? String(selectedContract.freeQuantityKg) : '500'}
+                  error={formErrors.collateralQuantityKg}
+                  icon="scale-outline"
+                  hint={
+                    selectedContract
+                      ? t('ppacsCredit.collateralHint').replace(
+                          '{{free}}',
+                          String(selectedContract.freeQuantityKg),
+                        )
+                      : t('ppacsCredit.collateralHintGeneric')
+                  }
+                />
+              </View>
+            ) : null}
+
+            {step === 'lender' ? (
+              <View className="mt-5">
+                <LenderPicker
+                  label={t('ppacsCredit.lender')}
+                  hint={t('ppacsCredit.lenderHint')}
+                  emptyMessage={t('ppacsCredit.noLenders')}
+                  lenders={lenders}
+                  selectedId={form.lenderId || null}
+                  onSelect={(id) => updateForm('lenderId', id)}
+                  loading={lendersLoading}
+                  error={formErrors.lenderId}
+                />
+              </View>
+            ) : null}
+
+            {step === 'terms' ? (
+              <View className="mt-5 gap-5">
+                <Input
+                  label={t('ppacsCredit.loanAmount')}
+                  value={form.loanAmountRupee}
+                  onChangeText={(value) => updateForm('loanAmountRupee', value)}
+                  keyboardType="number-pad"
+                  placeholder="50000"
+                  error={formErrors.loanAmountRupee}
+                  icon="wallet-outline"
+                  hint={t('ppacsCredit.loanAmountHint')}
+                />
+                {loanAmountLabel ? (
+                  <Text className="-mt-3 px-1 text-[13px] font-medium text-india-green">
+                    {t('ppacsCredit.loanAmountPreview').replace('{{amount}}', loanAmountLabel)}
+                  </Text>
+                ) : null}
+                <View className="gap-2">
                   <Input
-                    label={t('ppacsCredit.loanAmount')}
-                    value={form.loanAmountRupee}
-                    onChangeText={(value) => updateForm('loanAmountRupee', value)}
+                    label={t('ppacsCredit.tenureMonths')}
+                    value={form.tenureMonths}
+                    onChangeText={(value) => updateForm('tenureMonths', value)}
                     keyboardType="number-pad"
-                    placeholder="50000"
-                    error={formErrors.loanAmountRupee}
-                    icon="wallet-outline"
-                    hint={t('ppacsCredit.loanAmountHint')}
+                    placeholder="12"
+                    error={formErrors.tenureMonths}
+                    icon="time-outline"
+                    hint={t('ppacsCredit.tenureHint')}
                   />
-
-                  {loanAmountLabel ? (
-                    <Text className="-mt-3 px-1 text-[13px] font-medium text-india-green">
-                      {t('ppacsCredit.loanAmountPreview').replace('{{amount}}', loanAmountLabel)}
-                    </Text>
-                  ) : null}
-
-                  <View className="gap-2">
-                    <Input
-                      label={t('ppacsCredit.tenureMonths')}
-                      value={form.tenureMonths}
-                      onChangeText={(value) => updateForm('tenureMonths', value)}
-                      keyboardType="number-pad"
-                      placeholder="12"
-                      error={formErrors.tenureMonths}
-                      icon="time-outline"
-                      hint={t('ppacsCredit.tenureHint')}
-                    />
-                    <PresetChips
-                      values={TENURE_PRESETS_MONTHS}
-                      selected={form.tenureMonths}
-                      onSelect={(value) => updateForm('tenureMonths', value)}
-                      suffix={t('ppacsCredit.monthsShort')}
-                    />
-                  </View>
-
-                  <View className="gap-2">
-                    <Input
-                      label={t('ppacsCredit.maxInterest')}
-                      value={form.maxInterestPa}
-                      onChangeText={(value) => updateForm('maxInterestPa', value)}
-                      keyboardType="decimal-pad"
-                      placeholder="12"
-                      error={formErrors.maxInterestPa}
-                      icon="trending-down-outline"
-                      hint={t('ppacsCredit.maxInterestHint')}
-                    />
-                    <PresetChips
-                      values={INTEREST_PRESETS}
-                      selected={form.maxInterestPa}
-                      onSelect={(value) => updateForm('maxInterestPa', value)}
-                      suffix="%"
-                    />
-                  </View>
-
-                  <OptionPicker
-                    label={t('ppacsCredit.purpose')}
-                    value={form.purpose}
-                    options={CREDIT_PURPOSES}
-                    onChange={(value) => updateForm('purpose', value)}
-                    getLabel={getPurposeLabel}
-                    error={formErrors.purpose}
+                  <PresetChips
+                    values={TENURE_PRESETS_MONTHS}
+                    selected={form.tenureMonths}
+                    onSelect={(value) => updateForm('tenureMonths', value)}
+                    suffix={t('ppacsCredit.monthsShort')}
                   />
                 </View>
-              ) : null}
-
-              {step === 'review' ? (
-                <View className="mt-5 gap-5">
+                <View className="gap-2">
                   <Input
-                    label={t('ppacsCredit.commodity')}
-                    value={form.commodity}
-                    onChangeText={(value) => updateForm('commodity', value)}
-                    placeholder={t('ppacsCredit.commodityPlaceholder')}
-                    error={formErrors.commodity}
-                    icon="leaf-outline"
-                    hint={t('ppacsCredit.commodityHint')}
-                  />
-
-                  <Input
-                    label={t('ppacsCredit.quantityKg')}
-                    value={form.quantityKg}
-                    onChangeText={(value) => updateForm('quantityKg', value)}
+                    label={t('ppacsCredit.maxInterest')}
+                    value={form.maxInterestPa}
+                    onChangeText={(value) => updateForm('maxInterestPa', value)}
                     keyboardType="decimal-pad"
-                    placeholder="500"
-                    error={formErrors.quantityKg}
-                    icon="scale-outline"
+                    placeholder="12"
+                    error={formErrors.maxInterestPa}
+                    icon="trending-down-outline"
+                    hint={t('ppacsCredit.maxInterestHint')}
                   />
-
-                  <Input
-                    label={t('ppacsCredit.grade')}
-                    value={form.grade}
-                    onChangeText={(value) => updateForm('grade', value)}
-                    placeholder={t('ppacsCredit.gradePlaceholder')}
-                    error={formErrors.grade}
-                    icon="ribbon-outline"
+                  <PresetChips
+                    values={INTEREST_PRESETS}
+                    selected={form.maxInterestPa}
+                    onSelect={(value) => updateForm('maxInterestPa', value)}
+                    suffix="%"
                   />
-
-                  <Input
-                    label={t('ppacsCredit.notes')}
-                    value={form.query}
-                    onChangeText={(value) => updateForm('query', value)}
-                    placeholder={t('ppacsCredit.notesPlaceholder')}
-                    multiline
-                    numberOfLines={3}
-                    icon="chatbox-ellipses-outline"
-                    hint={t('ppacsCredit.notesHint')}
-                  />
-
-                  <ReviewSummary form={form} getPurposeLabel={getPurposeLabel} t={t} />
-                  <NextStepsCard t={t} />
                 </View>
-              ) : null}
-            </>
-          )}
+                <OptionPicker
+                  label={t('ppacsCredit.purpose')}
+                  value={form.purpose}
+                  options={CREDIT_PURPOSES}
+                  onChange={(value) => updateForm('purpose', value)}
+                  getLabel={getPurposeLabel}
+                  error={formErrors.purpose}
+                />
+              </View>
+            ) : null}
+
+            {step === 'bank' ? (
+              <View className="mt-5 gap-5">
+                <Input
+                  label={t('ppacsCredit.accountHolder')}
+                  value={form.accountHolder}
+                  onChangeText={(value) => updateForm('accountHolder', value)}
+                  error={formErrors.accountHolder}
+                  icon="account-outline"
+                />
+                <Input
+                  label={t('ppacsCredit.accountNumber')}
+                  value={form.accountNumber}
+                  onChangeText={(value) => updateForm('accountNumber', value)}
+                  keyboardType="number-pad"
+                  error={formErrors.accountNumber}
+                  icon="credit-card-outline"
+                />
+                <Input
+                  label={t('ppacsCredit.ifsc')}
+                  value={form.ifsc}
+                  onChangeText={(value) => updateForm('ifsc', value.toUpperCase())}
+                  autoCapitalize="characters"
+                  error={formErrors.ifsc}
+                  icon="bank-outline"
+                  placeholder="HDFC0001234"
+                />
+                <Input
+                  label={t('ppacsCredit.bankName')}
+                  value={form.bankName}
+                  onChangeText={(value) => updateForm('bankName', value)}
+                  error={formErrors.bankName}
+                  icon="bank-outline"
+                />
+              </View>
+            ) : null}
+
+            {step === 'review' ? (
+              <View className="mt-5 gap-5">
+                <ReviewSummary
+                  form={form}
+                  contract={selectedContract}
+                  lender={selectedLender}
+                  getPurposeLabel={getPurposeLabel}
+                  t={t}
+                />
+                <NextStepsCard t={t} />
+              </View>
+            ) : null}
+          </>
+        )}
       </KeyboardAwareFormShell>
     </View>
   );
@@ -446,14 +634,19 @@ function PresetChips({
 
 function ReviewSummary({
   form,
+  contract,
+  lender,
   getPurposeLabel,
   t,
 }: {
   form: PpacsCreditFormValues;
+  contract?: FarmerSmartContract;
+  lender?: Lender;
   getPurposeLabel: (purpose: CreditPurpose) => string;
   t: (key: string) => string;
 }) {
-  const loanLabel = formatPaise(toPpacsCreditDetails(form).loanAmountPaise);
+  const payload = toApplyAgriCreditPayload(form);
+  const loanLabel = formatPaise(Math.round(payload.requestedAmountRupees * 100));
 
   return (
     <View className="overflow-hidden rounded-2xl border border-india-green/20 bg-surface">
@@ -467,11 +660,17 @@ function ReviewSummary({
           {t('ppacsCredit.reviewTitle')}
         </Text>
         <View className="mt-3 gap-2">
-          <ReviewLine
-            icon="wallet-outline"
-            label={t('ppacsCredit.loanAmount')}
-            value={loanLabel}
-          />
+          {contract ? (
+            <ReviewLine
+              icon="file-document-outline"
+              label={t('ppacsCredit.smartContract')}
+              value={`${contract.cropType} · ${payload.collateralQuantityKg} kg`}
+            />
+          ) : null}
+          {lender ? (
+            <ReviewLine icon="bank-outline" label={t('ppacsCredit.lender')} value={lender.name} />
+          ) : null}
+          <ReviewLine icon="wallet-outline" label={t('ppacsCredit.loanAmount')} value={loanLabel} />
           <ReviewLine
             icon="time-outline"
             label={t('ppacsCredit.tenureMonths')}
@@ -487,8 +686,12 @@ function ReviewSummary({
             label={t('ppacsCredit.purpose')}
             value={getPurposeLabel(form.purpose)}
           />
+          <ReviewLine
+            icon="credit-card-outline"
+            label={t('ppacsCredit.accountNumber')}
+            value={`${payload.bankDetails.bankName} · ****${payload.bankDetails.accountNumber.slice(-4)}`}
+          />
         </View>
-
         <View className="mt-4 rounded-xl bg-white/80 px-3 py-3">
           <Text className="text-[12px] leading-5 text-muted">{t('ppacsCredit.reviewDisclaimer')}</Text>
         </View>
@@ -499,9 +702,9 @@ function ReviewSummary({
 
 function NextStepsCard({ t }: { t: (key: string) => string }) {
   const steps = [
-    t('ppacsCredit.nextSteps.received'),
+    t('ppacsCredit.nextSteps.kyc'),
+    t('ppacsCredit.nextSteps.pledge'),
     t('ppacsCredit.nextSteps.review'),
-    t('ppacsCredit.nextSteps.callback'),
     t('ppacsCredit.nextSteps.disbursement'),
   ];
 
@@ -524,13 +727,12 @@ function NextStepsCard({ t }: { t: (key: string) => string }) {
   );
 }
 
-function SuccessView({ orderId, t }: { orderId: string; t: (key: string) => string }) {
+function SuccessView({ loanNumber, t }: { loanNumber: string | null; t: (key: string) => string }) {
   return (
     <View className="items-center gap-5 pt-4">
       <View className="h-20 w-20 items-center justify-center rounded-full bg-india-green/10">
         <AppIcon name="check-circle" size={52} color={Palette.indiaGreen} />
       </View>
-
       <View className="items-center gap-2">
         <Text className="text-center text-[22px] font-bold text-indigo">
           {t('ppacsCredit.successTitle')}
@@ -539,15 +741,14 @@ function SuccessView({ orderId, t }: { orderId: string; t: (key: string) => stri
           {t('ppacsCredit.successBody')}
         </Text>
       </View>
-
       <View className="w-full rounded-2xl border border-india-green/30 bg-india-green/5 px-4 py-3">
         <Text className="text-center text-[14px] font-semibold text-india-green">
-          {t('ppacsCredit.orderRef').replace('{{orderId}}', orderId)}
+          {loanNumber
+            ? t('ppacsCredit.loanRef').replace('{{loanNumber}}', loanNumber)
+            : t('ppacsCredit.successTitle')}
         </Text>
       </View>
-
       <NextStepsCard t={t} />
-
       <View className="w-full rounded-2xl border border-border bg-surface px-4 py-3">
         <Text className="text-[13px] leading-5 text-muted">{t('ppacsCredit.successFootnote')}</Text>
       </View>

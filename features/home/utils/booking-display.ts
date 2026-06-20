@@ -1,3 +1,4 @@
+import { getBookingDetailRoute } from '@/features/bookings/utils/booking-progress';
 import type { Booking, BookingStatus } from '@/types/booking';
 import type { ServiceIconType } from '@/types/catalog';
 
@@ -25,8 +26,57 @@ const STATUS_BADGE_COLORS: Record<BookingStatus, string> = {
 
 export function translateBookingStatus(t: (key: string) => string, status: BookingStatus): string {
   const key = BOOKING_STATUS_KEYS[status];
+  if (!key) {
+    return status;
+  }
   const translated = t(key);
   return translated === key ? status : translated;
+}
+
+const TIMELINE_NOTE_EXACT_KEYS: Record<string, string> = {
+  'Booking submitted': 'bookingDetail.notes.bookingSubmitted',
+  'Opened for expert assignment': 'bookingDetail.notes.openedForAssignment',
+  'Expert accepted request': 'bookingDetail.notes.expertAccepted',
+};
+
+export function translateBookingTimelineNote(
+  t: (key: string) => string,
+  note: string | undefined,
+): string | undefined {
+  if (!note?.trim()) {
+    return undefined;
+  }
+
+  const trimmed = note.trim();
+  const exactKey = TIMELINE_NOTE_EXACT_KEYS[trimmed];
+  if (exactKey) {
+    return t(exactKey);
+  }
+
+  const statusUpdateMatch = trimmed.match(/^Status updated to ([A-Z_]+)$/);
+  if (statusUpdateMatch) {
+    const status = statusUpdateMatch[1] as BookingStatus;
+    if (BOOKING_STATUS_KEYS[status]) {
+      return t('bookingDetail.notes.statusUpdated').replace(
+        '{{status}}',
+        translateBookingStatus(t, status),
+      );
+    }
+  }
+
+  if (/^Accepted by expert /u.test(trimmed)) {
+    return t('bookingDetail.notes.expertAccepted');
+  }
+
+  if (/^Expert assigned by admin /u.test(trimmed)) {
+    return t('bookingDetail.notes.expertAssigned');
+  }
+
+  if (/^Expert reassigned to /u.test(trimmed)) {
+    return t('bookingDetail.notes.expertReassigned');
+  }
+
+  return trimmed;
 }
 
 export function getBookingStatusColor(status: BookingStatus): string {
@@ -53,10 +103,7 @@ export function getBookingRoute(booking: Booking) {
     };
   }
 
-  return {
-    pathname: '/payment/result' as const,
-    params: { bookingId: booking.id, orderId: booking.orderId },
-  };
+  return getBookingDetailRoute(booking.id);
 }
 
 export function isServiceIconType(value: string): value is ServiceIconType {

@@ -6,6 +6,7 @@ import { useFarmerProfile } from '@/features/farmer/hooks/use-farmer-profile';
 import { useLandParcels } from '@/features/farmer/hooks/use-land-parcel';
 import { CATALOG_KEYS } from '@/features/home/hooks/use-catalog';
 import { invalidateRequestedServicesQueries } from '@/features/home/utils/requested-services';
+import { SMART_CONTRACT_KEYS } from '@/features/smart-contracts/hooks/use-smart-contracts';
 import { useAuthStore } from '@/stores/auth.store';
 import type { FarmerProfile } from '@/types/farmer';
 import type { LandParcel } from '@/types/farmer';
@@ -37,6 +38,7 @@ export function FarmerHomeProvider({ children }: { children: ReactNode }) {
     profileQuery.refetch();
     parcelsQuery.refetch();
     queryClient.invalidateQueries({ queryKey: CATALOG_KEYS.services });
+    queryClient.invalidateQueries({ queryKey: SMART_CONTRACT_KEYS.list });
     void invalidateRequestedServicesQueries(queryClient);
   }, [parcelsQuery, profileQuery, queryClient]);
 

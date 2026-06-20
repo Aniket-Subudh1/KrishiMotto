@@ -145,6 +145,20 @@ export type BookingStatusTimelineEntry = {
   note?: string;
 };
 
+export type BookingCompletionDocument = {
+  assetKey: string;
+  label?: string;
+  uploadedAt: string;
+  uploadedBy?: string;
+  /** Populated client-side after presign upload for opening the file. */
+  publicUrl?: string;
+};
+
+export type AttachCompletionDocumentPayload = {
+  assetKey: string;
+  label?: string;
+};
+
 export type Booking = {
   id: string;
   orderId: string;
@@ -166,6 +180,7 @@ export type Booking = {
   slaDueAt?: string | null;
   slaRemainingMinutes?: number | null;
   statusTimeline: BookingStatusTimelineEntry[];
+  completionDocuments?: BookingCompletionDocument[];
   paymentUrl?: string | null;
   pollableUrl?: string;
   createdAt: string;

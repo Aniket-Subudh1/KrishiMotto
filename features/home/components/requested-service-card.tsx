@@ -11,7 +11,13 @@ import {
   isServiceIconType,
   translateBookingStatus,
 } from '@/features/home/utils/booking-display';
+import { BookingProgressDots } from '@/features/bookings/components/booking-progress-dots';
 import { getStorageRoute } from '@/features/home/utils/storage-display';
+import {
+  getLoanStatusColor,
+  getLoanTrackRoute,
+  translateLoanStatus,
+} from '@/features/ppacs-credit/utils/loan-display';
 import { formatPaise } from '@/lib/currency';
 import {
   translateServiceTitle,
@@ -21,6 +27,7 @@ import {
 import { Palette } from '@/constants/theme';
 import type { RequestedServiceItem } from '@/features/home/utils/requested-services';
 import type { Booking } from '@/types/booking';
+import type { Loan } from '@/types/credit';
 import type { StorageRequest } from '@/types/storage';
 
 export function BookingCard({
@@ -89,6 +96,17 @@ export function BookingCard({
               {formatPaise(booking.pricing.totalPaise)}
             </Text>
           </View>
+          <View className="mt-3">
+            <BookingProgressDots booking={booking} t={t} compact />
+          </View>
+          {(booking.completionDocuments?.length ?? 0) > 0 ? (
+            <Text className="mt-2 text-[12px] font-medium text-india-green">
+              {t('bookingDetail.documentCount').replace(
+                '{{count}}',
+                String(booking.completionDocuments?.length ?? 0),
+              )}
+            </Text>
+          ) : null}
         </View>
 
         <View
@@ -179,6 +197,85 @@ export function StorageCard({
   );
 }
 
+export function LoanCard({
+  loan,
+  t,
+  locale,
+}: {
+  loan: Loan;
+  t: TranslateFn;
+  locale: string;
+}) {
+  const iconStyle = getServiceIconStyle('PPACS_CREDIT');
+  const title = translateServiceTitle(t, 'PPACS_CREDIT', 'PPACS Credit');
+  const statusLabel = translateLoanStatus(t, loan.status);
+  const statusColor = getLoanStatusColor(loan.status);
+  const dateLabel = formatBookingDate(loan.createdAt, locale);
+
+  function handlePress() {
+    router.push(getLoanTrackRoute(loan.id));
+  }
+
+  return (
+    <Pressable onPress={handlePress} style={({ pressed }) => ({ opacity: pressed ? 0.92 : 1 })}>
+      <View
+        className="flex-row items-start gap-4 rounded-2xl bg-white p-4"
+        style={{
+          shadowColor: Palette.indigo,
+          shadowOffset: { width: 0, height: 3 },
+          shadowOpacity: 0.08,
+          shadowRadius: 10,
+          elevation: 4,
+          borderWidth: 1,
+          borderColor: 'rgba(226, 232, 240, 0.8)',
+        }}
+      >
+        <View
+          className="h-12 w-12 shrink-0 items-center justify-center rounded-2xl"
+          style={{ backgroundColor: iconStyle.iconBg }}
+        >
+          <AppIcon name={iconStyle.icon} size={24} color={iconStyle.iconColor} />
+        </View>
+
+        <View className="min-w-0 flex-1">
+          <Text className="text-[15px] font-bold leading-5 text-indigo" numberOfLines={2}>
+            {title}
+          </Text>
+          <Text className="mt-0.5 text-[12px] text-muted" numberOfLines={1}>
+            {loan.loanNumber}
+          </Text>
+          <View className="mt-1 flex-row items-start gap-1.5">
+            <AppIcon name="calendar-clock" size={13} color="#94A3B8" style={{ marginTop: 2 }} />
+            <Text className="flex-1 text-[12px] leading-4 text-muted" numberOfLines={2}>
+              {t('home.dashboard.requestedOn').replace('{{date}}', dateLabel)}
+            </Text>
+          </View>
+          <View className="mt-2.5 flex-row flex-wrap items-center gap-2">
+            <View
+              className="rounded-full px-2.5 py-0.5"
+              style={{ backgroundColor: `${statusColor}18` }}
+            >
+              <Text className="text-[11px] font-semibold leading-4" style={{ color: statusColor }} numberOfLines={2}>
+                {statusLabel}
+              </Text>
+            </View>
+            <Text className="text-[13px] font-bold text-indigo">
+              {formatPaise(loan.requestedAmountPaise)}
+            </Text>
+          </View>
+        </View>
+
+        <View
+          className="h-8 w-8 shrink-0 items-center justify-center self-start rounded-full"
+          style={{ backgroundColor: 'rgba(70, 150, 47, 0.08)' }}
+        >
+          <AppIcon name="chevron-right" size={20} color={Palette.indiaGreen} />
+        </View>
+      </View>
+    </Pressable>
+  );
+}
+
 export function RequestedServiceListItem({
   item,
   t,
@@ -190,6 +287,9 @@ export function RequestedServiceListItem({
 }) {
   if (item.kind === 'booking') {
     return <BookingCard booking={item.booking} t={t} locale={locale} />;
+  }
+  if (item.kind === 'loan') {
+    return <LoanCard loan={item.loan} t={t} locale={locale} />;
   }
   return <StorageCard request={item.request} t={t} locale={locale} />;
 }

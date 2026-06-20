@@ -37,6 +37,17 @@ export const QUICK_ACTIONS: ServiceDefinition[] = [
     iconColor: Palette.saffron,
     badgeColor: Palette.indiaGreen,
   },
+  {
+    key: 'smart-contracts',
+    icon: 'file-document-outline',
+    titleKey: 'home.tools.myReceipts',
+    badgeKey: 'home.tools.myReceiptsBody',
+    href: '/services/smart-contracts',
+    farmerOnly: true,
+    iconBg: 'rgba(70, 150, 47, 0.12)',
+    iconColor: Palette.indiaGreen,
+    badgeColor: Palette.indiaGreen,
+  },
 ];
 
 export const ALL_SERVICES: ServiceDefinition[] = [
@@ -98,6 +109,8 @@ export const ALL_SERVICES: ServiceDefinition[] = [
     icon: 'bank-outline',
     titleKey: 'home.dashboard.services.loan.title',
     badgeKey: 'home.dashboard.services.loan.badge',
+    href: '/services/ppacs-credit',
+    farmerOnly: true,
     iconBg: 'rgba(70, 150, 47, 0.12)',
     iconColor: Palette.indiaGreen,
   },

@@ -2,42 +2,51 @@ import {
   CREDIT_PURPOSES,
   type CreditPurpose,
 } from '@/types/booking';
+import type { BankDetails } from '@/types/credit';
 
 export type PpacsCreditFormValues = {
+  aadhaarNumber: string;
+  fullName: string;
+  smartContractId: string;
+  lenderId: string;
   loanAmountRupee: string;
   tenureMonths: string;
   maxInterestPa: string;
   purpose: CreditPurpose;
-  commodity: string;
-  quantityKg: string;
-  grade: string;
-  query: string;
+  collateralQuantityKg: string;
+  accountHolder: string;
+  accountNumber: string;
+  ifsc: string;
+  bankName: string;
 };
 
 export type PpacsCreditFormErrors = Partial<Record<keyof PpacsCreditFormValues, string>>;
 
-const MIN_LOAN_PAISE = 10_000_00;
-const MAX_LOAN_PAISE = 50_00_000_00;
+const MIN_LOAN_RUPEES = 10_000;
+const MAX_LOAN_RUPEES = 50_00_000;
 const MIN_TENURE_DAYS = 30;
 const MAX_TENURE_DAYS = 3650;
 
-export function buildDefaultPpacsCreditForm(): PpacsCreditFormValues {
+export function buildDefaultPpacsCreditForm(fullName = ''): PpacsCreditFormValues {
   return {
+    aadhaarNumber: '',
+    fullName,
+    smartContractId: '',
+    lenderId: '',
     loanAmountRupee: '',
     tenureMonths: '12',
     maxInterestPa: '12',
     purpose: 'Inputs',
-    commodity: '',
-    quantityKg: '',
-    grade: '',
-    query: '',
+    collateralQuantityKg: '',
+    accountHolder: fullName,
+    accountNumber: '',
+    ifsc: '',
+    bankName: '',
   };
 }
 
-export function parseLoanAmountPaise(value: string): number {
-  const rupees = Number.parseFloat(value.replace(/,/g, ''));
-  if (!Number.isFinite(rupees)) return NaN;
-  return Math.round(rupees * 100);
+export function parseLoanAmountRupees(value: string): number {
+  return Number.parseFloat(value.replace(/,/g, ''));
 }
 
 export function parseTenureDays(value: string): number {
@@ -50,23 +59,98 @@ export function parseMaxInterestPa(value: string): number {
   return Number.parseFloat(value);
 }
 
-export function parseQuantityKg(value: string): number | undefined {
-  const trimmed = value.trim();
-  if (!trimmed) return undefined;
-  const kg = Number.parseFloat(trimmed);
-  return Number.isFinite(kg) && kg > 0 ? kg : NaN;
+export function parseCollateralQuantityKg(value: string): number {
+  const kg = Number.parseFloat(value.trim());
+  return Number.isFinite(kg) ? kg : NaN;
 }
 
-export function validatePpacsCreditForm(
-  values: PpacsCreditFormValues,
+function validateAadhaar(value: string, t: (key: string) => string): string | undefined {
+  if (!/^\d{4}\s?-?\d{4}\s?-?\d{4}$/.test(value.trim())) {
+    return t('ppacsCredit.errors.aadhaar');
+  }
+  return undefined;
+}
+
+function validateBankDetails(
+  values: Pick<PpacsCreditFormValues, 'accountHolder' | 'accountNumber' | 'ifsc' | 'bankName'>,
   t: (key: string) => string,
 ): PpacsCreditFormErrors {
   const errors: PpacsCreditFormErrors = {};
 
-  const loanAmountPaise = parseLoanAmountPaise(values.loanAmountRupee);
-  if (!Number.isFinite(loanAmountPaise) || loanAmountPaise < MIN_LOAN_PAISE) {
+  if (values.accountHolder.trim().length < 2) {
+    errors.accountHolder = t('ppacsCredit.errors.accountHolder');
+  }
+
+  if (!/^\d{9,18}$/.test(values.accountNumber.replace(/\s/g, ''))) {
+    errors.accountNumber = t('ppacsCredit.errors.accountNumber');
+  }
+
+  if (!/^[A-Z]{4}0[A-Z0-9]{6}$/i.test(values.ifsc.trim())) {
+    errors.ifsc = t('ppacsCredit.errors.ifsc');
+  }
+
+  if (values.bankName.trim().length < 2) {
+    errors.bankName = t('ppacsCredit.errors.bankName');
+  }
+
+  return errors;
+}
+
+export function validateKycStep(
+  values: Pick<PpacsCreditFormValues, 'aadhaarNumber' | 'fullName'>,
+  t: (key: string) => string,
+): PpacsCreditFormErrors {
+  const errors: PpacsCreditFormErrors = {};
+  const aadhaarError = validateAadhaar(values.aadhaarNumber, t);
+  if (aadhaarError) errors.aadhaarNumber = aadhaarError;
+  if (values.fullName.trim().length < 2) {
+    errors.fullName = t('ppacsCredit.errors.fullName');
+  }
+  return errors;
+}
+
+export function validateReceiptStep(
+  values: Pick<PpacsCreditFormValues, 'smartContractId' | 'collateralQuantityKg'>,
+  freeQuantityKg: number | null,
+  t: (key: string) => string,
+): PpacsCreditFormErrors {
+  const errors: PpacsCreditFormErrors = {};
+
+  if (!values.smartContractId) {
+    errors.smartContractId = t('ppacsCredit.errors.smartContract');
+  }
+
+  const collateralKg = parseCollateralQuantityKg(values.collateralQuantityKg);
+  if (!Number.isFinite(collateralKg) || collateralKg <= 0) {
+    errors.collateralQuantityKg = t('ppacsCredit.errors.collateralRequired');
+  } else if (freeQuantityKg != null && collateralKg > freeQuantityKg) {
+    errors.collateralQuantityKg = t('ppacsCredit.errors.collateralExceedsFree')
+      .replace('{{free}}', String(freeQuantityKg));
+  }
+
+  return errors;
+}
+
+export function validateLenderStep(
+  values: Pick<PpacsCreditFormValues, 'lenderId'>,
+  t: (key: string) => string,
+): PpacsCreditFormErrors {
+  if (!values.lenderId) {
+    return { lenderId: t('ppacsCredit.errors.lender') };
+  }
+  return {};
+}
+
+export function validateTermsStep(
+  values: Pick<PpacsCreditFormValues, 'loanAmountRupee' | 'tenureMonths' | 'maxInterestPa' | 'purpose'>,
+  t: (key: string) => string,
+): PpacsCreditFormErrors {
+  const errors: PpacsCreditFormErrors = {};
+
+  const loanAmountRupees = parseLoanAmountRupees(values.loanAmountRupee);
+  if (!Number.isFinite(loanAmountRupees) || loanAmountRupees < MIN_LOAN_RUPEES) {
     errors.loanAmountRupee = t('ppacsCredit.errors.loanAmountMin');
-  } else if (loanAmountPaise > MAX_LOAN_PAISE) {
+  } else if (loanAmountRupees > MAX_LOAN_RUPEES) {
     errors.loanAmountRupee = t('ppacsCredit.errors.loanAmountMax');
   }
 
@@ -84,35 +168,54 @@ export function validatePpacsCreditForm(
     errors.purpose = t('ppacsCredit.errors.purpose');
   }
 
-  const quantityKg = parseQuantityKg(values.quantityKg);
-  if (values.quantityKg.trim() && !Number.isFinite(quantityKg)) {
-    errors.quantityKg = t('ppacsCredit.errors.quantityKg');
-  }
-
-  if (values.commodity.trim() && values.commodity.trim().length > 64) {
-    errors.commodity = t('ppacsCredit.errors.commodity');
-  }
-
-  if (values.grade.trim() && values.grade.trim().length > 32) {
-    errors.grade = t('ppacsCredit.errors.grade');
-  }
-
   return errors;
 }
 
-export function toPpacsCreditDetails(values: PpacsCreditFormValues) {
-  const loanAmountPaise = parseLoanAmountPaise(values.loanAmountRupee);
-  const tenureDays = parseTenureDays(values.tenureMonths);
-  const maxInterestPa = parseMaxInterestPa(values.maxInterestPa);
-  const quantityKg = parseQuantityKg(values.quantityKg);
+export function validateBankStep(
+  values: Pick<PpacsCreditFormValues, 'accountHolder' | 'accountNumber' | 'ifsc' | 'bankName'>,
+  t: (key: string) => string,
+): PpacsCreditFormErrors {
+  return validateBankDetails(values, t);
+}
+
+export function validatePpacsCreditForm(
+  values: PpacsCreditFormValues,
+  freeQuantityKg: number | null,
+  t: (key: string) => string,
+  options?: { skipKyc?: boolean },
+): PpacsCreditFormErrors {
+  return {
+    ...(options?.skipKyc ? {} : validateKycStep(values, t)),
+    ...validateReceiptStep(values, freeQuantityKg, t),
+    ...validateLenderStep(values, t),
+    ...validateTermsStep(values, t),
+    ...validateBankStep(values, t),
+  };
+}
+
+export function toApplyAgriCreditPayload(values: PpacsCreditFormValues) {
+  const bankDetails: BankDetails = {
+    accountHolder: values.accountHolder.trim(),
+    accountNumber: values.accountNumber.replace(/\s/g, ''),
+    ifsc: values.ifsc.trim().toUpperCase(),
+    bankName: values.bankName.trim(),
+  };
 
   return {
-    loanAmountPaise,
-    tenureDays,
-    maxInterestPa,
+    smartContractId: values.smartContractId,
+    lenderId: values.lenderId,
+    collateralQuantityKg: parseCollateralQuantityKg(values.collateralQuantityKg),
+    requestedAmountRupees: parseLoanAmountRupees(values.loanAmountRupee),
+    tenureDays: parseTenureDays(values.tenureMonths),
+    maxInterestRatePa: parseMaxInterestPa(values.maxInterestPa),
     purpose: values.purpose,
-    ...(values.commodity.trim() ? { commodity: values.commodity.trim() } : {}),
-    ...(Number.isFinite(quantityKg) ? { quantityKg } : {}),
-    ...(values.grade.trim() ? { grade: values.grade.trim() } : {}),
+    bankDetails,
+  };
+}
+
+export function toKycPayload(values: Pick<PpacsCreditFormValues, 'aadhaarNumber' | 'fullName'>) {
+  return {
+    aadhaarNumber: values.aadhaarNumber.trim(),
+    fullName: values.fullName.trim(),
   };
 }
