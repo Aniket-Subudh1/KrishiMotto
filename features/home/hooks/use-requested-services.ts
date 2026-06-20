@@ -1,26 +1,17 @@
-import { useFocusEffect } from '@react-navigation/native';
-import { useCallback, useMemo } from 'react';
+import { useMemo } from 'react';
 
 import { useHomeBookings } from '@/features/home/hooks/use-bookings';
 import { useHomeStorageRequests } from '@/features/home/hooks/use-storage-requests';
 import {
   buildRequestedServiceItems,
-  REQUESTED_SERVICES_FETCH_LIMIT,
 } from '@/features/home/utils/requested-services';
 import { useFarmerLoans } from '@/features/ppacs-credit/hooks/use-ppacs-credit';
+import { useManualRefresh } from '@/hooks/use-manual-refresh';
 
 export function useRequestedServices() {
-  const bookingsQuery = useHomeBookings(REQUESTED_SERVICES_FETCH_LIMIT);
-  const storageQuery = useHomeStorageRequests(REQUESTED_SERVICES_FETCH_LIMIT);
+  const bookingsQuery = useHomeBookings();
+  const storageQuery = useHomeStorageRequests();
   const loansQuery = useFarmerLoans();
-
-  useFocusEffect(
-    useCallback(() => {
-      void bookingsQuery.refetch();
-      void storageQuery.refetch();
-      void loansQuery.refetch();
-    }, [bookingsQuery.refetch, loansQuery.refetch, storageQuery.refetch]),
-  );
 
   const items = useMemo(
     () =>
@@ -34,14 +25,16 @@ export function useRequestedServices() {
 
   const isLoading =
     bookingsQuery.isLoading || storageQuery.isLoading || loansQuery.isLoading;
-  const isRefreshing =
-    bookingsQuery.isRefetching || storageQuery.isRefetching || loansQuery.isRefetching;
 
-  function refetch() {
-    void bookingsQuery.refetch();
-    void storageQuery.refetch();
-    void loansQuery.refetch();
-  }
+  const refreshData = async () => {
+    await Promise.all([
+      bookingsQuery.refetch(),
+      storageQuery.refetch(),
+      loansQuery.refetch(),
+    ]);
+  };
 
-  return { items, isLoading, isRefreshing, refetch };
+  const { isRefreshing, onRefresh } = useManualRefresh(refreshData);
+
+  return { items, isLoading, isRefreshing, refetch: onRefresh };
 }

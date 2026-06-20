@@ -56,7 +56,9 @@ export default function LandBoundaryScreen() {
   const setProfileCompleted = useAuthStore((s) => s.setProfileCompleted);
   const signupLandType = useAuthFlowStore((s) => s.landType);
   const setSignupStep = useAuthFlowStore((s) => s.setSignupStep);
-  const { data: farmerProfile } = useFarmerProfile();
+  const { data: farmerProfile } = useFarmerProfile(
+    isAuthenticated && user?.role === 'FARMER',
+  );
   const createLandType =
     profileCompleted || isEditMode
       ? (farmerProfile?.landType ?? 'OWNED')

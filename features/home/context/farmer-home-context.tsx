@@ -7,6 +7,7 @@ import { useLandParcels } from '@/features/farmer/hooks/use-land-parcel';
 import { CATALOG_KEYS } from '@/features/home/hooks/use-catalog';
 import { invalidateRequestedServicesQueries } from '@/features/home/utils/requested-services';
 import { SMART_CONTRACT_KEYS } from '@/features/smart-contracts/hooks/use-smart-contracts';
+import { useManualRefresh } from '@/hooks/use-manual-refresh';
 import { useAuthStore } from '@/stores/auth.store';
 import type { FarmerProfile } from '@/types/farmer';
 import type { LandParcel } from '@/types/farmer';
@@ -30,17 +31,17 @@ export function FarmerHomeProvider({ children }: { children: ReactNode }) {
   const profileQuery = useFarmerProfile(isFarmer);
   const parcelsQuery = useLandParcels(isFarmer);
 
-  const isRefreshing =
-    (profileQuery.isRefetching && !profileQuery.isLoading) ||
-    (parcelsQuery.isRefetching && !parcelsQuery.isLoading);
-
-  const onRefresh = useCallback(() => {
-    profileQuery.refetch();
-    parcelsQuery.refetch();
-    queryClient.invalidateQueries({ queryKey: CATALOG_KEYS.services });
-    queryClient.invalidateQueries({ queryKey: SMART_CONTRACT_KEYS.list });
-    void invalidateRequestedServicesQueries(queryClient);
+  const refreshData = useCallback(async () => {
+    await Promise.all([
+      profileQuery.refetch(),
+      parcelsQuery.refetch(),
+      queryClient.invalidateQueries({ queryKey: CATALOG_KEYS.services }),
+      queryClient.invalidateQueries({ queryKey: SMART_CONTRACT_KEYS.list }),
+      invalidateRequestedServicesQueries(queryClient),
+    ]);
   }, [parcelsQuery, profileQuery, queryClient]);
+
+  const { isRefreshing, onRefresh } = useManualRefresh(refreshData);
 
   const value = useMemo(
     () => ({
@@ -81,4 +82,8 @@ export function useFarmerHome() {
     throw new Error('useFarmerHome must be used within FarmerHomeProvider');
   }
   return context;
+}
+
+export function useOptionalFarmerHome() {
+  return useContext(FarmerHomeContext);
 }

@@ -1,3 +1,5 @@
+import { Platform } from 'react-native';
+
 import { apiClient } from '@/lib/api-client';
 import type { V1Response } from '@/types/api';
 
@@ -12,6 +14,24 @@ export type PresignResponse = {
   maxBytes: number;
 };
 
+function uploadViaXmlHttpRequest(uploadUrl: string, uri: string, contentType: string) {
+  return new Promise<void>((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve();
+        return;
+      }
+
+      reject(new Error(`Failed to upload file (${xhr.status})`));
+    };
+    xhr.onerror = () => reject(new Error('Failed to upload file'));
+    xhr.open('PUT', uploadUrl);
+    xhr.setRequestHeader('Content-Type', contentType);
+    xhr.send({ uri, type: contentType, name: 'upload.jpg' } as unknown as Blob);
+  });
+}
+
 export const uploadService = {
   presign: (kind: UploadKind, contentType: string) =>
     apiClient.post<V1Response<PresignResponse>>('/uploads/presign', {
@@ -20,17 +40,23 @@ export const uploadService = {
     }),
 
   uploadToPresignedUrl: async (uploadUrl: string, uri: string, contentType: string) => {
-    const response = await fetch(uri);
-    const blob = await response.blob();
+    if (Platform.OS === 'web') {
+      const response = await fetch(uri);
+      const blob = await response.blob();
 
-    const uploadResponse = await fetch(uploadUrl, {
-      method: 'PUT',
-      headers: { 'Content-Type': contentType },
-      body: blob,
-    });
+      const uploadResponse = await fetch(uploadUrl, {
+        method: 'PUT',
+        headers: { 'Content-Type': contentType },
+        body: blob,
+      });
 
-    if (!uploadResponse.ok) {
-      throw new Error('Failed to upload file');
+      if (!uploadResponse.ok) {
+        throw new Error(`Failed to upload file (${uploadResponse.status})`);
+      }
+
+      return;
     }
+
+    await uploadViaXmlHttpRequest(uploadUrl, uri, contentType);
   },
 };

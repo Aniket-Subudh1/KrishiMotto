@@ -53,7 +53,8 @@ export function DroneSprayScreen() {
   const { t } = useAppLocale();
   const insets = useSafeAreaInsets();
   const user = useAuthStore((s) => s.user);
-  const { data: parcels = [] } = useLandParcels();
+  const isFarmer = user?.role === 'FARMER';
+  const { data: parcels = [] } = useLandParcels(isFarmer);
   const { data: catalogServices, isLoading: catalogLoading } = useCatalog();
   const createBooking = useCreateDroneSprayBooking();
 

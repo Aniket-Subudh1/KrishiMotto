@@ -2,6 +2,11 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useSendOtp } from '@/features/auth/hooks/use-send-otp';
 import { getApiErrorMessage } from '@/lib/api-error';
+import { queryClient } from '@/lib/query-client';
+import {
+  ensureUploadUrlCacheHydrated,
+  withResolvedProfilePhoto,
+} from '@/lib/upload-url-cache';
 import { authService } from '@/services/auth.service';
 import { expertService } from '@/services/expert.service';
 import { useAuthStore } from '@/stores/auth.store';
@@ -11,6 +16,7 @@ import type {
 } from '@/types/auth';
 import type {
   ExpertDocumentSubmitPayload,
+  ExpertProfile,
   ExpertProfileUpdatePayload,
 } from '@/types/expert';
 
@@ -18,6 +24,11 @@ export const EXPERT_PROFILE_KEYS = {
   profile: ['expert', 'profile'] as const,
   kycStatus: ['expert', 'kyc-status'] as const,
 };
+
+export async function seedExpertProfileQueryCache(profile: ExpertProfile) {
+  await ensureUploadUrlCacheHydrated();
+  queryClient.setQueryData(EXPERT_PROFILE_KEYS.profile, withResolvedProfilePhoto(profile));
+}
 
 export { useSendOtp };
 
@@ -45,13 +56,16 @@ export function useAuthenticateExpert() {
 }
 
 export function useExpertProfile(enabled = true) {
+  const isExpert = useAuthStore((s) => s.user?.role === 'EXPERT');
+
   return useQuery({
     queryKey: EXPERT_PROFILE_KEYS.profile,
     queryFn: async () => {
+      await ensureUploadUrlCacheHydrated();
       const { data } = await expertService.getProfile();
-      return data.data;
+      return withResolvedProfilePhoto(data.data);
     },
-    enabled,
+    enabled: enabled && isExpert,
   });
 }
 
@@ -76,7 +90,13 @@ export function useUpdateExpertProfile() {
       return data.data;
     },
     onSuccess: (profile) => {
-      queryClient.setQueryData(EXPERT_PROFILE_KEYS.profile, profile);
+      const previous = queryClient.getQueryData<ExpertProfile>(EXPERT_PROFILE_KEYS.profile);
+      const merged = withResolvedProfilePhoto({
+        ...previous,
+        ...profile,
+        profilePicKey: profile.profilePicKey ?? previous?.profilePicKey,
+      });
+      queryClient.setQueryData(EXPERT_PROFILE_KEYS.profile, merged);
     },
   });
 }
@@ -90,12 +110,22 @@ export function useSubmitExpertDocuments() {
       return data.data;
     },
     onSuccess: (profile) => {
-      queryClient.setQueryData(EXPERT_PROFILE_KEYS.profile, profile);
+      const previous = queryClient.getQueryData<ExpertProfile>(EXPERT_PROFILE_KEYS.profile);
+      const merged = withResolvedProfilePhoto({
+        ...previous,
+        ...profile,
+        profilePicKey: profile.profilePicKey ?? previous?.profilePicKey,
+      });
+      queryClient.setQueryData(EXPERT_PROFILE_KEYS.profile, merged);
       queryClient.invalidateQueries({ queryKey: EXPERT_PROFILE_KEYS.kycStatus });
     },
   });
 }
 
 export function getMutationError(error: unknown, fallback: string) {
+  return getApiErrorMessage(error, fallback);
+}
+
+export function getExpertProfileError(error: unknown, fallback: string) {
   return getApiErrorMessage(error, fallback);
 }

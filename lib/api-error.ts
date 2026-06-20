@@ -19,6 +19,39 @@ export function isNotFoundError(error: unknown): boolean {
   return false;
 }
 
+export function getApiErrorStatus(error: unknown): number | undefined {
+  if (axios.isAxiosError(error)) {
+    return error.response?.status;
+  }
+
+  return undefined;
+}
+
+export function getApiErrorCode(error: unknown): string | undefined {
+  if (axios.isAxiosError<ApiErrorBody>(error)) {
+    return error.response?.data?.error?.code;
+  }
+
+  return undefined;
+}
+
+export function isForbiddenError(error: unknown): boolean {
+  return getApiErrorStatus(error) === 403;
+}
+
+export function isServerError(error: unknown): boolean {
+  const status = getApiErrorStatus(error);
+  return status != null && status >= 500;
+}
+
+export function isNetworkError(error: unknown): boolean {
+  if (axios.isAxiosError(error)) {
+    return error.message === 'Network Error' || !error.response;
+  }
+
+  return false;
+}
+
 export function getApiErrorMessage(error: unknown, fallback = 'Something went wrong'): string {
   
   if (axios.isAxiosError<ApiErrorBody>(error)) {

@@ -1,22 +1,68 @@
-import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Pressable, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
+import { LinearGradient } from "expo-linear-gradient";
+import { useMemo } from "react";
+import { Pressable, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { AppIcon, type AppIconName } from '@/components/ui/app-icon';
-import { FittedText } from '@/components/ui/fitted-text';
-import { Text } from '@/components/ui/text';
-import { Palette } from '@/constants/theme';
+import { AppIcon, type AppIconName } from "@/components/ui/app-icon";
+import { FittedText } from "@/components/ui/fitted-text";
+import { Palette } from "@/constants/theme";
+import { useAuthStore } from "@/stores/auth.store";
 
-const TAB_ICONS: Record<string, { icon: AppIconName; iconFocused: AppIconName }> = {
-  index: { icon: 'home-variant-outline', iconFocused: 'home-variant' },
-  land: { icon: 'map-marker-radius-outline', iconFocused: 'map-marker-radius' },
-  explore: { icon: 'view-grid-outline', iconFocused: 'view-grid' },
-  profile: { icon: 'account-circle-outline', iconFocused: 'account-circle' },
+const TAB_ICONS: Record<
+  string,
+  { icon: AppIconName; iconFocused: AppIconName }
+> = {
+  index: { icon: "home-variant-outline", iconFocused: "home-variant" },
+  requests: {
+    icon: "briefcase-search-outline",
+    iconFocused: "briefcase-search",
+  },
+  orders: { icon: "clipboard-list-outline", iconFocused: "clipboard-list" },
+  land: { icon: "map-marker-radius-outline", iconFocused: "map-marker-radius" },
+  explore: { icon: "view-grid-outline", iconFocused: "view-grid" },
+  profile: { icon: "account-circle-outline", iconFocused: "account-circle" },
 };
 
-export function AppTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+function getVisibleTabNames(role: string | undefined): string[] {
+  if (role === "EXPERT") {
+    return ["index", "requests", "orders", "profile"];
+  }
+
+  if (role === "FARMER") {
+    return ["index", "land", "explore", "profile"];
+  }
+
+  return ["index", "profile"];
+}
+
+function isTabVisible(
+  routeName: string,
+  options: BottomTabBarProps["descriptors"][string]["options"],
+  allowedTabNames: string[],
+) {
+  if (!allowedTabNames.includes(routeName)) {
+    return false;
+  }
+
+  if ("href" in options && options.href === null) {
+    return false;
+  }
+
+  return options.tabBarButton !== null;
+}
+
+export function AppTabBar({
+  state,
+  descriptors,
+  navigation,
+}: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
+  const role = useAuthStore((s) => s.user?.role);
+  const allowedTabNames = useMemo(() => getVisibleTabNames(role), [role]);
+  const visibleRoutes = state.routes.filter((route) =>
+    isTabVisible(route.name, descriptors[route.key].options, allowedTabNames),
+  );
 
   return (
     <View
@@ -38,17 +84,21 @@ export function AppTabBar({ state, descriptors, navigation }: BottomTabBarProps)
         />
       </View>
 
-      <View className="min-h-[60px] flex-row items-stretch px-1 py-1" style={{ paddingBottom: 0 }}>
-        {state.routes.map((route, index) => {
+      <View
+        className="min-h-[60px] flex-row items-stretch px-1 py-1"
+        style={{ paddingBottom: 0 }}
+      >
+        {visibleRoutes.map((route) => {
           const { options } = descriptors[route.key];
-          const isFocused = state.index === index;
+          const routeIndex = state.routes.findIndex((item) => item.key === route.key);
+          const isFocused = state.index === routeIndex;
           const icons = TAB_ICONS[route.name] ?? TAB_ICONS.index;
           const label = options.title ?? route.name;
-          const color = isFocused ? Palette.indiaGreen : '#94A3B8';
+          const color = isFocused ? Palette.indiaGreen : "#94A3B8";
 
           function onPress() {
             const event = navigation.emit({
-              type: 'tabPress',
+              type: "tabPress",
               target: route.key,
               canPreventDefault: true,
             });
@@ -70,7 +120,11 @@ export function AppTabBar({ state, descriptors, navigation }: BottomTabBarProps)
               <View className="w-full items-center justify-center gap-0.5">
                 <View
                   className="h-8 w-11 items-center justify-center rounded-2xl"
-                  style={isFocused ? { backgroundColor: 'rgba(70, 150, 47, 0.12)' } : undefined}
+                  style={
+                    isFocused
+                      ? { backgroundColor: "rgba(70, 150, 47, 0.12)" }
+                      : undefined
+                  }
                 >
                   <AppIcon
                     name={isFocused ? icons.iconFocused : icons.icon}
@@ -81,7 +135,7 @@ export function AppTabBar({ state, descriptors, navigation }: BottomTabBarProps)
                 <FittedText
                   maxLines={2}
                   className="w-full text-center text-[10px] font-condensed-semibold leading-3"
-                  style={{ color, fontWeight: isFocused ? '700' : '500' }}
+                  style={{ color, fontWeight: isFocused ? "700" : "500" }}
                 >
                   {label}
                 </FittedText>

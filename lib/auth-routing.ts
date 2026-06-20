@@ -1,5 +1,7 @@
 import type { Href } from 'expo-router';
 
+import { seedExpertProfileQueryCache } from '@/features/expert/hooks/use-expert-auth';
+import { seedFarmerProfileQueryCache } from '@/features/farmer/hooks/use-farmer-profile';
 import {
   isExpertAwaitingVerification,
   isExpertKycRejected,
@@ -60,6 +62,7 @@ export async function deriveAuthCompletion(
     try {
       const { data } = await farmerService.getProfile();
       const profile = data.data;
+      seedFarmerProfileQueryCache(profile);
 
       if (currentSignupStep === 'land') {
         return { profileCompleted: false, signupStep: 'land' };
@@ -82,6 +85,7 @@ export async function deriveAuthCompletion(
     try {
       const { data } = await expertService.getProfile();
       const profile = data.data;
+      await seedExpertProfileQueryCache(profile);
       const profileComplete = isExpertProfileComplete(profile);
 
       if (!profileComplete) {

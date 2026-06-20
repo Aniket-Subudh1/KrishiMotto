@@ -1,18 +1,14 @@
 import { Redirect } from 'expo-router';
 
+import { ExpertProfileTab } from '@/features/expert/components/expert-profile-tab';
 import { ProfileTab } from '@/features/home/components/profile-tab';
 import { useFarmerHome } from '@/features/home/context/farmer-home-context';
 import { useAppLocale } from '@/hooks/use-app-locale';
 import { useAuthStore } from '@/stores/auth.store';
 
-export default function ProfileScreen() {
+function FarmerProfileScreen() {
   const { t } = useAppLocale();
-  const user = useAuthStore((s) => s.user);
   const { profile, isLoading, isRefreshing, onRefresh } = useFarmerHome();
-
-  if (user?.role !== 'FARMER') {
-    return <Redirect href="/(tabs)" />;
-  }
 
   return (
     <ProfileTab
@@ -23,4 +19,18 @@ export default function ProfileScreen() {
       t={t}
     />
   );
+}
+
+export default function ProfileScreen() {
+  const user = useAuthStore((s) => s.user);
+
+  if (user?.role === 'EXPERT') {
+    return <ExpertProfileTab />;
+  }
+
+  if (user?.role !== 'FARMER') {
+    return <Redirect href="/(tabs)" />;
+  }
+
+  return <FarmerProfileScreen />;
 }

@@ -23,6 +23,7 @@ import {
   useUpdateFarmerProfile,
 } from '@/features/farmer/hooks/use-farmer-auth';
 import { useAppLocale } from '@/hooks/use-app-locale';
+import { clearLocalSession } from '@/lib/auth-session';
 import {
   isValidCrop,
   isValidIndianPhone,
@@ -53,8 +54,6 @@ export default function FarmerSignUpScreen() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const user = useAuthStore((s) => s.user);
   const profileCompleted = useAuthStore((s) => s.profileCompleted);
-  const clearAuth = useAuthStore((s) => s.clearAuth);
-  const clearAuthFlow = useAuthFlowStore((s) => s.clearAuthFlow);
   const intent = useAuthFlowStore((s) => s.intent);
   const selectedRole = useAuthFlowStore((s) => s.selectedRole);
   const hasEnteredFromGetStarted = useAuthFlowStore((s) => s.hasEnteredFromGetStarted);
@@ -123,18 +122,18 @@ export default function FarmerSignUpScreen() {
 
     if (step === 'profile') {
       showBackConfirmation(t('farmerSignUp.backFromProfileMessage'), () => {
-        clearAuth();
-        clearAuthFlow();
-        setOtp('');
-        setFormError(null);
-        setInfoMessage(null);
-        setStep('details');
+        void clearLocalSession().then(() => {
+          setOtp('');
+          setFormError(null);
+          setInfoMessage(null);
+          setStep('details');
+        });
       });
       return;
     }
 
     router.back();
-  }, [clearAuth, clearAuthFlow, showBackConfirmation, step, t]);
+  }, [showBackConfirmation, step, t]);
 
   useEffect(() => {
     if (step === 'details') {

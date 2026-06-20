@@ -1,5 +1,6 @@
 import { Redirect, router, type Href } from 'expo-router';
 import { Image } from 'expo-image';
+import * as ImagePicker from 'expo-image-picker';
 import { useCallback, useEffect, useState } from 'react';
 import { Alert, BackHandler, Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -24,6 +25,7 @@ import {
   useUpdateExpertProfile,
 } from '@/features/expert/hooks/use-expert-auth';
 import { useAppLocale } from '@/hooks/use-app-locale';
+import { clearLocalSession } from '@/lib/auth-session';
 import {
   isValidEmail,
   isValidExpertField,
@@ -39,6 +41,7 @@ import {
 } from '@/lib/validation';
 import { Palette } from '@/constants/theme';
 import { uploadService } from '@/services/upload.service';
+import { rememberAssetPublicUrl } from '@/lib/upload-url-cache';
 import { useAuthFlowStore } from '@/stores/auth-flow.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { KYC_DOCUMENT_TYPES, type KycDocumentType } from '@/types/expert';
@@ -78,8 +81,6 @@ export default function ExpertSignUpScreen() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const user = useAuthStore((s) => s.user);
   const profileCompleted = useAuthStore((s) => s.profileCompleted);
-  const clearAuth = useAuthStore((s) => s.clearAuth);
-  const clearAuthFlow = useAuthFlowStore((s) => s.clearAuthFlow);
   const intent = useAuthFlowStore((s) => s.intent);
   const selectedRole = useAuthFlowStore((s) => s.selectedRole);
   const hasEnteredFromGetStarted = useAuthFlowStore((s) => s.hasEnteredFromGetStarted);
@@ -170,12 +171,12 @@ export default function ExpertSignUpScreen() {
 
     if (step === 'profile') {
       showBackConfirmation(t('expertSignUp.backFromProfileMessage'), () => {
-        clearAuth();
-        clearAuthFlow();
-        setOtp('');
-        setFormError(null);
-        setInfoMessage(null);
-        setStep('details');
+        void clearLocalSession().then(() => {
+          setOtp('');
+          setFormError(null);
+          setInfoMessage(null);
+          setStep('details');
+        });
       });
       return;
     }
@@ -200,7 +201,7 @@ export default function ExpertSignUpScreen() {
     }
 
     router.back();
-  }, [clearAuth, clearAuthFlow, showBackConfirmation, step, t]);
+  }, [showBackConfirmation, step, t]);
 
   useEffect(() => {
     if (step === 'details') {
@@ -352,7 +353,6 @@ export default function ExpertSignUpScreen() {
   }
 
   async function pickProfilePhoto() {
-    const ImagePicker = await import('expo-image-picker');
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
       Alert.alert(t('expertSignUp.photoPermissionTitle'), t('expertSignUp.photoPermissionMessage'));
@@ -372,7 +372,6 @@ export default function ExpertSignUpScreen() {
   }
 
   async function pickKycDocument(type: KycDocumentType) {
-    const ImagePicker = await import('expo-image-picker');
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
       Alert.alert(t('expertSignUp.photoPermissionTitle'), t('expertSignUp.photoPermissionMessage'));
@@ -469,6 +468,7 @@ export default function ExpertSignUpScreen() {
         const presign = presignData.data;
         await uploadService.uploadToPresignedUrl(presign.uploadUrl, profilePhotoUri, contentType);
         profilePicKey = presign.assetKey;
+        rememberAssetPublicUrl(presign.assetKey, presign.publicUrl);
       }
 
       await updateProfile.mutateAsync({

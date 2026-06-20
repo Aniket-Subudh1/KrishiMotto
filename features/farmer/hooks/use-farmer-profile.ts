@@ -1,12 +1,18 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { getApiErrorMessage } from '@/lib/api-error';
+import { queryClient } from '@/lib/query-client';
 import { farmerService } from '@/services/farmer.service';
+import type { FarmerProfile } from '@/types/farmer';
 import type { FarmerProfileUpdatePayload } from '@/types/farmer';
 
 export const FARMER_PROFILE_KEYS = {
   profile: ['farmer', 'profile'] as const,
 };
+
+export function seedFarmerProfileQueryCache(profile: FarmerProfile) {
+  queryClient.setQueryData(FARMER_PROFILE_KEYS.profile, profile);
+}
 
 export function useFarmerProfile(enabled = true) {
   return useQuery({
