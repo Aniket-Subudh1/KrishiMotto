@@ -1,8 +1,10 @@
 import { AppIcon } from '@/components/ui/app-icon';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
+import { useCallback } from 'react';
 import { ActivityIndicator, Linking, Pressable, RefreshControl, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { ErrorBanner } from '@/components/auth/auth-screen-layout';
 import { Button } from '@/components/ui/button';
@@ -14,6 +16,8 @@ import {
 } from '@/features/ppacs-credit/utils/loan-display';
 import { AppBarGradient, Palette } from '@/constants/theme';
 import { useAppLocale } from '@/hooks/use-app-locale';
+import { useQueryFocusRefresh } from '@/hooks/use-query-focus-refresh';
+import { invalidateFarmerServiceQueries } from '@/lib/query-cache-sync';
 import { formatPaise } from '@/lib/currency';
 import type { LoanMilestone, LoanMilestoneStatus } from '@/types/credit';
 
@@ -46,9 +50,18 @@ function milestoneIcon(status: LoanMilestoneStatus) {
 export function LoanTrackScreen() {
   const { t } = useAppLocale();
   const insets = useSafeAreaInsets();
+  const queryClient = useQueryClient();
   const { id } = useLocalSearchParams<{ id: string }>();
   const loanId = typeof id === 'string' ? id : '';
-  const { data, isLoading, isRefetching, refetch, error } = useLoanTrack(loanId || null);
+  const refreshLoan = useCallback(
+    () => invalidateFarmerServiceQueries(queryClient),
+    [queryClient],
+  );
+
+  useQueryFocusRefresh(refreshLoan, Boolean(loanId));
+  const { data, isLoading, isRefetching, refetch, error } = useLoanTrack(loanId || null, {
+    poll: true,
+  });
 
   return (
     <View className="flex-1 bg-background">

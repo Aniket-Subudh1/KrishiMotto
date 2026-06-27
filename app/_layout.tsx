@@ -18,6 +18,9 @@ import { AppSplash, SPLASH_DURATION_MS } from "@/components/app-splash";
 import { FontLoadMap } from "@/constants/fonts";
 import { Colors, Fonts, NavigationTheme } from "@/constants/theme";
 import { queryClient } from "@/lib/query-client";
+import { setupQueryFocusManager } from "@/lib/query-focus-manager";
+
+setupQueryFocusManager();
 import { AuthSessionProvider } from "@/providers/auth-session-provider";
 import { I18nProvider } from "@/providers/i18n-provider";
 

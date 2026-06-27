@@ -2,6 +2,13 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { isActiveBookingStatus } from '@/features/bookings/utils/booking-progress';
 import { getApiErrorMessage } from '@/lib/api-error';
+import {
+  rememberUploadedCompletionDocument,
+  uploadNameForContentType,
+  withResolvedCompletionDocuments,
+} from '@/lib/completion-document';
+import { invalidateBookingRelatedQueries } from '@/lib/query-cache-sync';
+import { ensureUploadUrlCacheHydrated } from '@/lib/upload-url-cache';
 import { bookingService, type ListBookingsParams } from '@/services/booking.service';
 import { uploadService } from '@/services/upload.service';
 import type { AttachCompletionDocumentPayload, Booking } from '@/types/booking';
@@ -19,10 +26,12 @@ export function useBooking(id: string | null, options?: { pollPayment?: boolean;
   return useQuery({
     queryKey: BOOKING_KEYS.detail(id ?? ''),
     queryFn: async () => {
+      await ensureUploadUrlCacheHydrated();
       const { data } = await bookingService.getBooking(id!);
-      return data.data;
+      return withResolvedCompletionDocuments(data.data);
     },
     enabled: Boolean(id),
+    refetchOnMount: 'always',
     refetchInterval: (query) => {
       const booking = query.state.data;
       if (!booking) return false;
@@ -55,7 +64,13 @@ export function useAttachCompletionDocument(bookingId: string) {
     }) => {
       const { data: presignData } = await uploadService.presign('land_doc', contentType);
       const presign = presignData.data;
-      await uploadService.uploadToPresignedUrl(presign.uploadUrl, uri, contentType);
+      await uploadService.uploadToPresignedUrl(
+        presign.uploadUrl,
+        uri,
+        contentType,
+        uploadNameForContentType(contentType),
+      );
+      rememberUploadedCompletionDocument(presign.assetKey, presign.publicUrl);
 
       const payload: AttachCompletionDocumentPayload = {
         assetKey: presign.assetKey,
@@ -63,18 +78,11 @@ export function useAttachCompletionDocument(bookingId: string) {
       };
 
       const { data } = await bookingService.attachCompletionDocument(bookingId, payload);
-      const booking = data.data;
-
-      const lastDoc = booking.completionDocuments?.[booking.completionDocuments.length - 1];
-      if (lastDoc && lastDoc.assetKey === presign.assetKey) {
-        lastDoc.publicUrl = presign.publicUrl;
-      }
-
-      return booking;
+      return withResolvedCompletionDocuments(data.data);
     },
     onSuccess: (booking) => {
       queryClient.setQueryData(BOOKING_KEYS.detail(booking.id), booking);
-      queryClient.invalidateQueries({ queryKey: BOOKING_KEYS.all });
+      void invalidateBookingRelatedQueries(queryClient);
     },
   });
 }
@@ -83,27 +91,27 @@ export function mergeDocumentPublicUrls(
   booking: Booking,
   previous?: Booking | null,
 ): Booking {
-  if (!booking.completionDocuments?.length || !previous?.completionDocuments?.length) {
-    return booking;
+  let result = booking;
+
+  if (booking.completionDocuments?.length && previous?.completionDocuments?.length) {
+    const urlByKey = new Map(
+      previous.completionDocuments
+        .filter((doc) => doc.publicUrl)
+        .map((doc) => [doc.assetKey, doc.publicUrl!]),
+    );
+
+    if (urlByKey.size > 0) {
+      result = {
+        ...booking,
+        completionDocuments: booking.completionDocuments.map((doc) => ({
+          ...doc,
+          publicUrl: doc.publicUrl ?? urlByKey.get(doc.assetKey),
+        })),
+      };
+    }
   }
 
-  const urlByKey = new Map(
-    previous.completionDocuments
-      .filter((doc) => doc.publicUrl)
-      .map((doc) => [doc.assetKey, doc.publicUrl!]),
-  );
-
-  if (urlByKey.size === 0) {
-    return booking;
-  }
-
-  return {
-    ...booking,
-    completionDocuments: booking.completionDocuments.map((doc) => ({
-      ...doc,
-      publicUrl: doc.publicUrl ?? urlByKey.get(doc.assetKey),
-    })),
-  };
+  return withResolvedCompletionDocuments(result);
 }
 
 export function getBookingError(error: unknown, fallback: string) {

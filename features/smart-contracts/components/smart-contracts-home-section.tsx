@@ -4,6 +4,7 @@ import { ActivityIndicator, Pressable, View } from 'react-native';
 import { AppIcon } from '@/components/ui/app-icon';
 import { Text } from '@/components/ui/text';
 import { SmartContractCard } from '@/features/smart-contracts/components/smart-contract-card';
+import { useOptionalFarmerHome } from '@/features/home/context/farmer-home-context';
 import { useFarmerSmartContracts } from '@/features/smart-contracts/hooks/use-smart-contracts';
 import { SMART_CONTRACTS_ROUTE } from '@/features/smart-contracts/utils/display';
 import { Palette } from '@/constants/theme';
@@ -15,7 +16,10 @@ type SmartContractsHomeSectionProps = {
 const PREVIEW_LIMIT = 2;
 
 export function SmartContractsHomeSection({ t }: SmartContractsHomeSectionProps) {
-  const { data: contracts = [], isLoading } = useFarmerSmartContracts();
+  const optionalHome = useOptionalFarmerHome();
+  const { data: contracts = [], isLoading } = useFarmerSmartContracts({
+    poll: optionalHome?.shouldPollServices,
+  });
   const preview = contracts.slice(0, PREVIEW_LIMIT);
 
   if (isLoading) {

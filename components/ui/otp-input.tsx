@@ -1,6 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
+  Keyboard,
+  Platform,
   Pressable,
   TextInput,
   View,
@@ -12,6 +14,7 @@ import { useRegisterScrollField } from '@/components/auth/auth-scroll-context';
 import { FittedText } from '@/components/ui/fitted-text';
 import { Text } from '@/components/ui/text';
 import { Palette } from '@/constants/theme';
+import { useSmsOtpAutofill } from '@/hooks/use-sms-otp-autofill';
 
 type OtpInputProps = {
   value: string;
@@ -21,6 +24,8 @@ type OtpInputProps = {
   fieldId?: string;
   resetKey?: number;
   autoFocus?: boolean;
+  /** Listen for incoming OTP SMS on Android (User Consent API). */
+  smsAutofill?: boolean;
 };
 
 const boxShadow: StyleProp<ViewStyle> = {
@@ -47,21 +52,78 @@ export function OtpInput({
   fieldId,
   resetKey = 0,
   autoFocus = true,
+  smsAutofill = true,
 }: OtpInputProps) {
   const inputRef = useRef<TextInput>(null);
   const prevErrorRef = useRef(error);
+  const remountingRef = useRef(false);
   const [focused, setFocused] = useState(false);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
   const [inputInstanceKey, setInputInstanceKey] = useState(0);
   const scrollField = useRegisterScrollField(fieldId ?? '__unused_otp__');
   const enableScroll = Boolean(fieldId);
   const digits = value.padEnd(length, ' ').slice(0, length).split('');
 
-  function remountInput() {
+  const handleChange = useCallback(
+    (text: string) => {
+      onChange(text.replace(/\D/g, '').slice(0, length));
+    },
+    [length, onChange],
+  );
+
+  useSmsOtpAutofill({
+    enabled: smsAutofill,
+    length,
+    restartKey: resetKey,
+    onCode: handleChange,
+  });
+
+  const requestRemount = useCallback(() => {
+    if (remountingRef.current) {
+      return;
+    }
+
+    remountingRef.current = true;
     setInputInstanceKey((key) => key + 1);
-    setTimeout(() => {
+  }, []);
+
+  useEffect(() => {
+    if (inputInstanceKey === 0) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
       inputRef.current?.focus();
+      remountingRef.current = false;
     }, 100);
-  }
+
+    return () => clearTimeout(timer);
+  }, [inputInstanceKey]);
+
+  useEffect(() => {
+    const showEvent =
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent =
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+
+    const showSub = Keyboard.addListener(showEvent, () => {
+      remountingRef.current = false;
+      setKeyboardVisible(true);
+    });
+    const hideSub = Keyboard.addListener(hideEvent, () => {
+      if (remountingRef.current) {
+        return;
+      }
+
+      setKeyboardVisible(false);
+      setFocused(false);
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   useEffect(() => {
     if (!autoFocus) {
@@ -80,8 +142,8 @@ export function OtpInput({
       return;
     }
 
-    remountInput();
-  }, [resetKey]);
+    requestRemount();
+  }, [resetKey, requestRemount]);
 
   useEffect(() => {
     const previousError = prevErrorRef.current;
@@ -95,12 +157,8 @@ export function OtpInput({
       onChange('');
     }
 
-    remountInput();
-  }, [error, value, onChange]);
-
-  function handleChange(text: string) {
-    onChange(text.replace(/\D/g, '').slice(0, length));
-  }
+    requestRemount();
+  }, [error, value, onChange, requestRemount]);
 
   function handleFocus() {
     setFocused(true);
@@ -116,43 +174,57 @@ export function OtpInput({
     }
   }
 
+  function handleOtpPress() {
+    if (keyboardVisible) {
+      inputRef.current?.focus();
+      return;
+    }
+
+    requestRemount();
+  }
+
   const boxes = (
-    <Pressable
-      onPress={() => inputRef.current?.focus()}
-      className="flex-row justify-between gap-2"
-      accessibilityRole="button"
-      accessibilityLabel="OTP input"
-    >
-      {digits.map((digit, index) => {
-        const filled = digit.trim().length > 0;
-        const active = focused && value.length === index;
+    <View className="relative">
+      <View pointerEvents="none" className="flex-row justify-between gap-2">
+        {digits.map((digit, index) => {
+          const filled = digit.trim().length > 0;
+          const active = focused && value.length === index;
 
-        return (
-          <View
-            key={index}
-            className={`h-[58px] flex-1 items-center justify-center rounded-2xl border-2 bg-white ${
-              error
-                ? 'border-red-300 bg-red-50/40'
-                : active
-                  ? 'border-india-green'
-                  : filled
-                    ? 'border-india-green/70'
-                    : 'border-border/80'
-            }`}
-            style={active || filled ? activeBoxShadow : boxShadow}
-          >
-            <Text className="text-[24px] font-bold tracking-[1px] text-indigo">
-              {filled ? digit : '·'}
-            </Text>
-          </View>
-        );
-      })}
-    </Pressable>
-  );
+          return (
+            <View
+              key={index}
+              className={`h-[58px] flex-1 items-center justify-center rounded-2xl border-2 bg-white ${
+                error
+                  ? 'border-red-300 bg-red-50/40'
+                  : active
+                    ? 'border-india-green'
+                    : filled
+                      ? 'border-india-green/70'
+                      : 'border-border/80'
+              }`}
+              style={active || filled ? activeBoxShadow : boxShadow}
+            >
+              <Text className="text-[24px] font-bold tracking-[1px] text-indigo">
+                {filled ? digit : '·'}
+              </Text>
+            </View>
+          );
+        })}
+      </View>
 
-  const content = (
-    <View className="gap-3">
-      {boxes}
+      <Pressable
+        onPress={handleOtpPress}
+        accessibilityRole="button"
+        accessibilityLabel="OTP input"
+        pointerEvents={keyboardVisible ? 'none' : 'box-only'}
+        style={{
+          position: 'absolute',
+          top: 0,
+          right: 0,
+          bottom: 0,
+          left: 0,
+        }}
+      />
 
       <TextInput
         key={`otp-input-${inputInstanceKey}`}
@@ -161,12 +233,33 @@ export function OtpInput({
         onChangeText={handleChange}
         keyboardType="number-pad"
         textContentType="oneTimeCode"
-        autoComplete="sms-otp"
+        autoComplete={Platform.OS === 'android' ? 'sms-otp' : 'one-time-code'}
         maxLength={length}
         onFocus={handleFocus}
         onBlur={handleBlur}
-        style={{ position: 'absolute', opacity: 0, height: 1, width: 1 }}
+        caretHidden
+        autoCorrect={false}
+        spellCheck={false}
+        showSoftInputOnFocus
+        importantForAutofill="yes"
+        pointerEvents={keyboardVisible ? 'auto' : 'none'}
+        style={{
+          position: 'absolute',
+          top: 0,
+          right: 0,
+          bottom: 0,
+          left: 0,
+          opacity: Platform.OS === 'ios' ? 0.02 : 0,
+          fontSize: 16,
+          color: 'transparent',
+        }}
       />
+    </View>
+  );
+
+  const content = (
+    <View className="gap-3">
+      {boxes}
 
       {error ? (
         <View className="flex-row items-center justify-center gap-1.5">

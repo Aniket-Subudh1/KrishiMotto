@@ -4,6 +4,7 @@ import { Linking, Pressable, View } from 'react-native';
 import { AppIcon } from '@/components/ui/app-icon';
 import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
+import { StorageReceiptTrustDeedCard } from '@/features/smart-contracts/components/storage-receipt-trust-deed-card';
 import {
   getSmartContractDetailRoute,
   isPledgeableContract,
@@ -14,16 +15,21 @@ import type { FarmerSmartContract } from '@/types/credit';
 
 type SmartContractReceiptBannerProps = {
   contract: FarmerSmartContract;
-  t: (key: string) => string;
+  t: (key: string, options?: Record<string, unknown>) => string;
   variant?: 'cropTracker' | 'default';
+  qrId?: string;
+  publicReceiptUrl?: string;
 };
 
 export function SmartContractReceiptBanner({
   contract,
   t,
   variant = 'default',
+  qrId,
+  publicReceiptUrl,
 }: SmartContractReceiptBannerProps) {
   const pledgeable = isPledgeableContract(contract);
+  const showTrustDeed = Boolean(qrId && publicReceiptUrl);
 
   return (
     <View className="overflow-hidden rounded-2xl border border-india-green/30 bg-india-green/5">
@@ -81,6 +87,20 @@ export function SmartContractReceiptBanner({
               </Text>
             </View>
           </Pressable>
+        ) : null}
+
+        {showTrustDeed ? (
+          <StorageReceiptTrustDeedCard
+            qrId={qrId!}
+            publicReceiptUrl={publicReceiptUrl!}
+            warehouseName={contract.warehouse.name}
+            cropType={contract.cropType}
+            contractNumber={contract.contractNumber}
+            receiptId={contract.receiptId}
+            quantityKg={contract.totalQuantityKg}
+            valuationLabel={formatPaise(contract.valuationPaise)}
+            t={t}
+          />
         ) : null}
 
         <View className="flex-row gap-3">

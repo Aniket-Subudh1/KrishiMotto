@@ -1,14 +1,18 @@
 import { AppIcon } from '@/components/ui/app-icon';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
+import { useCallback } from 'react';
 import { ActivityIndicator, Linking, Pressable, RefreshControl, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { ErrorBanner } from '@/components/auth/auth-screen-layout';
 import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { SmartContractExplainer } from '@/features/smart-contracts/components/smart-contract-explainer';
+import { StorageReceiptTrustDeedCard } from '@/features/smart-contracts/components/storage-receipt-trust-deed-card';
 import { useFarmerSmartContract } from '@/features/smart-contracts/hooks/use-smart-contracts';
+import { useStorageRequest } from '@/features/storage/hooks/use-storage-request';
 import {
   getSmartContractStatusColor,
   isPledgeableContract,
@@ -17,6 +21,8 @@ import {
 } from '@/features/smart-contracts/utils/display';
 import { AppBarGradient, Palette } from '@/constants/theme';
 import { useAppLocale } from '@/hooks/use-app-locale';
+import { useQueryFocusRefresh } from '@/hooks/use-query-focus-refresh';
+import { invalidateFarmerServiceQueries } from '@/lib/query-cache-sync';
 import { formatPaise } from '@/lib/currency';
 import { formatDate } from '@/lib/format';
 import { useAuthStore } from '@/stores/auth.store';
@@ -24,12 +30,26 @@ import { useAuthStore } from '@/stores/auth.store';
 export function SmartContractDetailScreen() {
   const { t } = useAppLocale();
   const insets = useSafeAreaInsets();
+  const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
   const { id } = useLocalSearchParams<{ id: string }>();
   const contractId = typeof id === 'string' ? id : '';
+  const refreshContract = useCallback(
+    () => invalidateFarmerServiceQueries(queryClient),
+    [queryClient],
+  );
+
+  useQueryFocusRefresh(refreshContract, user?.role === 'FARMER' && Boolean(contractId));
   const { data: contract, isLoading, isRefetching, refetch, error } = useFarmerSmartContract(
     contractId || null,
+    { poll: true },
   );
+  const { data: storageRequest, isLoading: storageLoading } = useStorageRequest(
+    contract?.storageRequestId ?? null,
+    { poll: true },
+  );
+  const trustDeedUrl = storageRequest?.publicReceiptUrl;
+  const trustDeedQrId = storageRequest?.qrId;
 
   if (!user) {
     return <Redirect href="/get-started" />;
@@ -150,6 +170,31 @@ export function SmartContractDetailScreen() {
               )}
             </View>
           </View>
+
+          {trustDeedUrl && trustDeedQrId ? (
+            <View className="mt-5">
+              <Text className="mb-3 text-[13px] font-semibold uppercase tracking-wide text-muted">
+                {t('smartContracts.trustDeedSection')}
+              </Text>
+              <StorageReceiptTrustDeedCard
+                qrId={trustDeedQrId}
+                publicReceiptUrl={trustDeedUrl}
+                warehouseName={contract.warehouse.name}
+                cropType={contract.cropType}
+                contractNumber={contract.contractNumber}
+                receiptId={contract.receiptId}
+                quantityKg={contract.totalQuantityKg}
+                valuationLabel={formatPaise(contract.valuationPaise)}
+                t={t}
+              />
+            </View>
+          ) : !storageLoading ? (
+            <View className="mt-5 rounded-2xl border border-dashed border-border bg-surface px-4 py-4">
+              <Text className="text-[13px] leading-5 text-muted">
+                {t('smartContracts.trustDeedPending')}
+              </Text>
+            </View>
+          ) : null}
 
           {contract.events.length > 0 ? (
             <View className="mt-5 rounded-2xl border border-border bg-white p-4">

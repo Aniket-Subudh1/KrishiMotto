@@ -31,7 +31,7 @@ import { useLandParcels } from '@/features/farmer/hooks/use-land-parcel';
 import { useCatalog } from '@/features/home/hooks/use-catalog';
 import { AppBarGradient, Palette } from '@/constants/theme';
 import { useAppLocale } from '@/hooks/use-app-locale';
-import { translateCropType, translateSoilType } from '@/lib/booking-i18n';
+import { translateCropType, translateSoilType, getCatalogServicePriceLabel } from '@/lib/booking-i18n';
 import { formatPaise } from '@/lib/currency';
 import { formatAcres } from '@/lib/format';
 import { computePerAcrePricing } from '@/lib/pricing';
@@ -196,9 +196,10 @@ export function SoilHealthScreen() {
     }
   }
 
-  const perAcreLabel = soilHealthService
-    ? formatPaise(soilHealthService.basePricePaise)
-    : '₹4,999';
+  const perAcreLabel = getCatalogServicePriceLabel(
+    soilHealthService,
+    t('soilHealth.subtitle'),
+  );
   const transportLabel = priceEstimate?.transportPaise
     ? formatPaise(priceEstimate.transportPaise)
     : null;

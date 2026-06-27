@@ -1,8 +1,10 @@
 import { AppIcon } from '@/components/ui/app-icon';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Redirect, router } from 'expo-router';
+import { useCallback } from 'react';
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
@@ -11,13 +13,24 @@ import { SmartContractExplainer } from '@/features/smart-contracts/components/sm
 import { useFarmerSmartContracts } from '@/features/smart-contracts/hooks/use-smart-contracts';
 import { AppBarGradient, Palette } from '@/constants/theme';
 import { useAppLocale } from '@/hooks/use-app-locale';
+import { useQueryFocusRefresh } from '@/hooks/use-query-focus-refresh';
+import { invalidateFarmerServiceQueries } from '@/lib/query-cache-sync';
 import { useAuthStore } from '@/stores/auth.store';
 
 export function SmartContractsScreen() {
   const { t } = useAppLocale();
   const insets = useSafeAreaInsets();
+  const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
-  const { data: contracts = [], isLoading, isRefetching, refetch } = useFarmerSmartContracts();
+  const refreshContracts = useCallback(
+    () => invalidateFarmerServiceQueries(queryClient),
+    [queryClient],
+  );
+
+  useQueryFocusRefresh(refreshContracts, user?.role === 'FARMER');
+  const { data: contracts = [], isLoading, isRefetching, refetch } = useFarmerSmartContracts({
+    poll: true,
+  });
 
   if (!user) {
     return <Redirect href="/get-started" />;

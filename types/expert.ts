@@ -78,3 +78,14 @@ export type ExpertKycStatusResponse =
       canAcceptOrders: boolean;
       verifiedBadge: boolean;
     };
+
+/** Public summary returned to farmers for an assigned expert. */
+export type FarmerExpertSummary = {
+  id: string;
+  name?: string;
+  specialisation?: string;
+  qualification?: string;
+  yearsExperience?: number;
+  verifiedBadge?: boolean;
+  profilePicUrl?: string;
+};

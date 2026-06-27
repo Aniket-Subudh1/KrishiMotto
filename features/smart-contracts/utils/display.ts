@@ -16,6 +16,10 @@ export function findSmartContractByStorageRequest(
   return contracts.find((contract) => contract.storageRequestId === storageRequestId);
 }
 
+export function isActiveSmartContract(status: SmartContractStatus): boolean {
+  return status !== 'RELEASED';
+}
+
 export function isPledgeableContract(contract: FarmerSmartContract): boolean {
   return (
     contract.freeQuantityKg > 0 &&

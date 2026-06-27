@@ -14,7 +14,12 @@ export type PresignResponse = {
   maxBytes: number;
 };
 
-function uploadViaXmlHttpRequest(uploadUrl: string, uri: string, contentType: string) {
+function uploadViaXmlHttpRequest(
+  uploadUrl: string,
+  uri: string,
+  contentType: string,
+  fileName: string,
+) {
   return new Promise<void>((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.onload = () => {
@@ -28,7 +33,7 @@ function uploadViaXmlHttpRequest(uploadUrl: string, uri: string, contentType: st
     xhr.onerror = () => reject(new Error('Failed to upload file'));
     xhr.open('PUT', uploadUrl);
     xhr.setRequestHeader('Content-Type', contentType);
-    xhr.send({ uri, type: contentType, name: 'upload.jpg' } as unknown as Blob);
+    xhr.send({ uri, type: contentType, name: fileName } as unknown as Blob);
   });
 }
 
@@ -39,7 +44,12 @@ export const uploadService = {
       contentType,
     }),
 
-  uploadToPresignedUrl: async (uploadUrl: string, uri: string, contentType: string) => {
+  uploadToPresignedUrl: async (
+    uploadUrl: string,
+    uri: string,
+    contentType: string,
+    fileName?: string,
+  ) => {
     if (Platform.OS === 'web') {
       const response = await fetch(uri);
       const blob = await response.blob();
@@ -57,6 +67,7 @@ export const uploadService = {
       return;
     }
 
-    await uploadViaXmlHttpRequest(uploadUrl, uri, contentType);
+    const uploadFileName = fileName ?? 'upload.bin';
+    await uploadViaXmlHttpRequest(uploadUrl, uri, contentType, uploadFileName);
   },
 };

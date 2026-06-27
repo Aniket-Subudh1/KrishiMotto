@@ -178,9 +178,13 @@ export function useOptionalExpertHome() {
 
 /** Enables marketplace polling only while the calling screen is focused. */
 export function useExpertPollingScope(scope: string) {
+  const queryClient = useQueryClient();
   const { registerPollingScope } = useExpertHome();
 
   useFocusEffect(
-    useCallback(() => registerPollingScope(scope), [registerPollingScope, scope]),
+    useCallback(() => {
+      void invalidateExpertMarketplaceQueries(queryClient);
+      return registerPollingScope(scope);
+    }, [queryClient, registerPollingScope, scope]),
   );
 }

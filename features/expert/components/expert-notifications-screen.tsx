@@ -1,8 +1,9 @@
-import { useIsFocused } from '@react-navigation/native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Redirect, router } from 'expo-router';
+import { useCallback } from 'react';
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useQueryClient } from '@tanstack/react-query';
+import { LinearGradient } from 'expo-linear-gradient';
 
 import { ErrorBanner } from '@/components/auth/auth-screen-layout';
 import { AppIcon } from '@/components/ui/app-icon';
@@ -18,17 +19,25 @@ import { formatBookingDate } from '@/features/home/utils/booking-display';
 import { AppBarGradient, Palette } from '@/constants/theme';
 import { useAppLocale } from '@/hooks/use-app-locale';
 import { useManualRefresh } from '@/hooks/use-manual-refresh';
+import { useQueryFocusRefresh } from '@/hooks/use-query-focus-refresh';
+import { invalidateExpertMarketplaceQueries } from '@/lib/query-cache-sync';
 import { useAuthStore } from '@/stores/auth.store';
 import type { ExpertNotification } from '@/types/expert-booking';
 
 export function ExpertNotificationsScreen() {
   const { t, locale } = useAppLocale();
   const insets = useSafeAreaInsets();
+  const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
   const isExpert = user?.role === 'EXPERT';
-  const isFocused = useIsFocused();
+  const refreshNotifications = useCallback(
+    () => invalidateExpertMarketplaceQueries(queryClient),
+    [queryClient],
+  );
+
+  useQueryFocusRefresh(refreshNotifications, isExpert);
   const { data, isLoading, refetch, error } = useExpertNotifications(undefined, {
-    poll: isExpert && isFocused,
+    poll: isExpert,
     enabled: isExpert,
   });
   const { isRefreshing, onRefresh } = useManualRefresh(() => refetch());

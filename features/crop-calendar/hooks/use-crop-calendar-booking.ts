@@ -9,6 +9,7 @@ export {
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { BOOKING_KEYS } from '@/features/bookings/hooks/use-booking';
+import { invalidateBookingRelatedQueries } from '@/lib/query-cache-sync';
 import { bookingService } from '@/services/booking.service';
 import type { CreateCropCalendarBookingPayload } from '@/types/booking';
 
@@ -21,8 +22,8 @@ export function useCreateCropCalendarBooking() {
       return data.data;
     },
     onSuccess: (booking) => {
-      queryClient.invalidateQueries({ queryKey: BOOKING_KEYS.all });
       queryClient.setQueryData(BOOKING_KEYS.detail(booking.id), booking);
+      void invalidateBookingRelatedQueries(queryClient);
     },
   });
 }

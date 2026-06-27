@@ -150,7 +150,7 @@ export type BookingCompletionDocument = {
   label?: string;
   uploadedAt: string;
   uploadedBy?: string;
-  /** Populated client-side after presign upload for opening the file. */
+  /** Resolved from assetKey via presign upload cache or S3 public URL. */
   publicUrl?: string;
 };
 
@@ -168,6 +168,7 @@ export type Booking = {
   txnId?: string | null;
   bookingStatus: BookingStatus;
   expertId?: string | null;
+  expertName?: string | null;
   areaAcres?: number;
   quantityKg?: number;
   details: Record<string, unknown>;

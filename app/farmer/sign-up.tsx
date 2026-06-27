@@ -11,6 +11,7 @@ import {
   FormCard,
   SelectableCard,
 } from '@/components/auth/auth-screen-layout';
+import { IndiaLocationFields } from '@/components/location/india-location-fields';
 import { Input, PhoneInput } from '@/components/ui/input';
 import { OtpHint, OtpInput, ResendLink } from '@/components/ui/otp-input';
 import { SlideButton } from '@/components/ui/slide-button';
@@ -507,30 +508,13 @@ export default function FarmerSignUpScreen() {
           autoCapitalize="words"
         />
 
-        <View className="flex-row gap-3">
-          <View className="flex-1">
-            <Input
-              fieldId="profile-district"
-              label={t('farmerSignUp.districtLabel')}
-              value={district}
-              onChangeText={setDistrict}
-              placeholder={t('farmerSignUp.districtPlaceholder')}
-              icon="location-outline"
-              autoCapitalize="words"
-            />
-          </View>
-          <View className="flex-1">
-            <Input
-              fieldId="profile-state"
-              label={t('farmerSignUp.stateLabel')}
-              value={state}
-              onChangeText={setStateValue}
-              placeholder={t('farmerSignUp.statePlaceholder')}
-              icon="map-outline"
-              autoCapitalize="characters"
-            />
-          </View>
-        </View>
+        <IndiaLocationFields
+          state={state}
+          district={district}
+          onStateChange={setStateValue}
+          onDistrictChange={setDistrict}
+          t={t}
+        />
 
         <Input
           fieldId="profile-country"

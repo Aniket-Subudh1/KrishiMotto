@@ -35,6 +35,7 @@ import { useLandParcels } from '@/features/farmer/hooks/use-land-parcel';
 import { useCatalog } from '@/features/home/hooks/use-catalog';
 import { AppBarGradient, Palette } from '@/constants/theme';
 import { useAppLocale } from '@/hooks/use-app-locale';
+import { getCatalogServicePriceLabel } from '@/lib/booking-i18n';
 import { formatPaise } from '@/lib/currency';
 import { toLocalIsoDate } from '@/lib/date';
 import { useAuthStore } from '@/stores/auth.store';
@@ -299,9 +300,10 @@ export function CropCalendarScreen() {
     }
   }
 
-  const priceLabel = cropCalendarService
-    ? formatPaise(cropCalendarService.basePricePaise)
-    : '₹199';
+  const priceLabel = getCatalogServicePriceLabel(
+    cropCalendarService,
+    t('cropCalendar.subtitle'),
+  );
   const isBusy = createBooking.isPending || paymentState === 'paying' || paymentState === 'polling';
   const currentStepIndex = stepIndex(step);
   const isLastStep = step === 'schedule';

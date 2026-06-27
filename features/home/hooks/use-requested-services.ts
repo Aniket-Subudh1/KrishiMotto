@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 
+import { useOptionalFarmerHome } from '@/features/home/context/farmer-home-context';
 import { useHomeBookings } from '@/features/home/hooks/use-bookings';
 import { useHomeStorageRequests } from '@/features/home/hooks/use-storage-requests';
 import {
@@ -8,10 +9,13 @@ import {
 import { useFarmerLoans } from '@/features/ppacs-credit/hooks/use-ppacs-credit';
 import { useManualRefresh } from '@/hooks/use-manual-refresh';
 
-export function useRequestedServices() {
-  const bookingsQuery = useHomeBookings();
-  const storageQuery = useHomeStorageRequests();
-  const loansQuery = useFarmerLoans();
+export function useRequestedServices(options?: { poll?: boolean }) {
+  const optionalHome = useOptionalFarmerHome();
+  const poll = options?.poll ?? optionalHome?.shouldPollServices ?? false;
+
+  const bookingsQuery = useHomeBookings(undefined, { poll });
+  const storageQuery = useHomeStorageRequests({ poll });
+  const loansQuery = useFarmerLoans({ poll });
 
   const items = useMemo(
     () =>

@@ -1,3 +1,4 @@
+import { useFocusEffect } from '@react-navigation/native';
 import { useQueryClient } from '@tanstack/react-query';
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 
@@ -5,7 +6,7 @@ import { LandParcelSheet } from '@/features/home/components/land-parcel-sheet';
 import { useFarmerProfile } from '@/features/farmer/hooks/use-farmer-profile';
 import { useLandParcels } from '@/features/farmer/hooks/use-land-parcel';
 import { CATALOG_KEYS } from '@/features/home/hooks/use-catalog';
-import { invalidateRequestedServicesQueries } from '@/features/home/utils/requested-services';
+import { invalidateFarmerServiceQueries } from '@/lib/query-cache-sync';
 import { SMART_CONTRACT_KEYS } from '@/features/smart-contracts/hooks/use-smart-contracts';
 import { useManualRefresh } from '@/hooks/use-manual-refresh';
 import { useAuthStore } from '@/stores/auth.store';
@@ -20,6 +21,8 @@ type FarmerHomeContextValue = {
   onRefresh: () => void;
   selectedParcelId: string | null;
   setSelectedParcelId: (id: string | null) => void;
+  shouldPollServices: boolean;
+  registerPollingScope: (scope: string) => () => void;
 };
 
 const FarmerHomeContext = createContext<FarmerHomeContextValue | null>(null);
@@ -27,9 +30,28 @@ const FarmerHomeContext = createContext<FarmerHomeContextValue | null>(null);
 export function FarmerHomeProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   const [selectedParcelId, setSelectedParcelId] = useState<string | null>(null);
+  const [pollingScopes, setPollingScopes] = useState<Set<string>>(() => new Set());
   const isFarmer = useAuthStore((s) => s.user?.role === 'FARMER');
   const profileQuery = useFarmerProfile(isFarmer);
   const parcelsQuery = useLandParcels(isFarmer);
+
+  const registerPollingScope = useCallback((scope: string) => {
+    setPollingScopes((prev) => {
+      const next = new Set(prev);
+      next.add(scope);
+      return next;
+    });
+
+    return () => {
+      setPollingScopes((prev) => {
+        const next = new Set(prev);
+        next.delete(scope);
+        return next;
+      });
+    };
+  }, []);
+
+  const shouldPollServices = pollingScopes.size > 0;
 
   const refreshData = useCallback(async () => {
     await Promise.all([
@@ -37,7 +59,7 @@ export function FarmerHomeProvider({ children }: { children: ReactNode }) {
       parcelsQuery.refetch(),
       queryClient.invalidateQueries({ queryKey: CATALOG_KEYS.services }),
       queryClient.invalidateQueries({ queryKey: SMART_CONTRACT_KEYS.list }),
-      invalidateRequestedServicesQueries(queryClient),
+      invalidateFarmerServiceQueries(queryClient),
     ]);
   }, [parcelsQuery, profileQuery, queryClient]);
 
@@ -52,6 +74,8 @@ export function FarmerHomeProvider({ children }: { children: ReactNode }) {
       onRefresh,
       selectedParcelId,
       setSelectedParcelId,
+      shouldPollServices,
+      registerPollingScope,
     }),
     [
       isRefreshing,
@@ -60,7 +84,9 @@ export function FarmerHomeProvider({ children }: { children: ReactNode }) {
       parcelsQuery.isLoading,
       profileQuery.data,
       profileQuery.isLoading,
+      registerPollingScope,
       selectedParcelId,
+      shouldPollServices,
     ],
   );
 
@@ -86,4 +112,17 @@ export function useFarmerHome() {
 
 export function useOptionalFarmerHome() {
   return useContext(FarmerHomeContext);
+}
+
+/** Enables farmer service polling only while the calling screen is focused. */
+export function useFarmerPollingScope(scope: string) {
+  const queryClient = useQueryClient();
+  const { registerPollingScope } = useFarmerHome();
+
+  useFocusEffect(
+    useCallback(() => {
+      void invalidateFarmerServiceQueries(queryClient);
+      return registerPollingScope(scope);
+    }, [queryClient, registerPollingScope, scope]),
+  );
 }

@@ -4,6 +4,7 @@ import {
   BOOKING_KEYS,
   getBookingError,
 } from '@/features/crop-calendar/hooks/use-crop-calendar-booking';
+import { invalidateBookingRelatedQueries } from '@/lib/query-cache-sync';
 import { bookingService } from '@/services/booking.service';
 import type { CreateDroneSprayBookingPayload } from '@/types/booking';
 
@@ -18,8 +19,8 @@ export function useCreateDroneSprayBooking() {
       return data.data;
     },
     onSuccess: (booking) => {
-      queryClient.invalidateQueries({ queryKey: BOOKING_KEYS.all });
       queryClient.setQueryData(BOOKING_KEYS.detail(booking.id), booking);
+      void invalidateBookingRelatedQueries(queryClient);
     },
   });
 }

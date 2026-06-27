@@ -63,6 +63,8 @@ export type StorageRequest = {
   status: StorageRequestStatus;
   statusTimeline: StorageStatusTimelineEntry[];
   query?: string;
+  qrId?: string;
+  publicReceiptUrl?: string;
   createdAt: string;
   updatedAt: string;
 };
@@ -90,9 +92,21 @@ export type StorageSensorMetric = {
   updatedMinutesAgo?: number;
 };
 
-export type StorageTemperaturePoint = {
+export type StorageTelemetryPoint = {
   ts: string;
   temperatureC: number;
+  humidity?: number;
+  pressure?: number;
+  gas?: number;
+};
+
+export type StorageForecast24h = {
+  forecastWindow: '1-day';
+  avgTemperature: number;
+  avgHumidity: number;
+  avgPressure: number;
+  avgGas: number;
+  sampleCount: number;
 };
 
 export type StorageIotDashboard = {
@@ -109,24 +123,23 @@ export type StorageIotDashboard = {
   };
   status: string;
   statusLabel: string;
-  lastUpdated: string;
+  lastUpdated: string | null;
+  sensorId?: string | null;
+  live: boolean;
+  hasSensorData: boolean;
   priceReference: {
     amountPaise: number;
     perQuantityKg: number;
     label: string;
   };
-  sensorReadings: {
+  sensorReadings: null | {
     temperature: StorageSensorMetric;
     humidity: StorageSensorMetric;
-    co2: StorageSensorMetric;
+    pressure: StorageSensorMetric;
+    gas: StorageSensorMetric;
   };
-  temperatureHistory24h: StorageTemperaturePoint[];
-  aiForecast: {
-    spoilageRisk: string;
-    forecastWindow: string;
-    qualityGrade: string;
-    qualityStatus: string;
-  };
+  telemetryHistory24h: StorageTelemetryPoint[];
+  forecast24h: StorageForecast24h | null;
   extensionPricing: {
     ratePaise: number;
     perQuantityKg: number;

@@ -30,7 +30,12 @@ import {
   validateExpertVisitForm,
   type ExpertVisitFormValues,
 } from '@/features/expert-visit/utils/validate-form';
-import { translateCropType, translateSoilType, translateVisitPurpose } from '@/lib/booking-i18n';
+import {
+  translateCropType,
+  translateSoilType,
+  translateVisitPurpose,
+  getCatalogServicePriceLabel,
+} from '@/lib/booking-i18n';
 import { useLandParcels } from '@/features/farmer/hooks/use-land-parcel';
 import { useCatalog } from '@/features/home/hooks/use-catalog';
 import { AppBarGradient, Palette } from '@/constants/theme';
@@ -239,7 +244,7 @@ export function ExpertVisitScreen() {
     }
   }
 
-  const baseLabel = expertVisitService ? formatPaise(expertVisitService.basePricePaise) : '₹499';
+  const baseLabel = getCatalogServicePriceLabel(expertVisitService, t('expertVisit.subtitle'));
   const transportLabel = priceEstimate?.transportPaise
     ? formatPaise(priceEstimate.transportPaise)
     : null;

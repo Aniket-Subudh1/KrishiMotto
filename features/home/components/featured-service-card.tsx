@@ -65,7 +65,12 @@ export function FeaturedServiceCard({ service, t }: FeaturedServiceCardProps) {
                 }}
               >
                 <Text className="text-[11px] font-bold leading-[15px] text-india-green">
-                  {translateServicePrice(t, service.iconType, service.priceLabel)}
+                  {translateServicePrice(
+                    t,
+                    service.iconType,
+                    service.priceLabel,
+                    service.basePricePaise,
+                  )}
                 </Text>
               </View>
             </View>

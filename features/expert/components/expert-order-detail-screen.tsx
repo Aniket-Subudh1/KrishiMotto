@@ -42,6 +42,7 @@ import {
 import { AppBarGradient, Palette } from '@/constants/theme';
 import { useAppLocale } from '@/hooks/use-app-locale';
 import { useManualRefresh } from '@/hooks/use-manual-refresh';
+import { useQueryFocusRefresh } from '@/hooks/use-query-focus-refresh';
 import { translateServiceTitle } from '@/lib/booking-i18n';
 import { formatPaise } from '@/lib/currency';
 import { useAuthStore } from '@/stores/auth.store';
@@ -83,6 +84,7 @@ export function ExpertOrderDetailScreen() {
     () => (isRequest ? refetchRequest() : refetchOrder()),
     [isRequest, refetchOrder, refetchRequest],
   );
+  useQueryFocusRefresh(refreshDetail, Boolean(bookingId));
   const { isRefreshing, onRefresh } = useManualRefresh(refreshDetail);
 
   const acceptRequest = useAcceptExpertRequest();

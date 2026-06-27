@@ -23,6 +23,8 @@ const ANDROID_ADAPTIVE_ICON = {
 const IOS_BUILD_NUMBER = "1";
 
 const API_URL = "https://krishiaadhar.gramtarang.org";
+const ASSET_S3_BUCKET = "gttech-assests";
+const ASSET_S3_REGION = "ap-south-1";
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
@@ -108,5 +110,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       projectId: "000b27c8-ab72-4bf2-83f4-62761d0232db",
     },
     apiUrl: API_URL,
+    assetS3Bucket: ASSET_S3_BUCKET,
+    assetS3Region: ASSET_S3_REGION,
   },
 });

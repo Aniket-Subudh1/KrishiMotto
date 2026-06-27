@@ -1,45 +1,57 @@
 import { AppIcon } from '@/components/ui/app-icon';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Redirect, router } from 'expo-router';
+import { useCallback } from 'react';
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { StorageDashboard } from '@/features/crop-tracker/components/storage-dashboard';
+import { StorageRequestPicker } from '@/features/crop-tracker/components/storage-request-picker';
 import { StorageStatusTimeline } from '@/features/crop-tracker/components/storage-status-timeline';
 import { useCropTrackerAccess } from '@/features/crop-tracker/hooks/use-crop-tracker';
+import {
+  getStorageRequestViewMode,
+  useSelectedStorageRequest,
+} from '@/features/crop-tracker/hooks/use-selected-storage-request';
 import { SmartContractReceiptBanner } from '@/features/smart-contracts/components/smart-contract-receipt-banner';
+import { StorageReceiptTrustDeedCard } from '@/features/smart-contracts/components/storage-receipt-trust-deed-card';
 import { useFarmerSmartContracts } from '@/features/smart-contracts/hooks/use-smart-contracts';
 import { findSmartContractByStorageRequest } from '@/features/smart-contracts/utils/display';
 import { AppBarGradient, Palette } from '@/constants/theme';
 import { useAppLocale } from '@/hooks/use-app-locale';
-import { translateCropType, translateStorageStatus } from '@/lib/booking-i18n';
+import { useQueryFocusRefresh } from '@/hooks/use-query-focus-refresh';
+import { translateCropType, translateStorageStatus, type TranslateFn } from '@/lib/booking-i18n';
+import { invalidateFarmerServiceQueries } from '@/lib/query-cache-sync';
 import { formatPaise } from '@/lib/currency';
+import { formatQuantityLine } from '@/features/crop-tracker/utils/display';
 import { getStorageRoute } from '@/features/home/utils/storage-display';
 import { useAuthStore } from '@/stores/auth.store';
 import type { CropType } from '@/types/booking';
+import type { StorageRequest } from '@/types/storage';
 
 export function CropTrackerScreen() {
-  const { t } = useAppLocale();
+  const { t, locale } = useAppLocale();
   const insets = useSafeAreaInsets();
+  const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
+  const refreshData = useCallback(
+    () => invalidateFarmerServiceQueries(queryClient),
+    [queryClient],
+  );
+
+  useQueryFocusRefresh(refreshData, user?.role === 'FARMER');
   const {
     requests,
-    latestRequest,
-    trackableRequest,
-    pendingPaymentRequest,
     hasStorageRequest,
-    canTrack,
     isLoading,
     isRefetching,
     refetch,
-  } = useCropTrackerAccess();
-  const { data: smartContracts = [] } = useFarmerSmartContracts();
-
-  const activeReceipt = trackableRequest
-    ? findSmartContractByStorageRequest(smartContracts, trackableRequest.id)
-    : undefined;
+  } = useCropTrackerAccess({ poll: true });
+  const { selectedRequest, selectedId, setSelectedId } = useSelectedStorageRequest(requests);
+  const { data: smartContracts = [] } = useFarmerSmartContracts({ poll: true });
 
   if (!user) {
     return <Redirect href="/get-started" />;
@@ -49,7 +61,10 @@ export function CropTrackerScreen() {
     return <Redirect href="/(tabs)" />;
   }
 
-  const activeRequest = trackableRequest ?? latestRequest;
+  const viewMode = selectedRequest ? getStorageRequestViewMode(selectedRequest) : null;
+  const activeReceipt = selectedRequest
+    ? findSmartContractByStorageRequest(smartContracts, selectedRequest.id)
+    : undefined;
 
   return (
     <View className="flex-1 bg-background">
@@ -108,97 +123,27 @@ export function CropTrackerScreen() {
               {t('cropTracker.optStorage')}
             </Button>
           </View>
-        ) : canTrack && trackableRequest ? (
+        ) : selectedRequest && viewMode ? (
           <View className="gap-5">
-            {activeReceipt ? (
-              <SmartContractReceiptBanner
-                contract={activeReceipt}
+            <StorageRequestPicker
+              label={t('cropTracker.selectCrop')}
+              requests={requests}
+              selectedId={selectedId}
+              onSelect={setSelectedId}
+            />
+
+            {viewMode === 'track' ? (
+              <TrackingContent
+                request={selectedRequest}
+                activeReceipt={activeReceipt}
                 t={t}
-                variant="cropTracker"
+                locale={locale}
               />
-            ) : trackableRequest.status === 'IN_STORAGE' ? (
-              <View className="rounded-2xl border border-dashed border-india-green/30 bg-india-green/5 px-4 py-4">
-                <Text className="text-[14px] font-semibold text-indigo">
-                  {t('smartContracts.cropTrackerPendingReceiptTitle')}
-                </Text>
-                <Text className="mt-1 text-[13px] leading-5 text-muted">
-                  {t('smartContracts.cropTrackerPendingReceiptBody')}
-                </Text>
-              </View>
-            ) : null}
-
-            <View className="rounded-2xl border border-border bg-white p-4">
-              <Text className="text-[12px] font-semibold uppercase tracking-wide text-muted">
-                {t('cropTracker.tracking')}
-              </Text>
-              <Text className="mt-1 text-[18px] font-bold text-indigo">
-                {translateCropType(t, trackableRequest.cropType as CropType)}
-              </Text>
-              <Text className="mt-1 text-[13px] text-muted">
-                {trackableRequest.quantityKg.toLocaleString('en-IN')} kg ·{' '}
-                {trackableRequest.requestNumber}
-              </Text>
-            </View>
-            <StorageDashboard request={trackableRequest} />
-          </View>
-        ) : pendingPaymentRequest ? (
-          <View className="gap-5">
-            <View className="items-center rounded-2xl border border-dashed border-border bg-surface px-5 py-10">
-              <View className="mb-4 h-14 w-14 items-center justify-center rounded-full bg-marigold/15">
-                <AppIcon name="credit-card-outline" size={28} color={Palette.marigold} />
-              </View>
-              <Text className="text-center text-[18px] font-bold text-indigo">
-                {t('cropTracker.paymentPendingTitle')}
-              </Text>
-              <Text className="mt-2 text-center text-[14px] leading-5 text-muted">
-                {t('cropTracker.paymentPendingBody')}
-              </Text>
-              <Text className="mt-4 text-[13px] font-semibold text-india-green">
-                {pendingPaymentRequest.requestNumber}
-              </Text>
-            </View>
-            <Button onPress={() => router.push(getStorageRoute(pendingPaymentRequest))}>
-              {t('cropTracker.completePayment')}
-            </Button>
-          </View>
-        ) : activeRequest ? (
-          <View className="gap-5">
-            <View className="rounded-2xl border border-border bg-white p-4">
-              <Text className="text-[16px] font-bold text-indigo">{t('cropTracker.pendingTitle')}</Text>
-              <Text className="mt-2 text-[14px] leading-5 text-muted">
-                {t('cropTracker.pendingBody')}
-              </Text>
-              <View className="mt-4 rounded-xl bg-surface px-3 py-3">
-                <Text className="text-[13px] leading-5 text-muted">
-                  {t('smartContracts.pendingStorageHint')}
-                </Text>
-              </View>
-              <View className="mt-4 flex-row flex-wrap gap-2">
-                <StatusPill
-                  label={translateStorageStatus(t, activeRequest.status)}
-                />
-                <StatusPill
-                  label={`${activeRequest.quantityKg.toLocaleString('en-IN')} kg`}
-                  muted
-                />
-                <StatusPill label={formatPaise(activeRequest.valuationPaise)} muted />
-              </View>
-            </View>
-
-            <View className="rounded-2xl border border-border bg-white p-4">
-              <Text className="mb-4 text-[15px] font-bold text-indigo">
-                {t('cropTracker.statusTimeline')}
-              </Text>
-              <StorageStatusTimeline request={activeRequest} />
-            </View>
-
-            {requests.length > 1 ? (
-              <View className="rounded-2xl border border-border bg-surface px-4 py-3">
-                <Text className="text-[13px] text-muted">
-                  {t('cropTracker.otherRequests', { count: requests.length - 1 })}
-                </Text>
-              </View>
-            ) : null}
+            ) : viewMode === 'pending_payment' ? (
+              <PendingPaymentContent request={selectedRequest} t={t} />
+            ) : (
+              <PendingIntakeContent request={selectedRequest} t={t} locale={locale} />
+            )}
 
             <Button variant="secondary" onPress={() => router.push('/services/storage')}>
               {t('cropTracker.addStorage')}
@@ -207,6 +152,138 @@ export function CropTrackerScreen() {
         ) : null}
       </ScrollView>
     </View>
+  );
+}
+
+function TrackingContent({
+  request,
+  activeReceipt,
+  t,
+  locale,
+}: {
+  request: StorageRequest;
+  activeReceipt: ReturnType<typeof findSmartContractByStorageRequest>;
+  t: TranslateFn;
+  locale: string;
+}) {
+  return (
+    <>
+      {activeReceipt ? (
+        <SmartContractReceiptBanner
+          contract={activeReceipt}
+          t={t}
+          variant="cropTracker"
+          qrId={request.qrId}
+          publicReceiptUrl={request.publicReceiptUrl}
+        />
+      ) : request.qrId && request.publicReceiptUrl ? (
+        <StorageReceiptTrustDeedCard
+          qrId={request.qrId}
+          publicReceiptUrl={request.publicReceiptUrl}
+          cropType={translateCropType(t, request.cropType as CropType)}
+          quantityKg={request.quantityKg}
+          valuationLabel={formatPaise(request.valuationPaise)}
+          t={t}
+        />
+      ) : request.status === 'IN_STORAGE' ? (
+        <View className="rounded-2xl border border-dashed border-india-green/30 bg-india-green/5 px-4 py-4">
+          <Text className="text-[14px] font-semibold text-indigo">
+            {t('smartContracts.cropTrackerPendingReceiptTitle')}
+          </Text>
+          <Text className="mt-1 text-[13px] leading-5 text-muted">
+            {t('smartContracts.cropTrackerPendingReceiptBody')}
+          </Text>
+        </View>
+      ) : null}
+
+      <View className="rounded-2xl border border-border bg-white p-4">
+        <Text className="text-[12px] font-semibold uppercase tracking-wide text-muted">
+          {t('cropTracker.tracking')}
+        </Text>
+        <Text className="mt-1 text-[18px] font-bold text-indigo">
+          {translateCropType(t, request.cropType as CropType)}
+        </Text>
+        <Text className="mt-1 text-[13px] text-muted">
+          {formatQuantityLine(t, request.quantityKg, request.requestNumber, locale)}
+        </Text>
+      </View>
+
+      <StorageDashboard request={request} />
+    </>
+  );
+}
+
+function PendingPaymentContent({
+  request,
+  t,
+}: {
+  request: StorageRequest;
+  t: TranslateFn;
+}) {
+  return (
+    <View className="items-center rounded-2xl border border-dashed border-border bg-surface px-5 py-10">
+      <View className="mb-4 h-14 w-14 items-center justify-center rounded-full bg-marigold/15">
+        <AppIcon name="credit-card-outline" size={28} color={Palette.marigold} />
+      </View>
+      <Text className="text-center text-[18px] font-bold text-indigo">
+        {t('cropTracker.paymentPendingTitle')}
+      </Text>
+      <Text className="mt-2 text-center text-[14px] leading-5 text-muted">
+        {t('cropTracker.paymentPendingBody')}
+      </Text>
+      <Text className="mt-4 text-[13px] font-semibold text-india-green">
+        {request.requestNumber}
+      </Text>
+      <Button
+        className="mt-5 w-full"
+        onPress={() => router.push(getStorageRoute(request))}
+      >
+        {t('cropTracker.completePayment')}
+      </Button>
+    </View>
+  );
+}
+
+function PendingIntakeContent({
+  request,
+  t,
+  locale,
+}: {
+  request: StorageRequest;
+  t: TranslateFn;
+  locale: string;
+}) {
+  return (
+    <>
+      <View className="rounded-2xl border border-border bg-white p-4">
+        <Text className="text-[16px] font-bold text-indigo">{t('cropTracker.pendingTitle')}</Text>
+        <Text className="mt-2 text-[14px] leading-5 text-muted">
+          {t('cropTracker.pendingBody')}
+        </Text>
+        <View className="mt-4 rounded-xl bg-surface px-3 py-3">
+          <Text className="text-[13px] leading-5 text-muted">
+            {t('smartContracts.pendingStorageHint')}
+          </Text>
+        </View>
+        <View className="mt-4 flex-row flex-wrap gap-2">
+          <StatusPill label={translateStorageStatus(t, request.status)} />
+          <StatusPill
+            label={t('cropTracker.quantityKg', {
+              quantity: request.quantityKg.toLocaleString(locale === 'en' ? 'en-IN' : locale),
+            })}
+            muted
+          />
+          <StatusPill label={formatPaise(request.valuationPaise)} muted />
+        </View>
+      </View>
+
+      <View className="rounded-2xl border border-border bg-white p-4">
+        <Text className="mb-4 text-[15px] font-bold text-indigo">
+          {t('cropTracker.statusTimeline')}
+        </Text>
+        <StorageStatusTimeline request={request} />
+      </View>
+    </>
   );
 }
 

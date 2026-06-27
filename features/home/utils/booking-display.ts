@@ -1,6 +1,11 @@
-import { getBookingDetailRoute } from '@/features/bookings/utils/booking-progress';
+import {
+  getBookingDetailRoute,
+  parseExpertNameFromNote,
+} from '@/features/bookings/utils/booking-progress';
+import { looksLikeOpaqueId } from '@/lib/assigned-expert-display';
 import type { Booking, BookingStatus } from '@/types/booking';
 import type { ServiceIconType } from '@/types/catalog';
+import type { AppIconName } from '@/components/ui/app-icon';
 
 const BOOKING_STATUS_KEYS: Record<BookingStatus, string> = {
   PENDING_PAYMENT: 'enums.bookingStatuses.pendingPayment',
@@ -65,14 +70,26 @@ export function translateBookingTimelineNote(
   }
 
   if (/^Accepted by expert /u.test(trimmed)) {
+    const name = parseExpertNameFromNote(trimmed);
+    if (name && !looksLikeOpaqueId(name)) {
+      return t('bookingDetail.notes.expertAcceptedBy').replace('{{name}}', name);
+    }
     return t('bookingDetail.notes.expertAccepted');
   }
 
   if (/^Expert assigned by admin /u.test(trimmed)) {
+    const name = parseExpertNameFromNote(trimmed);
+    if (name && !looksLikeOpaqueId(name)) {
+      return t('bookingDetail.notes.expertAssignedBy').replace('{{name}}', name);
+    }
     return t('bookingDetail.notes.expertAssigned');
   }
 
   if (/^Expert reassigned to /u.test(trimmed)) {
+    const name = parseExpertNameFromNote(trimmed);
+    if (name && !looksLikeOpaqueId(name)) {
+      return t('bookingDetail.notes.expertReassignedTo').replace('{{name}}', name);
+    }
     return t('bookingDetail.notes.expertReassigned');
   }
 
@@ -81,6 +98,21 @@ export function translateBookingTimelineNote(
 
 export function getBookingStatusColor(status: BookingStatus): string {
   return STATUS_BADGE_COLORS[status];
+}
+
+const BOOKING_STATUS_ICONS: Record<BookingStatus, AppIconName> = {
+  PENDING_PAYMENT: 'credit-card-outline',
+  PAID: 'check-circle-outline',
+  OPEN: 'account-search-outline',
+  ACCEPTED: 'account-check-outline',
+  TRAVELLING: 'map-marker-path',
+  IN_PROGRESS: 'progress-wrench',
+  COMPLETED: 'check-decagram-outline',
+  CANCELLED: 'close-circle-outline',
+};
+
+export function getBookingStatusIcon(status: BookingStatus): AppIconName {
+  return BOOKING_STATUS_ICONS[status] ?? 'circle-outline';
 }
 
 export function formatBookingDate(isoDate: string, locale: string): string {

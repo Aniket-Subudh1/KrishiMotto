@@ -2,9 +2,10 @@ import { AppIcon } from '@/components/ui/app-icon';
 import { resolveAppIcon, type IconName } from '@/lib/icon-names';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Redirect, router } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Linking, Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { ErrorBanner } from '@/components/auth/auth-screen-layout';
 import { Button } from '@/components/ui/button';
@@ -43,7 +44,9 @@ import {
 import { useCatalog } from '@/features/home/hooks/use-catalog';
 import { AppBarGradient, Palette } from '@/constants/theme';
 import { useAppLocale } from '@/hooks/use-app-locale';
+import { useQueryFocusRefresh } from '@/hooks/use-query-focus-refresh';
 import { translateCreditPurpose, translateServiceDescription } from '@/lib/booking-i18n';
+import { invalidateFarmerServiceQueries } from '@/lib/query-cache-sync';
 import { formatPaise } from '@/lib/currency';
 import { useAuthStore } from '@/stores/auth.store';
 import { CREDIT_PURPOSES, type CreditPurpose } from '@/types/booking';
@@ -73,10 +76,19 @@ function eligibleContracts(contracts: FarmerSmartContract[]): FarmerSmartContrac
 export function PpacsCreditScreen() {
   const { t } = useAppLocale();
   const insets = useSafeAreaInsets();
+  const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
+  const refreshCreditData = useCallback(
+    () => invalidateFarmerServiceQueries(queryClient),
+    [queryClient],
+  );
+
+  useQueryFocusRefresh(refreshCreditData, user?.role === 'FARMER');
   const { data: catalogServices, isLoading: catalogLoading } = useCatalog();
   const { data: kyc, isLoading: kycLoading } = useFarmerKyc();
-  const { data: smartContracts = [], isLoading: contractsLoading } = useFarmerSmartContracts();
+  const { data: smartContracts = [], isLoading: contractsLoading } = useFarmerSmartContracts({
+    poll: true,
+  });
   const { data: lenders = [], isLoading: lendersLoading } = usePublicLenders();
   const submitKyc = useSubmitFarmerKyc();
   const applyCredit = useApplyAgriCredit();

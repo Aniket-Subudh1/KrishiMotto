@@ -8,6 +8,7 @@ import {
 
 import { AppIcon } from '@/components/ui/app-icon';
 import { Button } from '@/components/ui/button';
+import { IndiaLocationFields } from '@/components/location/india-location-fields';
 import { Input } from '@/components/ui/input';
 import { KeyboardAwareFormShell } from '@/components/ui/keyboard-aware-form-shell';
 import { Text } from '@/components/ui/text';
@@ -175,17 +176,12 @@ export function ProfileTab({
                     onChangeText={setName}
                     icon="person-outline"
                   />
-                  <Input
-                    label={t('home.profile.districtLabel')}
-                    value={district}
-                    onChangeText={setDistrict}
-                    icon="location-outline"
-                  />
-                  <Input
-                    label={t('home.profile.stateLabel')}
-                    value={state}
-                    onChangeText={setState}
-                    icon="map-outline"
+                  <IndiaLocationFields
+                    state={state}
+                    district={district}
+                    onStateChange={setState}
+                    onDistrictChange={setDistrict}
+                    t={t}
                   />
                   <Input
                     label={t('home.profile.cropLabel')}

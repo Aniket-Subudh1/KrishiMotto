@@ -11,6 +11,7 @@ import type {
   CreatePpacsCreditBookingPayload,
   CreateSoilHealthBookingPayload,
 } from '@/types/booking';
+import type { FarmerExpertSummary } from '@/types/expert';
 
 export type ListBookingsParams = {
   status?: string;
@@ -45,4 +46,7 @@ export const bookingService = {
 
   listBookings: (params?: ListBookingsParams) =>
     apiClient.get<V1Response<BookingListPage>>('/farmer/bookings', { params }),
+
+  getExpert: (expertId: string) =>
+    apiClient.get<V1Response<FarmerExpertSummary>>(`/farmer/experts/${expertId}`),
 };

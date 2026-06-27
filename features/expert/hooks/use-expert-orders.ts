@@ -7,11 +7,21 @@ import {
   isServerError,
 } from '@/lib/api-error';
 import {
+  rememberUploadedCompletionDocument,
+  uploadNameForContentType,
+  withResolvedCompletionDocuments,
+} from '@/lib/completion-document';
+import {
   EXPERT_HOME_LIST_PARAMS,
   EXPERT_ORDERS_DEFAULT_PARAMS,
   EXPERT_REQUESTS_DEFAULT_PARAMS,
   normalizeExpertBooking,
 } from '@/lib/expert-marketplace';
+import { ensureUploadUrlCacheHydrated } from '@/lib/upload-url-cache';
+import {
+  invalidateCrossRoleBookingQueries,
+  invalidateExpertMarketplaceQueries,
+} from '@/lib/query-cache-sync';
 import { isActiveExpertOrderStatus } from '@/features/expert/utils/expert-order-display';
 import { expertService } from '@/services/expert.service';
 import { uploadService } from '@/services/upload.service';
@@ -30,6 +40,8 @@ export {
   EXPERT_REQUESTS_DEFAULT_PARAMS,
 } from '@/lib/expert-marketplace';
 
+export { invalidateExpertMarketplaceQueries } from '@/lib/query-cache-sync';
+
 export const EXPERT_ORDER_KEYS = {
   all: ['expert', 'marketplace'] as const,
   requests: (params?: ListExpertRequestsParams) =>
@@ -45,15 +57,6 @@ export const EXPERT_UNREAD_NOTIFICATIONS_PARAMS = {
   unreadOnly: true,
   limit: 50,
 } as const;
-
-export function invalidateExpertMarketplaceQueries(queryClient: ReturnType<typeof useQueryClient>) {
-  return Promise.all([
-    queryClient.invalidateQueries({ queryKey: EXPERT_ORDER_KEYS.all }),
-    queryClient.invalidateQueries({ queryKey: ['expert', 'requests'] }),
-    queryClient.invalidateQueries({ queryKey: ['expert', 'orders'] }),
-    queryClient.invalidateQueries({ queryKey: ['expert', 'notifications'] }),
-  ]);
-}
 
 export function useExpertRequests(
   params: ListExpertRequestsParams = EXPERT_REQUESTS_DEFAULT_PARAMS,
@@ -112,6 +115,7 @@ export function useExpertRequest(
       return normalizeExpertBooking(data.data.item);
     },
     enabled: Boolean(id) && (options?.enabled ?? true),
+    refetchOnMount: 'always',
   });
 }
 
@@ -126,7 +130,7 @@ export function useAcceptExpertRequest() {
     onSuccess: (order) => {
       const normalized = normalizeExpertBooking(order);
       queryClient.setQueryData(EXPERT_ORDER_KEYS.orderDetail(normalized.id), normalized);
-      invalidateExpertMarketplaceQueries(queryClient);
+      void invalidateCrossRoleBookingQueries(queryClient);
     },
   });
 }
@@ -186,10 +190,12 @@ export function useExpertOrder(
   return useQuery({
     queryKey: EXPERT_ORDER_KEYS.orderDetail(id ?? ''),
     queryFn: async () => {
+      await ensureUploadUrlCacheHydrated();
       const { data } = await expertService.getOrder(id!);
-      return normalizeExpertBooking(data.data.item);
+      return withResolvedCompletionDocuments(normalizeExpertBooking(data.data.item));
     },
     enabled: Boolean(id) && (options?.enabled ?? true),
+    refetchOnMount: 'always',
     refetchInterval: (query) => {
       const order = query.state.data;
       if (!order || !pollStatus) {
@@ -211,7 +217,7 @@ export function useAdvanceExpertOrderStatus(orderId: string) {
     onSuccess: (order) => {
       const normalized = normalizeExpertBooking(order);
       queryClient.setQueryData(EXPERT_ORDER_KEYS.orderDetail(normalized.id), normalized);
-      invalidateExpertMarketplaceQueries(queryClient);
+      void invalidateCrossRoleBookingQueries(queryClient);
     },
   });
 }
@@ -231,7 +237,13 @@ export function useAttachExpertOrderDocument(orderId: string) {
     }) => {
       const { data: presignData } = await uploadService.presign('land_doc', contentType);
       const presign = presignData.data;
-      await uploadService.uploadToPresignedUrl(presign.uploadUrl, uri, contentType);
+      await uploadService.uploadToPresignedUrl(
+        presign.uploadUrl,
+        uri,
+        contentType,
+        uploadNameForContentType(contentType),
+      );
+      rememberUploadedCompletionDocument(presign.assetKey, presign.publicUrl);
 
       const payload: ExpertOrderDocumentAttachPayload = {
         assetKey: presign.assetKey,
@@ -239,19 +251,11 @@ export function useAttachExpertOrderDocument(orderId: string) {
       };
 
       const { data } = await expertService.attachOrderDocument(orderId, payload);
-      const order = data.data.item;
-
-      const lastDoc = order.completionDocuments?.[order.completionDocuments.length - 1];
-      if (lastDoc && lastDoc.assetKey === presign.assetKey) {
-        lastDoc.publicUrl = presign.publicUrl;
-      }
-
-      return order;
+      return withResolvedCompletionDocuments(normalizeExpertBooking(data.data.item));
     },
     onSuccess: (order) => {
-      const normalized = normalizeExpertBooking(order);
-      queryClient.setQueryData(EXPERT_ORDER_KEYS.orderDetail(normalized.id), normalized);
-      invalidateExpertMarketplaceQueries(queryClient);
+      queryClient.setQueryData(EXPERT_ORDER_KEYS.orderDetail(order.id), order);
+      void invalidateCrossRoleBookingQueries(queryClient);
     },
   });
 }
@@ -260,27 +264,27 @@ export function mergeExpertDocumentPublicUrls(
   order: ExpertBooking,
   previous?: ExpertBooking | null,
 ): ExpertBooking {
-  if (!order.completionDocuments?.length || !previous?.completionDocuments?.length) {
-    return order;
+  let result = order;
+
+  if (order.completionDocuments?.length && previous?.completionDocuments?.length) {
+    const urlByKey = new Map(
+      previous.completionDocuments
+        .filter((doc) => doc.publicUrl)
+        .map((doc) => [doc.assetKey, doc.publicUrl!]),
+    );
+
+    if (urlByKey.size > 0) {
+      result = {
+        ...order,
+        completionDocuments: order.completionDocuments.map((doc) => ({
+          ...doc,
+          publicUrl: doc.publicUrl ?? urlByKey.get(doc.assetKey),
+        })),
+      };
+    }
   }
 
-  const urlByKey = new Map(
-    previous.completionDocuments
-      .filter((doc) => doc.publicUrl)
-      .map((doc) => [doc.assetKey, doc.publicUrl!]),
-  );
-
-  if (urlByKey.size === 0) {
-    return order;
-  }
-
-  return {
-    ...order,
-    completionDocuments: order.completionDocuments.map((doc) => ({
-      ...doc,
-      publicUrl: doc.publicUrl ?? urlByKey.get(doc.assetKey),
-    })),
-  };
+  return withResolvedCompletionDocuments(result);
 }
 
 export function useExpertNotifications(

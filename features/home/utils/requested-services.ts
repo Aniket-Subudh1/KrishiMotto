@@ -1,10 +1,8 @@
 import type { QueryClient } from '@tanstack/react-query';
 
-import { BOOKING_KEYS } from '@/features/crop-calendar/hooks/use-crop-calendar-booking';
-import { CREDIT_KEYS } from '@/features/ppacs-credit/hooks/use-ppacs-credit';
 import { isActiveLoan } from '@/features/ppacs-credit/utils/loan-display';
 import { isActiveStorageRequest } from '@/features/home/utils/storage-display';
-import { STORAGE_KEYS } from '@/features/storage/hooks/use-storage-request';
+import { invalidateFarmerServiceQueries } from '@/lib/query-cache-sync';
 import type { Booking } from '@/types/booking';
 import type { Loan } from '@/types/credit';
 import type { StorageRequest } from '@/types/storage';
@@ -49,9 +47,5 @@ export function buildRequestedServiceItems(
 }
 
 export function invalidateRequestedServicesQueries(queryClient: QueryClient) {
-  return Promise.all([
-    queryClient.invalidateQueries({ queryKey: BOOKING_KEYS.all }),
-    queryClient.invalidateQueries({ queryKey: STORAGE_KEYS.all }),
-    queryClient.invalidateQueries({ queryKey: CREDIT_KEYS.loans }),
-  ]);
+  return invalidateFarmerServiceQueries(queryClient);
 }

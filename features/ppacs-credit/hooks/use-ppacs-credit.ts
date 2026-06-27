@@ -1,10 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { isActiveLoan } from '@/features/ppacs-credit/utils/loan-display';
 import { getApiErrorMessage, isNotFoundError } from '@/lib/api-error';
-import {
-  SMART_CONTRACT_KEYS,
-  useFarmerSmartContracts,
-} from '@/features/smart-contracts/hooks/use-smart-contracts';
+import { FARMER_DATA_POLL_INTERVAL_MS, invalidateFarmerServiceQueries } from '@/lib/query-cache-sync';
+import { useFarmerSmartContracts } from '@/features/smart-contracts/hooks/use-smart-contracts';
 import { farmerKycService } from '@/services/farmer-kyc.service';
 import { lenderService } from '@/services/lender.service';
 import { loanService } from '@/services/loan.service';
@@ -64,13 +63,14 @@ export function useSubmitFarmerKyc() {
   });
 }
 
-export function useFarmerLoans() {
+export function useFarmerLoans(options?: { poll?: boolean }) {
   return useQuery({
     queryKey: CREDIT_KEYS.loans,
     queryFn: async () => {
       const { data } = await loanService.listForFarmer();
       return data.data.items;
     },
+    refetchInterval: options?.poll ? FARMER_DATA_POLL_INTERVAL_MS : false,
   });
 }
 
@@ -83,20 +83,32 @@ export function useApplyAgriCredit() {
       return data.data;
     },
     onSuccess: (loan) => {
-      queryClient.invalidateQueries({ queryKey: CREDIT_KEYS.loans });
-      queryClient.invalidateQueries({ queryKey: SMART_CONTRACT_KEYS.list });
       queryClient.setQueryData(CREDIT_KEYS.loan(loan.id), loan);
+      void invalidateFarmerServiceQueries(queryClient);
     },
   });
 }
 
-export function useLoanTrack(loanId: string | null) {
+export function useLoanTrack(loanId: string | null, options?: { poll?: boolean }) {
   return useQuery({
     queryKey: CREDIT_KEYS.loanTrack(loanId ?? ''),
     enabled: Boolean(loanId),
     queryFn: async () => {
       const { data } = await loanService.trackForFarmer(loanId!);
       return data.data;
+    },
+    refetchOnMount: 'always',
+    refetchInterval: (query) => {
+      if (!options?.poll) {
+        return false;
+      }
+
+      const track = query.state.data;
+      if (!track || !isActiveLoan(track.loan)) {
+        return false;
+      }
+
+      return FARMER_DATA_POLL_INTERVAL_MS;
     },
   });
 }

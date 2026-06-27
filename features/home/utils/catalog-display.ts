@@ -65,7 +65,7 @@ export function toGridService(service: CatalogService, t: TranslateFn): GridServ
   return {
     key: service.id,
     title: translateServiceTitle(t, service.iconType, service.title),
-    badge: translateServicePrice(t, service.iconType, service.priceLabel),
+    badge: translateServicePrice(t, service.iconType, service.priceLabel, service.basePricePaise),
     icon: iconStyle.icon,
     iconBg: iconStyle.iconBg,
     iconColor: iconStyle.iconColor,

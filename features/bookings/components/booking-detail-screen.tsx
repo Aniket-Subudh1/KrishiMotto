@@ -1,6 +1,6 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQueryClient } from '@tanstack/react-query';
@@ -10,6 +10,7 @@ import { AppIcon } from '@/components/ui/app-icon';
 import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { BookingProgressDots } from '@/features/bookings/components/booking-progress-dots';
+import { AssignedExpertCard } from '@/features/bookings/components/assigned-expert-display';
 import { BookingStatusTimeline } from '@/features/bookings/components/booking-status-timeline';
 import { CompletionDocumentsSection } from '@/features/bookings/components/completion-documents-section';
 import {
@@ -24,8 +25,10 @@ import {
   isServiceIconType,
   translateBookingStatus,
 } from '@/features/home/utils/booking-display';
+import { hasAssignedExpert } from '@/features/bookings/utils/booking-progress';
 import { AppBarGradient, Palette } from '@/constants/theme';
 import { useAppLocale } from '@/hooks/use-app-locale';
+import { useQueryFocusRefresh } from '@/hooks/use-query-focus-refresh';
 import { translateServiceTitle } from '@/lib/booking-i18n';
 import { formatPaise } from '@/lib/currency';
 import { useAuthStore } from '@/stores/auth.store';
@@ -44,6 +47,13 @@ export function BookingDetailScreen() {
   const { data: fetched, isLoading, isRefetching, refetch, error } = useBooking(bookingId || null, {
     pollStatus: true,
   });
+
+  const refreshBooking = useCallback(async () => {
+    await refetch();
+    await queryClient.invalidateQueries({ queryKey: BOOKING_KEYS.all });
+  }, [queryClient, refetch]);
+
+  useQueryFocusRefresh(refreshBooking, Boolean(bookingId));
 
   const booking = useMemo(
     () => (fetched ? mergeDocumentPublicUrls(fetched, cached) : fetched),
@@ -66,6 +76,7 @@ export function BookingDetailScreen() {
       ? translateServiceTitle(t, iconType, booking.serviceTitle)
       : booking.serviceTitle
     : t('bookingDetail.title');
+  const showExpert = booking ? hasAssignedExpert(booking) : false;
 
   return (
     <View className="flex-1 bg-background">
@@ -163,6 +174,14 @@ export function BookingDetailScreen() {
               </Text>
             ) : null}
           </View>
+
+          {showExpert ? (
+            <AssignedExpertCard
+              expertId={booking.expertId}
+              expertName={booking.expertName}
+              t={t}
+            />
+          ) : null}
 
           <View className="mt-5 rounded-2xl border border-border bg-white p-4">
             <Text className="text-[13px] font-semibold uppercase tracking-wide text-muted">

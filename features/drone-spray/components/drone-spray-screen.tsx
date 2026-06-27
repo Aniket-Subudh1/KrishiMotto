@@ -31,7 +31,7 @@ import { useLandParcels } from '@/features/farmer/hooks/use-land-parcel';
 import { useCatalog } from '@/features/home/hooks/use-catalog';
 import { AppBarGradient, Palette } from '@/constants/theme';
 import { useAppLocale } from '@/hooks/use-app-locale';
-import { translateCropType } from '@/lib/booking-i18n';
+import { translateCropType, getCatalogServicePriceLabel } from '@/lib/booking-i18n';
 import { formatPaise } from '@/lib/currency';
 import { formatAcres } from '@/lib/format';
 import { computePerAcrePricing } from '@/lib/pricing';
@@ -191,9 +191,10 @@ export function DroneSprayScreen() {
     }
   }
 
-  const perAcreLabel = droneSprayService
-    ? formatPaise(droneSprayService.basePricePaise)
-    : '₹399';
+  const perAcreLabel = getCatalogServicePriceLabel(
+    droneSprayService,
+    t('droneSpray.subtitle'),
+  );
   const totalLabel = priceEstimate
     ? formatPaise(priceEstimate.totalPaise)
     : perAcreLabel;

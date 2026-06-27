@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 
 import { ExpertOverviewTab } from '@/features/expert/components/expert-overview-tab';
 import { OverviewTab } from '@/features/home/components/overview-tab';
-import { useFarmerHome } from '@/features/home/context/farmer-home-context';
+import { useFarmerHome, useFarmerPollingScope } from '@/features/home/context/farmer-home-context';
 import { useAppLocale } from '@/hooks/use-app-locale';
 import { useAuthStore } from '@/stores/auth.store';
 
@@ -46,6 +46,7 @@ function FarmerHomeScreen({
   t: (key: string) => string;
   locale: string;
 }) {
+  useFarmerPollingScope('home');
   const { profile, parcels, isLoading, isRefreshing, onRefresh } = useFarmerHome();
 
   const greeting = useMemo(() => {

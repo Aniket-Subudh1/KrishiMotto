@@ -1,6 +1,7 @@
 import type { ServiceIconType } from '@/types/catalog';
 import type { StorageRequestStatus } from '@/types/storage';
 import type { CreditPurpose, CropType, Season, SoilType, VisitPurpose } from '@/types/booking';
+import { formatPaise } from '@/lib/currency';
 
 /** Minimal translate fn used across screens — compatible with i18next `t` and simple stubs. */
 export type TranslateFn = (key: string, options?: Record<string, unknown>) => string;
@@ -60,12 +61,30 @@ export function translateServiceTitle(
   return translateOrFallback(t, `enums.services.${iconType}`, fallback);
 }
 
+export function getCatalogServicePriceLabel(
+  service: { priceLabel?: string; basePricePaise?: number } | null | undefined,
+  fallback = '…',
+): string {
+  if (service?.priceLabel?.trim()) {
+    return service.priceLabel.trim();
+  }
+  if (service?.basePricePaise != null && service.basePricePaise > 0) {
+    return formatPaise(service.basePricePaise);
+  }
+  return fallback;
+}
+
 export function translateServicePrice(
   t: TranslateFn,
   iconType: ServiceIconType,
-  fallback: string,
+  priceLabel: string,
+  basePricePaise?: number,
 ): string {
-  return translateOrFallback(t, `enums.servicePrices.${iconType}`, fallback);
+  const fromCatalog = getCatalogServicePriceLabel({ priceLabel, basePricePaise });
+  if (fromCatalog !== '…') {
+    return fromCatalog;
+  }
+  return translateOrFallback(t, `enums.servicePrices.${iconType}`, priceLabel);
 }
 
 export function translateServiceDescription(
@@ -73,10 +92,13 @@ export function translateServiceDescription(
   iconType: ServiceIconType,
   fallback?: string,
 ): string {
+  if (fallback?.trim()) {
+    return fallback.trim();
+  }
   return translateOrFallback(
     t,
     `enums.serviceDescriptions.${iconType}`,
-    fallback ?? translateServiceTitle(t, iconType, iconType),
+    translateServiceTitle(t, iconType, iconType),
   );
 }
 
