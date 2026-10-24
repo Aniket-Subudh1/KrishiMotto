@@ -106,8 +106,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   extra: {
     ...config.extra,
-    eas: {
-      projectId: "000b27c8-ab72-4bf2-83f4-62761d0232db",
+    "eas": {
+      "projectId": "e6993508-5d74-4d1f-a8f9-e5b4b6174726"
     },
     apiUrl: API_URL,
     assetS3Bucket: ASSET_S3_BUCKET,
